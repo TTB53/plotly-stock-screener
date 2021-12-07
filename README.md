@@ -35,7 +35,7 @@ understanding of financial datasets pertaining to the stock market.
 4. Calling API Service
     1. yFinance - option to use Pandareader
 5. Database Development
-    1. SQLite - option to use SQLAlchemy
+    1. SQLite - option to use for switch between DB's
 6. Interactive Data Visualization
 
 ## Features
