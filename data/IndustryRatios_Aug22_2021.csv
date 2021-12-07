@@ -1,0 +1,16 @@
+﻿Industry Ratios       ,2020  ,2019 ,2018 ,2017  ,2016  ,2015
+debtRatio             ,0.61  ,0.61 ,0.62 ,0.63  ,0.65  ,0.66
+debtToEquity          ,1.07  ,1.12 ,0.87 ,0.8   ,0.75  ,0.67
+interestCoverage      ,1.22  ,2.2  ,1.98 ,1.84  ,1.69  ,1.5
+currentRatio          ,1.94  ,1.69 ,1.58 ,1.56  ,1.53  ,1.53
+quickRatio            ,1.25  ,1.08 ,1.05 ,1.09  ,1.09  ,1.09
+cashRatio             ,0.82  ,0.51 ,0.4  ,0.42  ,0.41  ,0.39
+profitMargin          ,0.015 ,0.04 ,0.033,0.026 ,0.019 ,0.019
+returnOnEquity        ,-0.021,0.027,0.007,-0.011,-0.025,-0.041
+returnOnAssets        ,-0.001,0.01 ,0.008,0.005 ,0.002 ,-0.001
+grossMargin           ,0.415 ,0.422,0.422,0.417 ,0.41  ,0.412
+operatingMargin       ,0.048 ,0.08 ,0.074,0.064 ,0.057 ,0.055
+assetTurnoverDays     ,869   ,747  ,654  ,635   ,636   ,633
+recievableTurnoverDays,54    ,50   ,48   ,48    ,48    ,49
+inventoryTurnoverDays ,79    ,71   ,71   ,70    ,71    ,69
+divdendPayout         ,0.27  ,0.32 ,0.27 ,0.31  ,0.29  ,0.24

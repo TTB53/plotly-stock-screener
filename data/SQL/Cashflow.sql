@@ -1,0 +1,23 @@
+CREATE TABLE IF NOT EXISTS "stock_cashflows"(
+"id" INTEGER PRIMARY KEY, 
+"stock_id" INTEGER,
+"Investments" REAL,
+"Change To Liabilities" REAL,
+"Total Cashflows From Investing Activities" REAL,
+"Net Borrowings" REAL,
+"Total Cash From Financing Activites" REAL,
+"Change To Operating Activities" REAL,
+"Net Income" REAL,
+"Change In Cash" REAL,
+"Repurchase Of Stock" REAL,
+"Effect Of Exchange Rate" REAL,
+"Total Cash From Operating Activities" REAL,
+"Depreciation" REAL,
+"Other Cashflows From Investing Activities" REAL,
+"Dividends Paid" REAL,
+"Change To Other Cashflows From Investing Activities" REAL,
+"Change To Netincome" REAL,
+"Capital Expenditures" REAL,
+"date" TIMESTAMP,
+Foreign Key (stock_id) references stock(id)
+)
