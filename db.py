@@ -11,8 +11,8 @@ import pandas as pd
 from stock import MyStock
 
 stockObj = MyStock()
-DB_FILE = "C:/Users/TTB53\Documents/The_Vintage_D_Modernist/TVDM Digital/PythonProjects/stock-db.db"
-SnP500_FILE = "C:/Users/TTB53/Documents/The_Vintage_D_Modernist/TVDM Digital/PythonProjects/data/s&p500_stocks_Jun18_2021.csv"
+DB_FILE = "./data/stock-db.db"
+SnP500_FILE = "./data/s&p500_stocks_Jun18_2021.csv"
 
 balance_sheet_table_sql = "./data/SQL/BalanceSheet.sql"
 basic_info_table_sql = "./data/SQL/BasicInfo.sql"
