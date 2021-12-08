@@ -16,7 +16,7 @@ from stock import MyStock
 # from app import app  # Needed for making app multi-page
 
 # Interacts with the Database
-dbObj = db.db_connection()
+dbObj = db.DBConnection()
 
 # Interacts with the yFinance API
 StockObj = MyStock()

@@ -278,7 +278,7 @@ class MyStock:
                         conn
                     except Error as e:
                         print(e)
-                        conn = db.db_connection.create_connection()
+                        conn = db.DBConnection.create_connection()
 
                     # Creating a copy of the dataframes to add necessary data before saving into DB
                     balanceSheet_cpy = self.prep_dataframe_to_save(balanceSheet, stock_id)

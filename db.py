@@ -8,10 +8,8 @@ from sqlite3 import Error
 import pandas as pd
 
 # Create Table SQL statements
-from stock import MyStock
 
-stockObj = MyStock()
-DB_FILE = "./data/stock-db.db"
+DB_FILE = "./stock-db.db"
 SnP500_FILE = "./data/s&p500_stocks_Jun18_2021.csv"
 
 balance_sheet_table_sql = "./data/SQL/BalanceSheet.sql"
@@ -83,7 +81,7 @@ drop_earnings_sql = """ DROP TABLE IF EXISTS stock_earnings"""
 drop_financials_sql = """ DROP TABLE IF EXISTS stock_financials"""
 
 
-class db_connection():
+class DBConnection:
     """
     Create a database connection to the database specified by db_file
     :param db_file: database file path
@@ -225,6 +223,9 @@ class db_connection():
     def get_sp500_data(self, conn, table_name, db_file):
         import time
         import random
+        from stock import MyStock
+
+        stockObj = MyStock()
 
         try:
             # conn = create_connection(db_file)

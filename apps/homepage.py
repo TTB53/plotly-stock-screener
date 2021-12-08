@@ -13,7 +13,7 @@ from app import app
 from stock import MyStock
 
 # Interacts with the Database
-dbObj = db.db_connection()
+dbObj = db.DBConnection()
 
 # Interacts with the yFinance API
 StockObj = MyStock()

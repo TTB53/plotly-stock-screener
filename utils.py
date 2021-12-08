@@ -32,7 +32,7 @@ Produces the Navigation Bar that is on every app(page) of the applcation.
 
 PLOTLY_LOGO = "https://images.plot.ly/logo/new-branding/plotly-logomark.png"
 
-dbObj = db.db_connection()
+dbObj = db.DBConnection()
 
 
 def get_nav(app):
