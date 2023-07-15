@@ -1,9 +1,9 @@
 '''
 Creating the database for housing stock data information
 '''
-
 import sqlite3
 from sqlite3 import Error
+import logging
 
 import pandas as pd
 
@@ -103,7 +103,7 @@ class DBConnection:
             conn = sqlite3.connect(db_file)
             return conn
         except Error as e:
-            print(e)
+            logging.info(e)
 
         return conn
 
@@ -119,10 +119,10 @@ class DBConnection:
         try:
             c = conn.cursor()
             c.execute(drop_table_sql)
-            print("Table was Dropped Successfully.")
+            logging.info("Table was Dropped Successfully.")
 
         except Error as e:
-            print(e)
+            logging.info(e)
 
     """ create a table from the create_table_sql statement
     :param conn: Connection object
@@ -134,7 +134,7 @@ class DBConnection:
 
         create_table_sql_str = self.create_sql_string(create_table_sql)
 
-        print("Table SQL being created.\n{}\n".format(create_table_sql_str))
+        logging.info("Table SQL being created.\n{}\n".format(create_table_sql_str))
 
         try:
             c = conn.cursor()
@@ -142,7 +142,7 @@ class DBConnection:
             conn.commit()
             c.close()
         except Error as e:
-            print("ERROR OCCURRED WHEN CREATING TABLE----ERROR\n{}\nClosing Connection to DB".format(e))
+            logging.info("ERROR OCCURRED WHEN CREATING TABLE----ERROR\n{}\nClosing Connection to DB".format(e))
             conn.close()
 
     # conn.close()
@@ -162,16 +162,16 @@ class DBConnection:
             if param_list is not None:
                 c.execute(insert_table_sql, param_list)
                 conn.commit()
-                print("Data Successfully submitted to DB with the provided paramaters\n{}".format(param_list))
+                logging.info("Data Successfully submitted to DB with the provided paramaters\n{}".format(param_list))
             else:
                 c.execute(insert_table_sql)
                 conn.commit()
-                print("Data Successfully entered into the DB.")
+                logging.info("Data Successfully entered into the DB.")
             c.close()
             # conn.close() TODO check on if you should close/reopen after each insert or not.Feels like this would make it really slow?
 
         except Error as e:
-            print(e)
+            logging.info(e)
 
     '''
     Select and retrieve all the data for the table name.
@@ -185,7 +185,7 @@ class DBConnection:
         if conn and table_name:
             c = conn.cursor()
             data = c.execute('''SELECT * FROM {}'''.format(table_name)).getall()
-            print(data)
+            logging.info(data)
             c.close()
 
     '''
@@ -200,7 +200,7 @@ class DBConnection:
         if conn and table_name:
             c = conn.cursor()
             data = c.execute('''SELECT * FROM {} where {} = {}'''.format(table_name, column, param)).getall()
-            print(data)
+            logging.info(data)
             c.close()
 
     '''
@@ -264,14 +264,14 @@ class DBConnection:
                     options, financials, cashflows, earnings, balanceSheet, stock_info = stockObj.get_ticker_additional_information(
                         stock_symbol=stock_symbol, stock_info=True)
 
-                    print("Waiting to get the Other Info\n{}s\n".format(random_number))
+                    logging.info("Waiting to get the Other Info\n{}s\n".format(random_number))
                     time.wait(random_number)
                     stock_info = stockObj.get_ticker_additional_information(balanceSheet=False,
                                                                             stock_id=stock_id)
-                    print(stock_info)
+                    logging.info(stock_info)
                     i = i + 1
         except Error as e:
-            print(e)
+            logging.info(e)
 
     '''
     Get all the data in a selected SQL table
@@ -286,7 +286,7 @@ class DBConnection:
             c.close()
             return data
         except Error as e:
-            print(e)
+            logging.info(e)
             return None
 
     '''
@@ -303,7 +303,7 @@ class DBConnection:
             c.close()
             return data
         except Error as e:
-            print(e)
+            logging.info(e)
             return None
 
     '''
@@ -361,7 +361,7 @@ class DBConnection:
         # create a database connection
         db_file = self.DB_FILE
         conn = self.create_connection(self, db_file=db_file)
-        print(conn)
+        logging.info(conn)
 
         # create tables
         if conn is not None:
@@ -427,6 +427,6 @@ class DBConnection:
         stock_price_df = pd.read_sql_query('SELECT * FROM stock_price', conn)
         # options_df = pd.read_sql_query('SELECT * FROM options', conn)
 
-        print(stock_df.head())
-        print(stock_price_df.head())
-        # print(options_df.head())
+        logging.info(stock_df.head())
+        logging.info(stock_price_df.head())
+        # logging.info(options_df.head())

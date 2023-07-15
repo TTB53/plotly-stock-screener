@@ -2,7 +2,9 @@
 # yfinance documentation https://pypi.org/project/yfinance/
 # Plotly  Documentation https://plotly.com/python/
 import datetime as dt
+import sys
 from sqlite3 import Error
+import logging
 
 import pandas as pd
 import talib as ta
@@ -153,7 +155,7 @@ class MyStock:
         }, inplace=True)
         add_data['stock_id'] = stock_id
 
-        print("{}{}{}".format(add_data.head(), "\\n", add_data.tail()))
+        logging.info("{}{}{}".format(add_data.head(), "\\n", add_data.tail()))
 
         # TODO Utilize the DB Connetion Object for this
         add_data.to_sql('stock_price', conn, if_exists='append', index=False)
@@ -225,8 +227,10 @@ class MyStock:
 
         data = yf.Ticker(ticker=stock_symbol)
 
+        # Note as of yFinance 0.2.22 earnings is now lumped into the financials, so instead of being separate,
+        # it will have to be created from the Financials Data.
         if data is not None:
-            if options and financials and cashflows and earnings and balanceSheet:
+            if options and financials and cashflows and balanceSheet:
                 balanceSheet, cashflows, earnings, financials = {}, {}, {}, {}
                 option_chain = {}
                 # option_chain = data.option_chain(data.options[0])
@@ -238,11 +242,15 @@ class MyStock:
                     option_chain = {'options': option_chain, 'option_dates': data.options}
 
                 except Exception as e:
-                    print(e)
+                    logging.error(e)
 
                 financials = data.financials
                 cashflows = data.cashflow
-                earnings = data.earnings
+                if financials is not None:
+                    # Need to get the revenue and after-tax net income to match the pervious earnings information
+                    earnings = financials.loc[['Net Income', 'Total Revenue']]
+                    earnings = earnings.rename({'Net Income': 'earnings', 'Total Revenue': 'revenue'})
+                # earnings = data.earnings
                 balanceSheet = data.balance_sheet
 
                 if stock_info:
@@ -277,28 +285,75 @@ class MyStock:
                     try:
                         conn
                     except Error as e:
-                        print(e)
+                        logging.error(e)
                         conn = db.DBConnection.create_connection()
 
                     # Creating a copy of the dataframes to add necessary data before saving into DB
-                    balanceSheet_cpy = self.prep_dataframe_to_save(balanceSheet, stock_id)
+                    balanceSheet_cpy = self.prep_dataframe_to_save(balanceSheet.rename({
+                        'Total Liabilities Net Minority Interest': 'Total Liab',
+                        'Other Short Term Investments': 'Short Term Investments',
+                        'Current Liabilities': 'Total Current Liabilities',
+                        'Current Assets': 'Total Current Assets'
+                    }), stock_id)
                     cashflows_cpy = self.prep_dataframe_to_save(cashflows, stock_id)
                     financials_cpy = self.prep_dataframe_to_save(financials, stock_id)
                     # COMMIT/APPEND DB Tables
                     if not stock_info_cpy.empty:
-                        stock_info_cpy.to_sql('stock_basic_info', conn, index=False, if_exists='append')
+                        try:
+                            stock_info_cpy.to_sql('stock_basic_info', conn, index=False, if_exists='append')
+                            logging.info("Earnings records appended to the database.")
+                        except Error as e:
+                            logging.error("Error occured when appending to the database")
+                            logging.error(e)
 
-                    balanceSheet_cpy.to_sql('stock_balance_sheet', conn, index=False, if_exists='append')
-                    cashflows_cpy.to_sql('stock_cashflows', conn, index=False, if_exists='append')
-                    financials_cpy.to_sql('stock_financials', conn, index=False, if_exists='append')
+                    try:
+                        balanceSheet_cpy.to_sql('stock_balance_sheet', conn, index=False, if_exists='append')
+                        logging.info("Balance Sheet records appended to the database.")
+                    except Error as e:
+                        logging.error("Error Occurred when trying to update/append the balance sheet.")
+                        logging.error(e)
+                        # balanceSheet_cpy.to_sql('stock_balance_sheet', conn, index=False, if_exists='append',)
+                    finally:
+                        logging.info("Balance Sheet Insertion Completed.")
+                        pass
 
-                    earnings_cpy = earnings.copy()
+                    try:
+                        cashflows_cpy.to_sql('stock_cashflows', conn, index=False, if_exists='append')
+                        logging.info("Cash Flow records appended to the database.")
+                    except Error as e:
+                        logging.error("Error Occurred when trying to update/append the cashflow sheet.")
+                        logging.error(e)
+                        # balanceSheet_cpy.to_sql('stock_balance_sheet', conn, index=False, if_exists='append',)
+                    finally:
+                        logging.info("Cash Flow Insertion Completed.")
+                        pass
+
+                    try:
+                        financials_cpy.to_sql('stock_financials', conn, index=False, if_exists='append')
+                        logging.info("Financials records appended to the database.")
+                    except Error as e:
+                        logging.error("Error Occurred when trying to update/append the financials.")
+                        # balanceSheet_cpy.to_sql('stock_balance_sheet', conn, index=False, if_exists='append',)
+                        logging.error(e)
+                    finally:
+                        logging.info("Financials Insertion Completed.")
+                        pass
+
+                    earnings_cpy = earnings.copy().T
                     earnings_cpy.index.rename("Year", inplace=True)
                     earnings_cpy.reset_index(inplace=True)
                     earnings_cpy['stock_id'] = stock_id
                     earnings_cpy['date'] = pd.Timestamp.now()
-
-                    earnings_cpy.to_sql('stock_earnings', conn, index=False, if_exists='append')
+                    try:
+                        earnings_cpy.to_sql('stock_earnings', conn, index=False, if_exists='append')
+                        logging.info("Earnings records appended to the database.")
+                    except Error as e:
+                        logging.error("Error Occurred when trying to update/append to earnings.")
+                        # balanceSheet_cpy.to_sql('stock_balance_sheet', conn, index=False, if_exists='append',)
+                        logging.error(e)
+                    finally:
+                        logging.info("Earnings Insertion Completed.")
+                        pass
 
                     # Close Connection
                     # Return something indicating status of operation.
@@ -315,7 +370,7 @@ class MyStock:
                     option_chain = {'options': option_chain, 'option_dates': data.options}
 
                 except Exception as e:
-                    print(e)
+                    logging.error(e)
 
                 return option_chain
 
@@ -395,7 +450,8 @@ class MyStock:
             max_date = dt.datetime.strptime(str(dataframe['date'].max()), '%Y-%m-%d %H:%M:%S')
             max_date = max_date.date()
             current_date = dt.datetime.now().date() - dt.timedelta(1)
-            print("The maximum date for {} is {}, the current datetime is {}".format(stock_id, max_date, current_date))
+            logging.info(
+                "The maximum date for {} is {}, the current datetime is {}".format(stock_id, max_date, current_date))
 
             if max_date != current_date or max_date < current_date:
                 # Get additional price data that wil be added to the stock price table

@@ -1,5 +1,6 @@
 import random
 from sqlite3 import Error
+import logging
 
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
@@ -60,7 +61,7 @@ def get_nav(app):
                     dbc.Col(nav, width=8),
                 ],
                 align="center",
-                no_gutters=True,
+                # no_gutters=True,
             ),
             href="https://plotly.com",
         ),
@@ -206,14 +207,14 @@ def get_company_info(stock_symbol):
             'SELECT symbol, id, company, gics_sector, gics_subsector, headquarters FROM stock WHERE stock.symbol="{}"'.format(
                 stock_symbol), conn)
         if company_info_df.empty:
-            print("{} company information is empty.{} needs to be added to our database.".format(stock_symbol,
-                                                                                                 stock_symbol))
+            logging.info("{} company information is empty.{} needs to be added to our database.".format(stock_symbol,
+                                                                                                        stock_symbol))
             raise Error
 
         return company_info_df, conn
 
     except Error as e:
-        print(e)
+        logging.error(e)
         return None
 
 
@@ -239,7 +240,8 @@ def convert_timestamp_columns(dataframe, inplace=True):
         else:
             pass
 
-    print("Columns were converted from Timestamps to Strings and are of type\n{}\n".format(type(dataframe.columns)))
+    logging.info(
+        "Columns were converted from Timestamps to Strings and are of type\n{}\n".format(type(dataframe.columns)))
 
     return dataframe
 
@@ -672,7 +674,7 @@ def generate_scatter_graph(dataframe, x_column, y_column, secondary_y_column, ti
     x_col_series = dataframe[x_column]
     y_col_series = dataframe[y_column]
 
-    print("X Column Max {}\nY Column Max {}".format(x_col_series.max(), y_col_series.max()))
+    logging.info("X Column Max {}\nY Column Max {}".format(x_col_series.max(), y_col_series.max()))
 
     scatter = go.Scatter(x=dataframe[x_column], y=dataframe[y_column], name=str(y_column))
     scatter_layout = go.Layout(title=title,
@@ -752,7 +754,7 @@ def generate_scatter_graph_no_bar(dataframe, x_column, y_column, secondary_y_col
     x_col_series = dataframe[x_column]
     y_col_series = dataframe[y_column]
 
-    print("X Column Max {}\nY Column Max {}".format(x_col_series.max(), y_col_series.max()))
+    logging.info("X Column Max {}\nY Column Max {}".format(x_col_series.max(), y_col_series.max()))
 
     scatter = go.Scatter(x=dataframe[x_column], y=dataframe[y_column], name=str(y_column))
     scatter_layout = go.Layout(title=title,
@@ -839,7 +841,7 @@ def generate_bar_graph(dataframe, title, x_column, y_column, secondary_y_column=
     x_col_series = dataframe[x_column]
     y_col_series = dataframe[y_column]
 
-    print("X Column Max {}\nY Column Max {}".format(x_col_series.max(), y_col_series.max()))
+    logging.info("X Column Max {}\nY Column Max {}".format(x_col_series.max(), y_col_series.max()))
 
     bar_layout = go.Layout(title=title,
                            barmode='group',
@@ -977,9 +979,9 @@ def generate_btn_grp_buttons(exDate, stock_symbol=None):
 
 # create a "Master Financials Table" overview using the Financials, BalanceSheet, Cashflows, Earnings
 # Note Earnings will have to be transposed
-def generate_master_financials(financials, balanceSheet, cashflows, earnings):
+def generate_master_financials(financials, balanceSheet, cashflows, earnings, master_financials_df):
     # Transposing the rows and columns for the earnings reports.
-    if 'Year' in earnings.columns:
+    if 'Year' in earnings.columns or 'year' in earnings.columns:
         earnings.set_index('Year', inplace=True)
         earnings = earnings.transpose()
         # earnings_cols = earnings['Year'].transpose()
@@ -987,20 +989,25 @@ def generate_master_financials(financials, balanceSheet, cashflows, earnings):
         # earnings = earnings.transpose()
         # earnings.rename(columns=earnings_cols, inplace=True)
         pass
-    elif 'Earnings' in earnings.index:
+    elif 'Earnings' in earnings.index or 'earnings' in earnings.index:
+        earnings.rename({'earnings': 'Earnings', 'revenue': 'Revenue'})
         pass
     else:
         earnings = earnings.transpose()
 
     # converting the years into the same format as the other financials mm/yyyy format
     for c in earnings.columns:
-        year = str(c)
+        # Checking for timestamp objects. Might need to check for DateTime Objects as well.
+        if type(c) is pd.Timestamp:
+            year = str(c.year)
+        else:
+            year = str(c)
         earnings.rename(columns={c: "{}".format(year)}, inplace=True)
 
-    master_financials_df = pd.DataFrame.append(financials, balanceSheet, )
-    master_financials_df = pd.DataFrame.append(master_financials_df, cashflows, )
+    master_financials_df = pd.DataFrame._append(financials, balanceSheet, )
+    master_financials_df = pd.DataFrame._append(master_financials_df, cashflows, )
     master_financials_df = convert_timestamp_columns(master_financials_df)
-    master_financials_df = pd.DataFrame.append(master_financials_df, earnings, )
+    master_financials_df = pd.DataFrame._append(master_financials_df, earnings, )
 
     master_financials_df.index.rename('Financials', inplace=True)
     master_financials_df.reset_index(inplace=True)
@@ -1138,7 +1145,7 @@ def roi_between_dates(dataframe, sdate, edate):
         end_val = dataframe.loc[edate, 'adjusted_close']
         roi = ((end_val - start_val) / start_val)
     except Exception:
-        print("Data Corrupted")
+        logging.error("Data Corrupted")
     else:
         return roi
 
@@ -1152,9 +1159,9 @@ def roi_between_dates_df(dataframe, company, sdate, edate):
         start_val = dataframe[(dataframe['company'] == company)][(dataframe['date'] == sdate)]['adjusted_close'].item()
         end_val = dataframe[(dataframe['company'] == company)][(dataframe['date'] == edate)]['adjusted_close'].item()
         roi = ((end_val - start_val) / start_val) * 100
-        print("{}'s total roi for the period ({}, {}) is  {}".format(company, sdate, edate, roi))
+        logging.info("{}'s total roi for the period ({}, {}) is  {}".format(company, sdate, edate, roi))
     except Exception:
-        print("Data Corrupted\n{}".format(Exception))
+        logging.error("Data Corrupted\n{}".format(Exception))
     else:
         return roi
 

@@ -1,6 +1,7 @@
 import dash
 import dash_bootstrap_components as dbc
 
+
 # BOOSTRAP APPLICATION THEME
 #   CYBORG, DARKLY, LUX, MINTY, SOLAR, VAPOR,YETI -- All Cool can also create your own as well.
 BS = "https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
@@ -17,7 +18,7 @@ ALLOWED_TYPES = (
 )
 
 # TODO until this bug is fixed - make __name__ something else like stockScreener
-app = dash.Dash("simpleScreener",
+app = dash.Dash("StockScreener",
                 meta_tags=[{'name': 'viewport',
                             'content': 'width=device-width, '
                                        'initial-scale=1.0'}
@@ -27,4 +28,5 @@ app = dash.Dash("simpleScreener",
 
 server = app.server
 app.config.suppress_callback_exceptions = True
-app.title = "Simple Screen - S&P500 Stocks"
+app.title = "Stock Screener"
+

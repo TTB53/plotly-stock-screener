@@ -1,5 +1,6 @@
 import random
 from sqlite3 import Error
+import logging
 
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
@@ -23,13 +24,13 @@ StockObj = MyStock()
 conn = None
 
 # Connect to DB and  Load Data
-DB_FILE = "C:/Users/TTB53\Documents/The_Vintage_D_Modernist/TVDM Digital/PythonProjects/stock-db.db"
+DB_FILE = "./stock-db.db"
 
 try:
     conn = dbObj.create_connection(db_file=DB_FILE)
     # stock_price_df = pd.read_sql('SELECT * FROM stock_price, stock WHERE stock_id= stock.id', conn)
 except Error as e:
-    print(e)
+    logging.error(e)
 
 # TODO Feature Enhancement add ability to automatically show how security of interest does against whatever the industry
 #  3 year rolling averages are. Similar to Grad School Corp Finance Project.
@@ -201,14 +202,14 @@ def update_UI(stock_symbol):
     macd_figure = utils.generate_macd_chart(dataframe=data)
 
     # Gets the most recent price in the data for the stock
-    print("End of Dataframe \n {}".format(data.tail()))
-    print("Total Length of Dataframe \n {}".format(len(data)))
-    print("Total Length by Date Column \n {}".format(len(data.date)))
-    print("Total Length by Index Column \n {}".format(len(data.index)))
+    logging.info("End of Dataframe \n {}".format(data.tail()))
+    logging.info("Total Length of Dataframe \n {}".format(len(data)))
+    logging.info("Total Length by Date Column \n {}".format(len(data.date)))
+    logging.info("Total Length by Index Column \n {}".format(len(data.index)))
 
     stock_price = "${:.2f}".format(data['Close'][data.shape[0] - 1].min())
 
-    print(
+    logging.info(
         "{}\n{}\n{}\n{}\n{}".format(company_name, stock_symbol, stock_price, stock_sector, stock_subsector, stock_info))
 
     return candlestick_figure, obv_chart, atr_chart, macd_figure, call_datatable, put_datatable, company_name, stock_symbol, stock_price, stock_sector, stock_subsector
@@ -570,7 +571,7 @@ def update_layout(n_clicks, ticker_input_value, companies_dropdown, ticker_input
                     return update_UI(stock_symbol)
 
             except Error as e:
-                print(e)
+                logging.error(e)
     elif ticker_input_value is not None:
         return update_UI(ticker_input_value)
     # Returns initial data for the UI

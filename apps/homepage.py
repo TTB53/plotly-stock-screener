@@ -1,4 +1,5 @@
 from sqlite3 import Error
+import logging
 
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
@@ -12,6 +13,8 @@ import utils
 from app import app
 from stock import MyStock
 
+import assets.candlestickPattens as cp
+
 # Interacts with the Database
 dbObj = db.DBConnection()
 
@@ -20,18 +23,16 @@ StockObj = MyStock()
 conn = None
 
 # Connect to DB and  Load Data
-DB_FILE = "C:/Users/TTB53\Documents/The_Vintage_D_Modernist/TVDM Digital/PythonProjects/stock-db.db"
+DB_FILE = "./stock-db.db"
 
 try:
     conn = dbObj.create_connection(db_file=DB_FILE)
     # stock_price_df = pd.read_sql('SELECT * FROM stock_price, stock WHERE stock_id= stock.id', conn)
 except Error as e:
-    print(e)
+    logging.info()
+    logging.error(e)
 
 companies_df = dbObj.select_table_data(conn=conn, table_name='stock')
-
-import assets.candlestickPattens as cp
-
 patternsDict = cp.candlestick_patterns
 stock, pattern = None, None
 
@@ -72,7 +73,7 @@ def serve_layout():
             dcc.Interval(id='page-load-count', ),
             utils.get_sidebar(app, companies_df, page_stock_info_ids),
             dbc.Row([
-                dbc.Jumbotron(
+                dbc.Container(
                     children=[
                         html.Center([
                             html.H1("Simple Screener"),
@@ -186,7 +187,7 @@ def serve_layout():
             dbc.Row([
                 dbc.Col(
                     children=[
-                        dbc.CardDeck(
+                        dbc.CardGroup(
                             children=[
                                 dbc.Card(
                                     className="card",
@@ -316,7 +317,7 @@ def display_graph(pattern_value):
             conn = dbObj.create_connection(db_file=DB_FILE)
             # stock_price_df = pd.read_sql('SELECT * FROM stock_price, stock WHERE stock_id= stock.id', conn)
         except Error as e:
-            print(e)
+            logging.error(e)
 
         # Get only the companies column from the companies_df
         companies = companies_df['company']
@@ -330,7 +331,7 @@ def display_graph(pattern_value):
         for company in companies:
             # Filter the dataset to only look at the current company and use that for analysis of the candlestick
             # pattern
-            print(company)
+            logging.info(company)
             price_data = all_price_data[(all_price_data.company == company)]
 
             # Get the pattern key from the value selected by in the dropdown. Reverse of how this is supposed to work.
@@ -350,13 +351,13 @@ def display_graph(pattern_value):
                 price_data[pattern_col_name] = pattern_data
 
                 if price_data[pattern_col_name].iloc[-1] != 0:
-                    print("{} matches the {} pattern".format(company, pattern_value))
+                    logging.info("{} matches the {} pattern".format(company, pattern_value))
                     new_pattern_graph = create_pattern_chart_card(pattern_value, company, price_data)
                     pattern_graphs.append(new_pattern_graph)
 
 
             except Exception as e:
-                print("Failed to get pattern data", e)
+                logging.error(f"Failed to get pattern data {e}")
 
         if pattern_graphs == [] and pattern_value is not None:
             pattern_graphs.append(
@@ -397,7 +398,7 @@ def update_roi_chart(pattern_value):
         roi_df_copy = roi_df.copy()
         roi_df_copy['max_date'] = roi_df.groupby(by="company", sort=False).date.transform('max')
         roi_df_copy['min_date'] = roi_df.groupby(by='company', sort=False).date.transform('min')
-        print(roi_df_copy.head())
+        logging.info(roi_df_copy.head())
 
         roi_df_copy = roi_df_copy[['date', 'company', 'adjusted_close', 'daily_return', 'max_date', 'min_date']]
 
@@ -410,14 +411,14 @@ def update_roi_chart(pattern_value):
             if roi_df_copy[(roi_df_copy['date'][index] == row['max_date'])]:
                 max = roi_df_copy[(roi_df_copy['date'][index] == row['max_date'])][
                     (roi_df_copy['company'] == row['company'])]
-                # print(max.head())
+                # logging.info(max.head())
                 max_roi_df = max_roi_df.append(max, ignore_index=True)
-                print("Max ROI DF\n{}\n".format(max_roi_df.head()))
+                logging.info("Max ROI DF\n{}\n".format(max_roi_df.head()))
 
             min = roi_df_copy[(roi_df_copy['date'] == row['min_date'])][(roi_df_copy['company'] == row['company'])]
-            # print(min.head())
+            # logging.info(min.head())
             min_roi_df = min_roi_df.append(min, ignore_index=True)
-            print("Min ROI DF\n{}\n".format(min_roi_df.head()))
+            logging.info("Min ROI DF\n{}\n".format(min_roi_df.head()))
 
         max_roi_df.drop_duplicates(inplace=True)
         min_roi_df.drop_duplicates(inplace=True)

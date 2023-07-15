@@ -1,4 +1,5 @@
 from sqlite3 import Error
+import logging
 
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
@@ -21,13 +22,13 @@ StockObj = MyStock()
 conn = None
 
 # Connect to DB and  Load Data
-DB_FILE = "C:/Users/TTB53/Documents/The_Vintage_D_Modernist/TVDM Digital/PythonProjects/stock-db.db"
+DB_FILE = "./stock-db.db"
 
 try:
     conn = dbObj.create_connection(db_file=DB_FILE)
     # stock_price_df = pd.read_sql('SELECT * FROM stock_price, stock WHERE stock_id= stock.id', conn)
 except Error as e:
-    print(e)
+    logging.error(e)
 
 # TODO Feature Enhancement add ability to automatically show how security of interest does against whatever the industry
 #  3 year rolling averages are. Similar to Grad School Corp Finance Project.
@@ -104,7 +105,7 @@ def update_fundamentals_UI(stock_symbol):
                                                   add_bb=True)
 
         except Error as e:
-            print(e)
+            logging.error(e)
 
             # Get the Stock Price Data from YFinance for the Newly Entered Ticker
             data = StockObj.get_ticker_all(stock_symbol=stock_symbol, add_ma=False, add_bb=False,
@@ -257,14 +258,15 @@ def update_fundamentals_UI(stock_symbol):
     if financials.empty:
         pass
     else:
-
-        master_financials_df = utils.generate_master_financials(financials, balanceSheet, cashflows, earnings)
+        master_financials_df = utils.generate_master_financials(financials, balanceSheet, cashflows, earnings,
+                                                                master_financials_df)
         master_financials = utils.generate_generic_dash_datatable(master_financials_df, id='master-financials-data')
 
     # Should be Empty for ETFs
 
     if len(master_financials_df) > 0:
         master_financials_df.set_index('Financials', inplace=True)
+        master_financials_df.sort_index(ascending=True, inplace=True)
         master_financials_df.fillna(0, inplace=True)
         mfdf_cols = master_financials_df.columns
 
@@ -324,8 +326,8 @@ def update_fundamentals_UI(stock_symbol):
         profit_margin_chart_dict = {}
 
         for col in range(0, mf_years):
-            if 'Ebit' in master_financials_df.index:
-                ebit += master_financials_df[mfdf_cols[col]]['Net Income'][0]
+            if 'EBIT' in master_financials_df.index or 'ebit' in master_financials_df.index:
+                ebit += master_financials_df[mfdf_cols[col]]['Net Income']
 
             if 'Gross Profit' in master_financials_df.index:
                 profit_combined += master_financials_df[mfdf_cols[col]]['Gross Profit']
@@ -336,17 +338,21 @@ def update_fundamentals_UI(stock_symbol):
             if 'Capital Expenditures' in master_financials_df.index:
                 total_capex += master_financials_df[mfdf_cols[col]]['Capital Expenditures']
 
-            if 'Revenue' in master_financials_df.index:
-                revenue_combined += master_financials_df[mfdf_cols[col]]['Revenue']
+            if 'Revenue' in master_financials_df.index or 'revenue' in master_financials_df.index:
+                if 'revenue' in master_financials_df.index:
+                    master_financials_df.rename({'revenue': 'Revenue'}, inplace=True)
+                    revenue_combined += master_financials_df[mfdf_cols[col]]['Revenue']
+                else:
+                    revenue_combined += master_financials_df[mfdf_cols[col]]['Revenue']
             else:
                 revenue = 1
 
             profit_margin_chart_dict[mfdf_cols[col]] = {
-                'profit margin': (master_financials_df[mfdf_cols[col]]['Net Income'][0] /
+                'profit margin': (master_financials_df[mfdf_cols[col]]['Net Income'] /
                                   master_financials_df[mfdf_cols[col]]['Total Revenue']) * 100,
 
                 'net profit margin': ((master_financials_df[mfdf_cols[col]]['Total Revenue'] -
-                                       master_financials_df[mfdf_cols[col]]['Total Operating Expenses']) /
+                                       master_financials_df[mfdf_cols[col]]['Total Expenses']) /
                                       master_financials_df[mfdf_cols[col]]['Total Revenue']) * 100,
 
                 'operating margin':
@@ -392,8 +398,8 @@ def update_fundamentals_UI(stock_symbol):
             # profit_margin_figure = utils.generate_bar_graph(pm_chart_df, title='Margin Analysis', x_column='Years',
             #                                                 y_column='Profit Margin')  # WORKING CODE
 
-        eff_tax_rate = master_financials_df[mfdf_cols[0]]['Income Tax Expense'] / \
-                       master_financials_df[mfdf_cols[0]]['Income Before Tax']
+        eff_tax_rate = master_financials_df[mfdf_cols[0]]['Income Tax Paid Supplemental Data'] / \
+                       master_financials_df[mfdf_cols[0]]['Pretax Income']
 
         avg_ebit = ebit / mf_years
         avg_profit = profit_combined / mf_years
@@ -415,7 +421,7 @@ def update_fundamentals_UI(stock_symbol):
         adj_earnings = normalized_profit - avg_capex
 
         total_equity = master_financials_df[mfdf_cols[0]]['Total Assets'] - master_financials_df[mfdf_cols[0]][
-            'Total Liab']  # Shareholders Equity
+            'Total Liabilities Net Minority Interest']  # Shareholders Equity
 
         if 'Long Term Debt' in master_financials_df.index and 'Short Long Term Debt' in master_financials_df.index:
             total_debt = master_financials_df[mfdf_cols[0]]['Long Term Debt'] + master_financials_df[mfdf_cols[0]][
@@ -450,37 +456,62 @@ def update_fundamentals_UI(stock_symbol):
 
             market_cap = price * sharesOutstanding
 
-            returnOnInvestedCapital = (master_financials_df[mfdf_cols[0]]['Net Income'][
-                                           0] - dividendsPaid) / total_value
+            returnOnInvestedCapital = (master_financials_df[mfdf_cols[0]]['Net Income'] - dividendsPaid) / total_value
 
             # Financial Ratios that needed to be calculated.
-            earningsPerShare = (master_financials_df[mfdf_cols[0]]['Net Income'][0] + dividendsPaid) / sharesOutstanding
+            earningsPerShare = (master_financials_df[mfdf_cols[0]]['Net Income'] + dividendsPaid) / sharesOutstanding
             priceToEarnings = price / earningsPerShare  # Should be < 15
 
             if stock_info['Values']['quoteType'] != 'ETF':
-                if type(master_financials_df[mfdf_cols[0]]['Total Current Assets']) == pd.Series:
-                    currentRatio = master_financials_df[mfdf_cols[0]]['Total Current Assets'][1] / \
-                                   master_financials_df[mfdf_cols[0]]['Total Current Liabilities']
+                if 'Total Current Assets' in master_financials_df.index:
+                    if type(master_financials_df[mfdf_cols[0]]['Total Current Assets']) == pd.Series:
+                        currentRatio = master_financials_df[mfdf_cols[0]]['Total Current Assets'][1] / \
+                                       master_financials_df[mfdf_cols[0]]['Total Current Liabilities']
 
-                    quickRatio = (master_financials_df[mfdf_cols[0]]['Total Current Assets'][1] - inventory) / \
-                                 master_financials_df[mfdf_cols[0]][
-                                     'Total Current Liabilities']
+                        quickRatio = (master_financials_df[mfdf_cols[0]]['Total Current Assets'][1] - inventory) / \
+                                     master_financials_df[mfdf_cols[0]][
+                                         'Total Current Liabilities']
 
-                    netCurrAssetVal = master_financials_df[mfdf_cols[0]][
-                                          'Total Current Assets'][1] - master_financials_df[mfdf_cols[0]][
-                                          'Total Current Liabilities'] + dividendsPaid
+                        netCurrAssetVal = master_financials_df[mfdf_cols[0]][
+                                              'Total Current Assets'][1] - master_financials_df[mfdf_cols[0]][
+                                              'Total Current Liabilities'] + dividendsPaid
 
+                    else:
+                        if 'Current Assets' in master_financials_df.index:
+                            master_financials_df.rename('Current Assets', 'Total Current Assets', inplace=True)
+
+                        currentRatio = master_financials_df[mfdf_cols[0]]['Total Current Assets'] / \
+                                       master_financials_df[mfdf_cols[0]]['Total Current Liabilities']
+
+                        quickRatio = (master_financials_df[mfdf_cols[0]]['Total Current Assets'] - inventory) / \
+                                     master_financials_df[mfdf_cols[0]][
+                                         'Total Current Liabilities']
+
+                        netCurrAssetVal = master_financials_df[mfdf_cols[0]][
+                                              'Total Current Assets'] - master_financials_df[mfdf_cols[0]][
+                                              'Total Current Liabilities'] + dividendsPaid
                 else:
-                    currentRatio = master_financials_df[mfdf_cols[0]]['Total Current Assets'] / \
-                                   master_financials_df[mfdf_cols[0]]['Total Current Liabilities']
+                    if 'Current Assets' in master_financials_df.index:
+                        if 'Current Liabilities' in master_financials_df.index:
+                            master_financials_df.rename({'Current Assets': 'Total Current Assets',
+                                                         'Current Liabilities': 'Total Current Liabilities'},
+                                                        inplace=True)
+                        else:
+                            master_financials_df.rename({'Current Assets': 'Total Current Assets'}, inplace=True)
 
-                    quickRatio = (master_financials_df[mfdf_cols[0]]['Total Current Assets'] - inventory) / \
-                                 master_financials_df[mfdf_cols[0]][
-                                     'Total Current Liabilities']
+                        currentRatio = master_financials_df[mfdf_cols[0]]['Total Current Assets'] / \
+                                       master_financials_df[mfdf_cols[0]]['Total Current Liabilities']
 
-                    netCurrAssetVal = master_financials_df[mfdf_cols[0]][
-                                          'Total Current Assets'] - master_financials_df[mfdf_cols[0]][
-                                          'Total Current Liabilities'] + dividendsPaid
+                        quickRatio = (master_financials_df[mfdf_cols[0]]['Total Current Assets'] - inventory) / \
+                                     master_financials_df[mfdf_cols[0]][
+                                         'Total Current Liabilities']
+
+                        netCurrAssetVal = master_financials_df[mfdf_cols[0]][
+                                              'Total Current Assets'] - master_financials_df[mfdf_cols[0]][
+                                              'Total Current Liabilities'] + dividendsPaid
+
+                        cashRatio = master_financials_df[mfdf_cols[0]]['Cash And Cash Equivalents'] / master_financials_df[mfdf_cols[0]][
+                            'Total Current Liabilities']
 
             else:
 
@@ -503,10 +534,10 @@ def update_fundamentals_UI(stock_symbol):
             NCAVperShare = netCurrAssetVal / sharesOutstanding
             bookValue = (total_equity / sharesOutstanding)  # Should be < 2
             priceToBook = price / bookValue
-            debtToEquity = master_financials_df[mfdf_cols[0]]['Total Liab'] / total_equity
-            returnOnAssets = master_financials_df[mfdf_cols[0]]['Net Income'][0] / master_financials_df[mfdf_cols[0]][
+            debtToEquity = master_financials_df[mfdf_cols[0]]['Total Liabilities Net Minority Interest'] / total_equity
+            returnOnAssets = master_financials_df[mfdf_cols[0]]['Net Income'] / master_financials_df[mfdf_cols[0]][
                 'Total Assets']
-            returnOnEquity = master_financials_df[mfdf_cols[0]]['Net Income'][0] / total_equity
+            returnOnEquity = master_financials_df[mfdf_cols[0]]['Net Income'] / total_equity
 
             if not stock_info.empty:
 
@@ -613,10 +644,10 @@ def update_fundamentals_UI(stock_symbol):
     stock_price = "${:.2f}".format(price)
     business_summary = stock_info['Values']['longBusinessSummary']
 
-    print(
+    logging.info(
         "{}\n{}\n{}\n{}\n{}".format(company_name, stock_symbol, stock_price, stock_sector, stock_subsector, stock_info))
 
-    print(financialRatioDF)
+    logging.info(financialRatioDF)
 
     return candlestick_figure, call_datatable, put_datatable, company_name, stock_symbol, stock_price, stock_sector, \
            stock_subsector, master_financials, financial_ratios, business_summary, profit_margin_figure
@@ -923,7 +954,7 @@ def update_layout(n_clicks, ticker_input_value, companies_dropdown, ticker_input
                     return update_fundamentals_UI(stock_symbol)
 
             except Error as e:
-                print(e)
+                logging.error(e)
     elif ticker_input_value is not None:
 
         return update_fundamentals_UI(ticker_input_value)

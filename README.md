@@ -5,16 +5,17 @@ Simple S&P500 Screener
 ## Application Purpose
 
 ***
-Utilizing Python, yFinance, TA-LIB, and Plotly Dash this is a simple multi-page stock screener that allows you select a
-candlestick pattern of interest, and see the stocks matching that pattern in the database.
+Utilize Python, yFinance and/or other financial data packages, TA-LIB, and Plotly Dash, this is intended to be a simple 
+multi-page stock screener that helps increae your knowledge about fundamental, technical, and option investing through
+data visualization and analysis.
 
-After finding the stock of interest, you can then dive into the fundamentals and a very basic look at some Technical
-Analysis.
 
 ## Motivation
 
 ***
-To find stocks on the S&P500 that match a desired pattern, and see if there is an investment opportunity. I built this
+To find stocks on the S&P500 that match a desired pattern, and see if there is an investment opportunity. 
+
+I built this
 to strip out all the various things in a screener that are not relevant to my investment level and skillset. This is not
 intended to be a tool to be used for actual investments, but to learn how to identify trends and start to get an
 understanding of financial datasets pertaining to the stock market.
@@ -30,7 +31,9 @@ understanding of financial datasets pertaining to the stock market.
     3. Technical Analysis
     4. #### Planned Pages
         1. Options Page - Currently at the bottom of both Technical and Fundamentals Pages
-        2. Stock vs Top N Stocks in
+        2. Stock vs Top N Stocks within 
+           1. Industry
+           2. S&P500
 
 4. Calling API Service
     1. yFinance - option to use Pandareader
@@ -63,7 +66,7 @@ understanding of financial datasets pertaining to the stock market.
 * Machine Learning
 * Pulling in RSS Feeds/insider trading information
 * Job Scheduling for Daily Updates
-* Possible Hosting on Heroku 
+* Possible Hosting on Heroku/Other Platform.
 
 
 

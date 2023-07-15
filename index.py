@@ -1,4 +1,5 @@
 from sqlite3 import Error
+import logging
 
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
@@ -13,6 +14,14 @@ from app import app
 from apps import fundamentalAnalysis, technicalAnalysis, homepage
 from stock import MyStock
 
+# setup logger. Only run this once.
+logging.basicConfig(level=logging.DEBUG,  # lowest level and up. # TODO Change before sending to production.
+                    encoding='utf-8',
+                    filename='logs.log',
+                    filemode='w',
+                    format="%(asctime)s - %(levelname)s - %(lineno)d | %(message)s ",
+                    )
+
 # Interacts with the Database
 dbObj = db.DBConnection()
 
@@ -21,12 +30,12 @@ StockObj = MyStock()
 conn = None
 
 # Connect to DB and  Load Data
-DB_FILE = "C:/Users/TTB53\Documents/The_Vintage_D_Modernist/TVDM Digital/PythonProjects/stock-db.db"
+DB_FILE = "./stock-db.db"
 
 try:
     conn = dbObj.create_connection(db_file=DB_FILE)
 except Error as e:
-    print(e)
+    logging.debug(f"Error occured when trying to connect to the database | {e}")
 
 companies_df = dbObj.select_table_data(conn=conn, table_name='stock')
 
@@ -67,7 +76,7 @@ def add_stock_data_to_storage(stock_symbol, data=None):
                     'subsector': stock_data['gics_subsector'].values[0],
                     }
 
-    print("Storage data is {}".format(data))
+    logging.info("Storage data is {}".format(data))
     return data
 
 
