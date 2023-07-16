@@ -1,0 +1,39 @@
+----------------------------------------------------------------------
+-- Balance Sheet from yFinance API
+-- V2.0
+-- Anthony Thomas-Bell
+--
+--
+----------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS "stock_balance_sheet"(
+"id" INTEGER PRIMARY KEY, 
+"stock_id" INTEGER,
+"year" INTEGER,
+"Intangible Assets" REAL,
+"Capital Surplus" REAL,
+"Total Liab" REAL,
+"Total Stockholder Equity" REAL,
+"Other Current Liab" REAL,
+"Total Assets" REAL,
+"Common Stock" REAL,
+"Other Current Assets" REAL,
+"Retained Earnings" REAL,
+"Other Liab" REAL,
+"Good Will" REAL,
+"Treasury Stock" REAL,
+"Other Assets" REAL,
+"Cash" REAL,
+"Total Curent Liabilities" REAL,
+"Deferred Long Term Asset Charges" REAL,
+"Short Long Term Debt" REAL,
+"Other Stockholder Equity" REAL,
+"Property Plant Equipment" REAL,
+"Total Current Assets" REAL,
+"Long Term Investments" REAL,
+"Net Tangible Assets" REAL,
+"Short Term Investments" REAL,
+"Net Recievables" REAL,
+"Long Term Debt" REAL,
+"date" TIMESTAMP,
+Foreign Key (stock_id) references stock(id)
+);

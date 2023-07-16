@@ -178,7 +178,7 @@ Generate a random stock from the list to populate the application with some data
 
 def generate_random_stock(stock_symbols=None):
     if stock_symbols is None:
-        stock_symbols = ['WHLR', 'VTI', 'TSCO', 'SQ', 'SBUX', 'ALLY', 'GOOG', 'DX', 'LMFA', 'ABCM', 'CHPT', 'BLNK',
+        stock_symbols = ['APPL', 'VTI', 'TSCO', 'SQ', 'SBUX', 'BK', 'GOOG', 'DX', 'LMFA', 'ABCM', 'CHPT', 'BLNK',
                          'SPGI', 'VALU', 'YUM', 'AC', 'PINS', 'SNAP']
     if not stock_symbols:
         stock_symbols = stock_symbols

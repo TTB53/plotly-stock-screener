@@ -255,7 +255,7 @@ class MyStock:
 
                 if stock_info:
                     stock_info = {}
-                    stock_info = data.info
+                    stock_info = data.fast_info  # can also use basic_info
                     stock_info_cpy = stock_info
 
                     keys = ['sector', 'fullTimeEmployees', 'longBusinessSummary', 'website', 'city', 'state', 'zip',

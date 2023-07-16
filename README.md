@@ -6,7 +6,7 @@ Simple S&P500 Screener
 
 ***
 Utilize Python, yFinance and/or other financial data packages, TA-LIB, and Plotly Dash, this is intended to be a simple 
-multi-page stock screener that helps increae your knowledge about fundamental, technical, and option investing through
+multi-page stock screener that helps increase your knowledge about fundamental, technical, and option investing through
 data visualization and analysis.
 
 
@@ -36,7 +36,7 @@ understanding of financial datasets pertaining to the stock market.
            2. S&P500
 
 4. Calling API Service
-    1. yFinance - option to use Pandareader
+    1. yFinance - option to use Pandareader to include ability to download from various datasources. 
 5. Database Development
     1. SQLite - option to use for switch between DB's
 6. Interactive Data Visualization
@@ -46,7 +46,7 @@ understanding of financial datasets pertaining to the stock market.
 ***
 
 * Search Candlestick Patterns to identify potential investment opportunities.
-* Fundamental Analysis comparing Stock to Industry
+* Fundamental Analysis comparing Stocks to Industry
 * Technical Analysis
     * Bollinger Bands
     * Moving Averages

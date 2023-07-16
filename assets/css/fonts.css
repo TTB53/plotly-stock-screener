@@ -1,0 +1,43 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;500&display=swap');
+
+
+h5, h6{
+    font-family:'Montserrat', 'sans-serif';
+    font-weight: 400;
+}
+
+h1,{
+    font-family:'Bebas Neue', 'cursive';
+    /*font-size:8rem;*/
+    font-size:xxlarge;
+}
+
+h2{
+    font-family:'Bebas Neue', 'cursive';
+    /*font-size:8rem;*/
+    font-size:xlarge;
+
+    #sidebar-menu-name{
+        font-size:small;
+    }
+}
+
+h3{
+    font-family:'Bebas Neue', 'cursive';
+    font-size:large;
+}
+
+h4{
+    font-family:'Bebas Neue', 'cursive';
+    font-size:large;
+}
+
+.annotations{
+    font-size:20;
+    font-family:'Bebas Neue', 'cursive';
+    font-color:salmon;
+}
+
+body{
+    font-family: 'Montserrat', 'sans-serif';
+}

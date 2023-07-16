@@ -1,3 +1,4 @@
+import dash
 from sqlite3 import Error
 import logging
 
@@ -17,10 +18,11 @@ from stock import MyStock
 # setup logger. Only run this once.
 logging.basicConfig(level=logging.DEBUG,  # lowest level and up. # TODO Change before sending to production.
                     encoding='utf-8',
-                    filename='logs.log',
+                    filename='./logs/logs.log',
                     filemode='w',
                     format="%(asctime)s - %(levelname)s - %(lineno)d | %(message)s ",
                     )
+
 
 # Interacts with the Database
 dbObj = db.DBConnection()
@@ -35,7 +37,7 @@ DB_FILE = "./stock-db.db"
 try:
     conn = dbObj.create_connection(db_file=DB_FILE)
 except Error as e:
-    logging.debug(f"Error occured when trying to connect to the database | {e}")
+    logging.debug(f"Error occurred when trying to connect to the database | {e}")
 
 companies_df = dbObj.select_table_data(conn=conn, table_name='stock')
 
@@ -46,6 +48,7 @@ CONTENT_STYLE = {
     "padding": "2rem 1rem",
 }
 
+# dash.register_page(__name__, path='/', name='Homepage') # for use with use pages.
 app.layout = dbc.Container([
 
     dbc.Row([
@@ -94,4 +97,6 @@ def display_page(pathname):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True)  # TODO Change to False in Production
+    app.run_server(
+        debug=True
+    )  # TODO Change to False in Production
