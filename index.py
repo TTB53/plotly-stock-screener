@@ -147,7 +147,7 @@ content = dbc.Container(id='page-content',
                           )
 
 # dash.register_page(__name__, path='/', name='Homepage') # for use with use pages.
-app.layout = dbc.Container(
+layout = dbc.Container(
     children=[
         dbc.Row([
 
@@ -191,7 +191,7 @@ def display_page(pathname):
         return home_page_layout
 
 
-if __name__ == '__main__':
-    app.run_server(
-        debug=True
-    )  # TODO Change to False in Production
+# if __name__ == '__main__':
+#     app.run_server(
+#         debug=True
+#     )  # TODO Change to False in Production

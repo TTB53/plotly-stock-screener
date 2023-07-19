@@ -127,13 +127,13 @@ pio.templates["atbAnalyticsGroupDefaultDark"] = go.layout.Template(
             {'font': {
                 'family': f'{HEADING_FONT_1}, {SUBHEADING_FONT_1}, Helvetica, Sans-serif',
                 'size': TITLE_SIZE,
-                'color': BLACK
+                'color': IVORY
             },
             },
         'font': {
             'family': f'{BODY_FONT_1}, Helvetica Neue, Helvetica, Sans-serif',
             'size': FONT_SIZE,
-            'color': BLACK,
+            'color': IVORY,
         },
         # Coloring
         'coloraxis': {
@@ -238,7 +238,7 @@ pio.templates["atbAnalyticsGroupDefaultDark"] = go.layout.Template(
             'title': {
                 'standoff': 15
             },
-            'zerolinecolor': DIMGREY,
+            'zerolinecolor': IVORY,
             'zerolinewidth': 2,
             'showspikes': True,
             'spikethickness': 2,
@@ -250,7 +250,7 @@ pio.templates["atbAnalyticsGroupDefaultDark"] = go.layout.Template(
         'yaxis': {
             'automargin': True,
             'gridcolor': DIMGREY,
-            'linecolor': DIMGREY,
+            'linecolor': IVORY,
             'ticks': '',
             'title': {
                 'standoff': 15

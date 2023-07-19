@@ -5,7 +5,7 @@ import logging
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
-import dash_table
+from dash import dash_table
 import dash_table.FormatTemplate as FormatTemplate
 import pandas as pd
 import plotly.graph_objs as go
@@ -76,6 +76,8 @@ def get_nav(app):
 Produces the sidebar that is  in every app(page) of the application and controls what the user see's.
 
 '''
+
+
 def get_sidebar(app, dataframe, page_stock_info_ids={}):
     if page_stock_info_ids == {}:
         page_stock_info_ids['stock-name'] = 'fundamentals-stock-name'
@@ -84,85 +86,76 @@ def get_sidebar(app, dataframe, page_stock_info_ids={}):
         page_stock_info_ids['stock-sector'] = 'fundamentals-stock-sector'
         page_stock_info_ids['stock-subsector'] = 'fundamentals-stock-subsector'
 
-    sidebar = dbc.Container(
-        id='sidebar',
-        className='col-md-4',
+    sidebar = dbc.Row(
         children=[
-            dbc.Row(
+
+            dbc.Col(
+                id="sb-stock-info-column",
+                # className='col-md-4',
                 children=[
-
-                    dbc.Col(
-                        id="sb-stock-info-column",
-                        # className='col-md-4',
+                    dbc.Card(
+                        className='mb-2 mt-2 pl-2 pr-2',
                         children=[
-                            dbc.Card(
-                                className='mb-2 mt-2 pl-2 pr-2',
+                            # dbc.CardImg(src="/static/images/placeholder286x180.png", top=True),
+                            dbc.CardBody(
+                                className='pl-2 pr-2',
                                 children=[
-                                    # dbc.CardImg(src="/static/images/placeholder286x180.png", top=True),
-                                    dbc.CardBody(
-                                        className='pl-2 pr-2',
-                                        children=[
-                                            html.H4(id=page_stock_info_ids['stock-name'], className='text-left', ),
-                                            # Company Name
-                                            html.H5(id=page_stock_info_ids['stock-title'], className='text-left', ),
-                                            # Stock symbol
-                                            html.H5(id=page_stock_info_ids['stock-price'], className='text-left', ),
-                                            html.Br(),
-                                            html.H6(id=page_stock_info_ids['stock-sector'], className='text-left', ),
-                                            html.H6(id=page_stock_info_ids['stock-subsector'], className='text-left', ),
+                                    html.H4(id=page_stock_info_ids['stock-name'], className='text-left', ),
+                                    # Company Name
+                                    html.H5(id=page_stock_info_ids['stock-title'], className='text-left', ),
+                                    # Stock symbol
+                                    html.H5(id=page_stock_info_ids['stock-price'], className='text-left', ),
+                                    html.Br(),
+                                    html.H6(id=page_stock_info_ids['stock-sector'], className='text-left', ),
+                                    html.H6(id=page_stock_info_ids['stock-subsector'], className='text-left', ),
 
-                                            # dbc.Button("Go somewhere", color="primary"),
-                                            # dbc.CardLink("Card link", href="#"),
-                                            # dbc.CardLink("External link", href="https://google.com"),
-
-                                        ],
-                                    ),
+                                    # dbc.Button("Go somewhere", color="primary"),
+                                    # dbc.CardLink("Card link", href="#"),
+                                    # dbc.CardLink("External link", href="https://google.com"),
 
                                 ],
                             ),
-                        ]
+
+                        ],
                     ),
-                    dbc.Col(
-                        id="sb-stock-select-column",
-                        # className='col-md-4',
-                        children=[
-                            dbc.Card(
-                                className='mb-2 mt-2',
-                                children=[
-                                    dbc.CardBody(
-                                        className='pl-2 pr-2',
-                                        children=[
-                                            html.H4('Select a Stock'),
-                                            html.Br(),
-                                            html.P("Select a company from the list below."),
-                                            dcc.Dropdown(
-                                                id='companies_dropdown',
-                                                value='Company Ticker Symbol',
-                                                options=[
-                                                    {'label': company, 'value': company} for company in
-                                                    sorted(dataframe.company.unique())
-                                                ],
-                                                optionHeight=35,
-                                                searchable=True,
-                                            ),
-                                            html.P("or enter the ticker symbol of the stock you wish to research"),
-                                            html.Br(),
-                                            dcc.Input(id="ticker_input", type="text",
-                                                      placeholder="Enter a Stock Ticker"),
-                                            html.Button('Submit', id='get_stock_btn'),
-                                        ],
-                                    ),
-                                ],
-                            ),
-                        ]
-                    ),
-                ],
+                ]
             ),
-
+            dbc.Col(
+                id="sb-stock-select-column",
+                # className='col-md-4',
+                children=[
+                    dbc.Card(
+                        className='mb-2 mt-2',
+                        children=[
+                            dbc.CardBody(
+                                className='pl-2 pr-2',
+                                children=[
+                                    html.H4('Select a Stock'),
+                                    html.Br(),
+                                    html.P("Select a company from the list below."),
+                                    dcc.Dropdown(
+                                        id='companies_dropdown',
+                                        value='Company Ticker Symbol',
+                                        options=[
+                                            {'label': company, 'value': company} for company in
+                                            sorted(dataframe.company.unique())
+                                        ],
+                                        optionHeight=35,
+                                        searchable=True,
+                                    ),
+                                    html.P("or enter the ticker symbol of the stock you wish to research"),
+                                    html.Br(),
+                                    dcc.Input(id="ticker_input", type="text",
+                                              placeholder="Enter a Stock Ticker"),
+                                    html.Button('Submit', id='get_stock_btn'),
+                                ],
+                            ),
+                        ],
+                    ),
+                ]
+            ),
         ],
-        style=SIDEBAR_STYLE,
-        fluid=True,
-    )
+    ),
 
     return sidebar
 
@@ -469,11 +462,11 @@ def generate_candlestick_graph(dataframe, stock_symbol):
         yaxis={'range': [dataframe['adjusted_close'].min(), dataframe['adjusted_close'].max()]},
         yaxis2={'range': [dataframe['Volume'].min() - 1000, dataframe['Volume'].max() + 1000]},
         height=600,
-        paper_bgcolor="#000000",
-        plot_bgcolor="#000000",
-        font={
-            'color': '#FFFFFF',
-        },
+        # paper_bgcolor="#000000",
+        # plot_bgcolor="#000000",
+        # font={
+        #     'color': '#FFFFFF',
+        # },
         # legend=dict(
         #     orientation="h",
         #     yanchor="bottom",
@@ -555,11 +548,11 @@ def generate_candlestick_graph_w_indicators(dataframe, stock_symbol):
         yaxis={'range': [dataframe['Bollinger-Lower'].min() - 10, dataframe['Bollinger-Upper'].max() + 10]},
         yaxis2={'range': [dataframe['Volume'].min() - 1000, dataframe['Volume'].max() + 1000]},
         height=600,
-        paper_bgcolor="#000000",
-        plot_bgcolor="#000000",
-        font={
-            'color': '#FFFFFF',
-        },
+        # paper_bgcolor="#000000",
+        # plot_bgcolor="#000000",
+        # font={
+        #     'color': '#FFFFFF',
+        # },
         # legend=dict(
         #     orientation="h",
         #     yanchor="bottom",
@@ -682,11 +675,11 @@ def generate_scatter_graph(dataframe, x_column, y_column, secondary_y_column, ti
                                xaxis={'range': [x_col_series.min(), x_col_series.max()]},
                                yaxis={'range': [y_col_series.min(), y_col_series.max()]},
                                height=400,
-                               paper_bgcolor="#000000",
-                               plot_bgcolor="#000000",
-                               font={
-                                   'color': '#FFFFFF',
-                               }
+                               # paper_bgcolor="#000000",
+                               # plot_bgcolor="#000000",
+                               # font={
+                               #     'color': '#FFFFFF',
+                               # }
                                )
 
     scatter_chart.add_trace(scatter)
@@ -848,11 +841,11 @@ def generate_bar_graph(dataframe, title, x_column, y_column, secondary_y_column=
                            xaxis={'range': [x_col_series.min(), x_col_series.max()]},
                            yaxis={'range': [y_col_series.min(), y_col_series.max()]},
                            height=400,
-                           paper_bgcolor="#000000",
-                           plot_bgcolor="#000000",
-                           font={
-                               'color': '#FFFFFF',
-                           },
+                           # paper_bgcolor="#000000",
+                           # plot_bgcolor="#000000",
+                           # font={
+                           #     'color': '#FFFFFF',
+                           # },
                            legend=dict(
                                orientation="h",
                                yanchor="bottom",
@@ -898,11 +891,11 @@ def generate_bar_and_line_graph(df1, df2, title, x_column, y_column, secondary_y
                            xaxis={'range': [x_col_series.min(), x_col_series.max()]},
                            yaxis={'range': [y_col_series.min(), y_col_series.max()]},
                            height=400,
-                           paper_bgcolor="#000000",
-                           plot_bgcolor="#000000",
-                           font={
-                               'color': '#FFFFFF',
-                           },
+                           # paper_bgcolor="#000000",
+                           # plot_bgcolor="#000000",
+                           # font={
+                           #     'color': '#FFFFFF',
+                           # },
                            legend=dict(
                                orientation="h",
                                yanchor="bottom",
@@ -920,23 +913,25 @@ def generate_bar_and_line_graph(df1, df2, title, x_column, y_column, secondary_y
                            )
 
     # Profit Margin
-    profit_graph = go.Bar(x=df1[x_column], y=df1[y_column], name=str(y_column), opacity=.7,
-                          marker_color='plum')
+    profit_graph = go.Bar(
+        x=df1[x_column], y=df1[y_column], name=str(y_column), opacity=.7,
+        marker_color='#9BCEB5'
+    )
     industry_profit_graph = go.Scatter(x=df2[x_column], y=df2[y_column], name=str("Industry" + y_column), opacity=.7,
-                                       marker_color='lavender')
+                                       marker_color='#9BCEB5')
 
     # Operating Margin
     operating_graph = go.Bar(x=df1[x_column], y=df1['Operating Margin'], name=str('Operating Margin'),
-                             opacity=.8, marker_color='salmon')
+                             opacity=.8, marker_color='#709784')
     industry_operating_graph = go.Scatter(x=df2[x_column], y=df2['Operating Margin'],
                                           name=str('Industry Operating Margin'),
-                                          opacity=.8, marker_color='darksalmon')
+                                          opacity=.8, marker_color='#709784')
     # Gross Marign
     gross_graph = go.Bar(x=df1[x_column], y=df1['Gross Margin'], name=str('Gross Margin'), opacity=.9,
-                         marker_color='goldenrod')
+                         marker_color='#E4F2EF')
     industry_gross_graph = go.Scatter(x=df2[x_column], y=df2['Gross Margin'], name=str('Industry Gross Margin'),
                                       opacity=.9,
-                                      marker_color='darkgoldenrod')
+                                      marker_color='#E4F2EF')
 
     bar_figure.add_traces(profit_graph)
     bar_figure.add_traces(industry_profit_graph)

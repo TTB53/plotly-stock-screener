@@ -1,7 +1,8 @@
 import random
 from sqlite3 import Error
 import logging
-
+import dash
+from dash import callback
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
@@ -11,7 +12,6 @@ from dash.exceptions import PreventUpdate
 
 import db
 import utils
-from app import app
 from stock import MyStock
 
 # from app import app  # Needed for making app multi-page
@@ -28,9 +28,10 @@ DB_FILE = "./stock-db.db"
 
 try:
     conn = dbObj.create_connection(db_file=DB_FILE)
+    logging.info("Successfully Connected to the DB from Technical Analysis.")
     # stock_price_df = pd.read_sql('SELECT * FROM stock_price, stock WHERE stock_id= stock.id', conn)
 except Error as e:
-    logging.error(e)
+    logging.error(f"Error Occured | {e}")
 
 # TODO Feature Enhancement add ability to automatically show how security of interest does against whatever the industry
 #  3 year rolling averages are. Similar to Grad School Corp Finance Project.
@@ -248,11 +249,19 @@ page_stock_info_ids['stock-price'] = 'stock-price'
 page_stock_info_ids['stock-sector'] = 'stock-sector'
 page_stock_info_ids['stock-subsector'] = 'stock-subsector'
 
-technical_page_layout = dbc.Container(
+# Registering the Dash Page
+dash.register_page(__name__,
+                   path='/technical-analysis',
+                   name='Technical Analysis',
+                   title='Stock Screener - Technical Analysis - ATB Analytics Group',
+                   description='Technical Analysis of Stocks'
+                   )
+
+layout = dbc.Container(
     # id='page-content',
     # className='col-md-12',
     children=[
-        utils.get_sidebar(app, companies_df, page_stock_info_ids),
+        # utils.get_sidebar("", companies_df, page_stock_info_ids),
 
         dbc.Row([
             # Company Name
@@ -485,7 +494,7 @@ technical_page_layout = dbc.Container(
     '''
 
 
-@app.callback(
+@callback(
     Output('stock-name-heading-tech', 'children'),
     Output('stock-price-heading', 'children'),
     Input('stock-storage', 'data'),
@@ -501,7 +510,7 @@ def update_layout_w_storage_data(data, dataState):
     return stockNameHeading, stockPriceHeading
 
 
-@app.callback(Output('candlestick-graph', 'figure'),
+@callback(Output('candlestick-graph', 'figure'),
               Output('obv-chart', 'figure'),
               Output('atr-chart', 'figure'),
               Output('macd-graph', 'figure'),

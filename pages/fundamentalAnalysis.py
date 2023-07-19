@@ -1,17 +1,18 @@
 from sqlite3 import Error
 import logging
 
+import dash
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
 import pandas as pd
 import yfinance
+from dash import callback
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 
 import db
 import utils
-from app import app
 from stock import MyStock
 
 # Interacts with the Database
@@ -24,11 +25,13 @@ conn = None
 # Connect to DB and  Load Data
 DB_FILE = "./stock-db.db"
 
+
 try:
     conn = dbObj.create_connection(db_file=DB_FILE)
+    logging.info("Successfully Connected to the DB from Fundamental Analysis.")
     # stock_price_df = pd.read_sql('SELECT * FROM stock_price, stock WHERE stock_id= stock.id', conn)
 except Error as e:
-    logging.error(e)
+    logging.error(f"Error Occurred | {e}")
 
 # TODO Feature Enhancement add ability to automatically show how security of interest does against whatever the industry
 #  3 year rolling averages are. Similar to Grad School Corp Finance Project.
@@ -414,8 +417,7 @@ def update_fundamentals_UI(stock_symbol):
             # profit_margin_figure = utils.generate_bar_graph(pm_chart_df, title='Margin Analysis', x_column='Years',
             #                                                 y_column='Profit Margin')  # WORKING CODE
 
-        eff_tax_rate = master_financials_df[mfdf_cols[0]]['Income Tax Paid Supplemental Data'] / \
-                       master_financials_df[mfdf_cols[0]]['Pretax Income']
+        eff_tax_rate = master_financials_df[mfdf_cols[0]]['Tax Rate For Calcs']
 
         avg_ebit = ebit / mf_years
         avg_profit = profit_combined / mf_years
@@ -676,11 +678,12 @@ def update_fundamentals_UI(stock_symbol):
 Layout of our Dash Application - the Bones of the App 
 
 '''
-fundamental_page_layout = dbc.Container(
+
+layout = dbc.Container(
 
     children=[
 
-        utils.get_sidebar(app, companies_df, page_stock_info_ids),
+        # utils.get_sidebar("", companies_df, page_stock_info_ids),
 
         dbc.Row(
             children=[
@@ -874,6 +877,15 @@ fundamental_page_layout = dbc.Container(
 
     ])
 
+# Registering the Dash Page
+dash.register_page(__name__,
+                   path='/fundamental-analysis',
+                   name='Fundamental Analysis',
+                   title='Stock Screener - Fundamental Analysis - ATB Analytics Group',
+                   description='Fundamental Analysis of Stocks'
+                   )
+
+
 '''
 
 Dash Callback that allows for interactivity between UI, API and DB
@@ -881,7 +893,7 @@ Dash Callback that allows for interactivity between UI, API and DB
 '''
 
 
-@app.callback(
+@callback(
     Output('stock-name-heading', 'children'),
     Output('master-financials-heading', 'children'),
     Input('stock-storage', 'data'),
@@ -899,27 +911,27 @@ def update_layout_w_storage_data(data, data1):
 
 # TODO Break into separate callbacks for each section of the application so
 #  if one it doesnt break the entire application.
-@app.callback(Output('fundamentals-candlestick-graph', 'figure'),
-              Output('fundamentals-calls-table', 'children'),
-              Output('fundamentals-puts-table', 'children'),
-              Output('fundamentals-stock-name', 'children'),
-              Output('fundamentals-stock-title', 'children'),
-              Output('fundamentals-stock-price', 'children'),
-              Output('fundamentals-stock-sector', 'children'),
-              Output('fundamentals-stock-subsector', 'children'),
-              Output('master-financials', 'children'),
-              Output('financial-ratios', 'children'),
-              Output('business-summary', 'children'),
-              Output('profit-margin-chart', 'figure'),
-              Input('get_stock_btn', 'n_clicks'),
-              Input('ticker_input', 'value'),
-              Input('companies_dropdown', 'value'),
-              Input('stock-storage', 'data'),
-              # [Input(str(stock_symbol + "-" + str(options['option_dates'][i])), 'n_clicks') for i in
-              #  range(0, len(options['option_dates']))],
-              State('ticker_input', 'value'),
-              # State('companies-dropdown', 'value'),
-              )
+@callback(Output('fundamentals-candlestick-graph', 'figure'),
+          Output('fundamentals-calls-table', 'children'),
+          Output('fundamentals-puts-table', 'children'),
+          Output('fundamentals-stock-name', 'children'),
+          Output('fundamentals-stock-title', 'children'),
+          Output('fundamentals-stock-price', 'children'),
+          Output('fundamentals-stock-sector', 'children'),
+          Output('fundamentals-stock-subsector', 'children'),
+          Output('master-financials', 'children'),
+          Output('financial-ratios', 'children'),
+          Output('business-summary', 'children'),
+          Output('profit-margin-chart', 'figure'),
+          Input('get_stock_btn', 'n_clicks'),
+          Input('ticker_input', 'value'),
+          Input('companies_dropdown', 'value'),
+          Input('stock-storage', 'data'),
+          # [Input(str(stock_symbol + "-" + str(options['option_dates'][i])), 'n_clicks') for i in
+          #  range(0, len(options['option_dates']))],
+          State('ticker_input', 'value'),
+          # State('companies-dropdown', 'value'),
+          )
 def update_layout(n_clicks, ticker_input_value, companies_dropdown, ticker_input, data):
     # Returns the updated information after entering a Stock Ticker into the Input Box
 
@@ -933,7 +945,7 @@ def update_layout(n_clicks, ticker_input_value, companies_dropdown, ticker_input
         stock_symbol = utils.generate_random_stock()
         # ticker_input = ticker_input
 
-        #NOT needed but keep for ex purposes.access Callback Context information to know which button from the options button list that was generated
+        # NOT needed but keep for ex purposes.access Callback Context information to know which button from the options button list that was generated
         #  and see which button was clicked and get that option chain and data.
         # user_click = dash.callback_context.triggered[0]['prop_id'].split('.')[0]
         # callback_states = dash.callback_context.states.values()

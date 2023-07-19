@@ -12,14 +12,14 @@ import pandas as pd
 DB_FILE = "./stock-db.db"
 SnP500_FILE = "./data/s&p500_stocks_Jun18_2021.csv"
 
-balance_sheet_table_sql = "./data/SQL/BalanceSheet.sql"
-basic_info_table_sql = "./data/SQL/BasicInfo.sql"
-cashflow_table_sql = "./data/SQL/Cashflow.sql"
-earnings_table_sql = "./data/SQL/Earnings.sql"
-financials_table_sql = "./data/SQL/BalanceSheet.sql"
-prices_table_sql = "./data/SQL/Prices.sql"
-stock_table_sql = "./data/SQL/Stock.sql"
-sector_ratios_sql = "./data/SQL/SectorRatios.sql"
+balance_sheet_table_sql = "./data/SQL/create/BalanceSheet.sql"
+basic_info_table_sql = "./data/SQL/create/BasicInfo.sql"
+cashflow_table_sql = "./data/SQL/create/Cashflow.sql"
+earnings_table_sql = "./data/SQL/create/Earnings.sql"
+financials_table_sql = "./data/SQL/create/Financials.sql"
+prices_table_sql = "./data/SQL/create/Prices.sql"
+stock_table_sql = "./data/SQL/create/Stock.sql"
+sector_ratios_sql = "./data/SQL/sector_analysis/SectorRatios.sql"
 
 insert_stock_table_data = """
 INSERT INTO stock(symbol, company, nasdaq_sector, gcis_sector,gcis_subsector,headquarters,date_added,CIK,founded) 

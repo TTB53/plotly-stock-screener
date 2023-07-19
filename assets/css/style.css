@@ -21,6 +21,14 @@ body{
     color:var(--IVORY);
 }
 
+#sidebar{
+    background-color: var(--DIMGREY);
+}
+
+#sidebar-toggle{
+        background-color:var(--DIMGREY);
+}
+
 .card {
     margin:2em 0;
     padding:1em;

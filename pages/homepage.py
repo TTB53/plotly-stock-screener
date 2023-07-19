@@ -1,5 +1,6 @@
 from sqlite3 import Error
 import logging
+import dash
 
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
@@ -7,10 +8,10 @@ import dash_html_components as html
 import pandas as pd
 import talib
 from dash.dependencies import Input, Output
+from dash import callback
 
 import db
 import utils
-from app import app
 from stock import MyStock
 
 import assets.candlestickPattens as cp
@@ -27,10 +28,10 @@ DB_FILE = "./stock-db.db"
 
 try:
     conn = dbObj.create_connection(db_file=DB_FILE)
+    logging.info("Successfully Connected to the DB from Homepage.")
     # stock_price_df = pd.read_sql('SELECT * FROM stock_price, stock WHERE stock_id= stock.id', conn)
 except Error as e:
-    logging.info()
-    logging.error(e)
+    logging.error(f"Error Occured |{e}")
 
 companies_df = dbObj.select_table_data(conn=conn, table_name='stock')
 patternsDict = cp.candlestick_patterns
@@ -67,13 +68,22 @@ def create_pattern_chart_card(pattern, stock, data):
     return patternChartCard
 
 
+# Registering the Dash Page
+dash.register_page(__name__,
+                   path='/',
+                   name='Home',
+                   title='Stock Screener - Home - ATB Analytics Group',
+                   description='Stock Screener Homepage'
+                   )
+
+
 def serve_layout():
-    return dbc.Container(
+    return html.Div(
         children=[
             dcc.Interval(id='page-load-count', ),
-            utils.get_sidebar(app, companies_df, page_stock_info_ids),
+            # utils.get_sidebar("", companies_df, page_stock_info_ids),
             dbc.Row([
-                dbc.Container(
+                dbc.Col(
                     children=[
                         html.Center([
                             html.H1("Simple Screener"),
@@ -102,7 +112,7 @@ def serve_layout():
                         ),
 
                     ],
-                    fluid=True,
+                    width='8'
                 ),
 
             ]),
@@ -303,7 +313,10 @@ def serve_layout():
     )
 
 
-@app.callback(
+layout = serve_layout()
+
+
+@callback(
     Output('chart-pattern-container', 'children'),
     [Input('candlestick-pattern-dropdown', 'value')],
     # Input('get-pattern-btn', 'n_clicks'),
@@ -376,7 +389,7 @@ def display_graph(pattern_value):
     )
 
 
-@app.callback(
+@callback(
     Output('stock-rois-chart', 'children'),
     Input('candlestick-pattern-dropdown', 'value'),
     # State('page-content', 'children')
@@ -436,7 +449,7 @@ def update_roi_chart(pattern_value):
         return dcc.Loading(children=[roi_df], type='circle', color='lightseagreen')
 
 
-@app.callback(
+@callback(
     Output('sector-margins-chart', 'children'),
     Input('candlestick-pattern-dropdown', 'value'),
     # State('page-content', 'children')
