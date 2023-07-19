@@ -32,6 +32,7 @@ Produces the Navigation Bar that is on every app(page) of the applcation.
 '''
 
 PLOTLY_LOGO = "https://images.plot.ly/logo/new-branding/plotly-logomark.png"
+ATB_ANALYTICS_GRP_LOGO = './assets/img/logo/atb-analytics-group-logo.png'
 
 dbObj = db.DBConnection()
 
@@ -42,9 +43,9 @@ def get_nav(app):
         children=[
 
             dbc.NavLink("Home", href="/", active="exact"),
-            dbc.NavLink("Fundamental Analysis", href="/apps/fundamentals",
+            dbc.NavLink("Fundamental Analysis", href="/pages/fundamentals",
                         active="exact"),
-            dbc.NavLink("Technical Analysis", href="/apps/technical",
+            dbc.NavLink("Technical Analysis", href="/pages/technical",
                         active="exact"),
         ],
         pills=True,
@@ -56,7 +57,7 @@ def get_nav(app):
             # Use row and col to control vertical alignment of logo / brand
             dbc.Row(
                 [
-                    dbc.Col(html.Img(src=PLOTLY_LOGO, height="30px"), width=4),
+                    dbc.Col(html.Img(src=ATB_ANALYTICS_GRP_LOGO, height="30px"), width=4),
                     # dbc.Col(dbc.NavbarBrand("Navbar", className="ml-2")),
                     dbc.Col(nav, width=8),
                 ],
@@ -75,8 +76,6 @@ def get_nav(app):
 Produces the sidebar that is  in every app(page) of the application and controls what the user see's.
 
 '''
-
-
 def get_sidebar(app, dataframe, page_stock_info_ids={}):
     if page_stock_info_ids == {}:
         page_stock_info_ids['stock-name'] = 'fundamentals-stock-name'

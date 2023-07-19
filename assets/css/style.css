@@ -14,17 +14,11 @@ Styles to be applied to the app globally
     --DARKSLATECYAN :#1f4f57;
     --GOLDENROD : #cfa42f;
     --BLACK : #333333;
-/*
+}
 
-
-    --GAINSBORO : #DBDBDB;
-    --PERSIAN_BLUE : #1c39bb;
-    --ALICE_BLUE : #F3F7FF;
-    --MISTY_ROSE : #fbe4e0;
-    --SOLITUDE : #e6eeff;
-    --GRAY : #808080;
-    --PAUA : #312f4f;
-    --WAIKAWA_GRAY : #696D8C;*/
+body{
+    background-color: var(--DIMGREY);
+    color:var(--IVORY);
 }
 
 .card {

@@ -227,7 +227,7 @@ class MyStock:
 
         data = yf.Ticker(ticker=stock_symbol)
 
-        # Note as of yFinance 0.2.22 earnings is now lumped into the financials, so instead of being separate,
+        # Note as of yFinan ce 0.2.22 earnings is now lumped into the financials, so instead of being separate,
         # it will have to be created from the Financials Data.
         if data is not None:
             if options and financials and cashflows and balanceSheet:
@@ -242,7 +242,8 @@ class MyStock:
                     option_chain = {'options': option_chain, 'option_dates': data.options}
 
                 except Exception as e:
-                    logging.error(e)
+                    logging.error(
+                        f"Error Occurred when trying to get the option_chain and options from Ticker Data |{e}")
 
                 financials = data.financials
                 cashflows = data.cashflow
@@ -255,20 +256,20 @@ class MyStock:
 
                 if stock_info:
                     stock_info = {}
-                    stock_info = data.fast_info  # can also use basic_info
+                    stock_info = data.fast_info  # can also use basic_info or history_metadata
                     stock_info_cpy = stock_info
 
-                    keys = ['sector', 'fullTimeEmployees', 'longBusinessSummary', 'website', 'city', 'state', 'zip',
-                            'industry', 'targetLowPrice', 'targetMeanPrice', 'targetHighPrice', 'shortName', 'longName',
-                            'quoteType', 'symbol', '52weekChange', 'sharesOutstanding', 'sharesShort',
-                            'SandP52WeekChange', 'yield', 'beta', 'lastDividendDate', 'twoHundredDayAverage',
-                            'dividendRate',
-                            'exDividendDate', 'fiftyTwoWeekHigh', 'fiftyTwoWeekLow', 'dividendYield',
-                            'nextFiscalYearEnd']
+                    keys = ['dayHigh', 'dayLow', 'exchange', 'fiftyDayAverage', 'lastPrice', 'lastVolume', 'marketCap',
+                            'open', 'previousClose', 'quoteType', 'regularMarketPreviousClose', 'shares',
+                            'tenDayAverageVolume', 'threeMonthAverageVolume', 'timezone', 'twoHundredDayAverage',
+                            'yearChange', 'yearHigh', 'yearLow']
                     stock_info_cpy = {x: stock_info[x] for x in keys if x in stock_info}
                     stock_info_cpy = pd.DataFrame.from_dict(stock_info_cpy, orient='index')
+                    stock_info_cpy.loc['symbol', :] = data.history_metadata['symbol']
+
+
                     # stock_info = pd.DataFrame.from_dict(stock_info)
-                    stock_info_cpy.rename(index={'52WeekChange': 'fiftyTwoWeekChange'}, inplace=True)
+                    # stock_info_cpy.rename(index={'52WeekChange': 'fiftyTwoWeekChange'}, inplace=True)
                     stock_info_cpy.columns = ['Values']
                     stock_info_cpy = stock_info_cpy.T
                     stock_info_cpy.index.rename('Attributes', inplace=True)
@@ -303,7 +304,7 @@ class MyStock:
                             stock_info_cpy.to_sql('stock_basic_info', conn, index=False, if_exists='append')
                             logging.info("Earnings records appended to the database.")
                         except Error as e:
-                            logging.error("Error occured when appending to the database")
+                            logging.error("Error occurred when appending to the database")
                             logging.error(e)
 
                     try:
@@ -346,7 +347,7 @@ class MyStock:
                     earnings_cpy['date'] = pd.Timestamp.now()
                     try:
                         earnings_cpy.to_sql('stock_earnings', conn, index=False, if_exists='append')
-                        logging.info("Earnings records appended to the database.")
+                        logging.info("Success! Earnings records appended to the database.")
                     except Error as e:
                         logging.error("Error Occurred when trying to update/append to earnings.")
                         # balanceSheet_cpy.to_sql('stock_balance_sheet', conn, index=False, if_exists='append',)
