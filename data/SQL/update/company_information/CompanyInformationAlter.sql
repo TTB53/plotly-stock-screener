@@ -1,0 +1,11 @@
+----------------------------------------------------------------------
+-- ALTER Company Information table.
+-- V2.0
+-- Anthony Thomas-Bell
+--
+-- add new columns to Company Information - partial query since the dynamic part is done via python.
+-- Can only add one column at a time.
+----------------------------------------------------------------------
+ALTER TABLE stock_basic_info
+--ADD "Column_Name" "Data_type"
+--DROP "Column_Name"

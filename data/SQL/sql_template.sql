@@ -26,8 +26,12 @@
 
 --Update/Alter TABLE
 --ALTER TABLE stock_table_name
---ADD column_name datatype
+--ADD/Drop column_name datatype
 
+-- UPDATE stock_table_name
+-- 	--SET DATA TO BE USED TO POPULATE
+-- 	SET COLUMN_NAME
+-- WHERE
 
 
 --Delete TABLE

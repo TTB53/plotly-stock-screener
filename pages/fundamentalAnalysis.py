@@ -18,13 +18,16 @@ from stock import MyStock
 # Interacts with the Database
 dbObj = db.DBConnection()
 
+# DB Queries
+INDUSTRY_RATIOS = "./data/IndustryRatios_Aug22_2021.csv"
+SECTOR_RATIOS = "./data/SQL/sector_analysis/SectorRatios.sql"
+
 # Interacts with the yFinance API
 StockObj = MyStock()
 conn = None
 
-# Connect to DB and  Load Data
+# Connect to DB and Load Data
 DB_FILE = "./stock-db.db"
-
 
 try:
     conn = dbObj.create_connection(db_file=DB_FILE)
@@ -74,6 +77,8 @@ def update_fundamentals_UI(stock_symbol):
     candlestick_figure, calls, puts, data, call_datatable, put_datatable, = None, None, None, None, None, None
     company_name, stock_sector, stock_subsector, stock_info, profit_margin_figure = None, None, None, None, None
 
+    COMPANY_INFO_QRY = "SELECT symbol, id, company, gics_sector, gics_subsector FROM stock"
+
     if stock_symbol is not None:
 
         try:
@@ -82,12 +87,11 @@ def update_fundamentals_UI(stock_symbol):
 
             # Getting record for company - If no record returned we create one and get data.
             company_info_df = pd.read_sql_query(
-                'SELECT symbol, id, company, gics_sector, gics_subsector FROM stock WHERE stock.symbol="{}"'.format(
-                    stock_symbol), conn)
+                COMPANY_INFO_QRY+ f" WHERE stock.symbol={stock_symbol}", conn)
 
             if company_info_df.empty:
                 # This takes us to adding the new symbol to our stocks table in the DB TODO needs to be handled better
-                logging.error(f"{stock_symbol} Company Info DF is Empty {company_info_df}")
+                logging.error(f"{COMPANY_INFO_QRY} WHERE stock.symbol = {stock_symbol} Company Info DF is Empty {company_info_df}")
                 raise Error
             else:
                 stock_id = company_info_df['id'][0]
@@ -187,7 +191,7 @@ def update_fundamentals_UI(stock_symbol):
 
             data.drop_duplicates(inplace=True)
 
-        # Checking if the stock has data already for the financials if it does
+        # Checking if the stock has data already for the financial if it does
         # it will have the data for all the financial statements.
         financials_table_df = pd.read_sql_query(
             'SELECT * FROM stock_financials WHERE stock_financials.stock_id="{}"'.format(
@@ -264,7 +268,7 @@ def update_fundamentals_UI(stock_symbol):
     else:
         master_financials_df = utils.generate_master_financials(financials, balanceSheet, cashflows, earnings,
                                                                 master_financials_df)
-        master_financials = utils.generate_generic_dash_datatable(master_financials_df, id='master-financials-data')
+        master_financials = utils.generate_generic_dash_datatable(master_financials_df, id='master-financial-data')
 
     # Should be Empty for ETFs
 
@@ -350,7 +354,6 @@ def update_fundamentals_UI(stock_symbol):
         totAssets = 0
         totLiab = 0
 
-
         mf_years = master_financials_df.columns.size
 
         profit_margin_chart_dict = {}
@@ -424,7 +427,7 @@ def update_fundamentals_UI(stock_symbol):
             pm_chart_df.reset_index(inplace=True)
             pm_chart_df.sort_index(ascending=True, inplace=True)
 
-            sector_pm_sql = dbObj.create_sql_string("./data/SQL/sector_analysis/SectorRatios.sql")
+            sector_pm_sql = dbObj.create_sql_string(SECTOR_RATIOS)
             sector_pm_df = pd.read_sql_query(sector_pm_sql, conn)
             sector_pm_df = sector_pm_df.query('gics_sector=="{}"'.format(stock_sector), inplace=False)
             # sector_pm_df = sector_pm_df.transpose()
@@ -455,9 +458,11 @@ def update_fundamentals_UI(stock_symbol):
         else:
             if 'Income Tax Expense' in master_financials_df.index:
                 if 'Earnings' in master_financials_df.index:
-                    eff_tax_rate = master_financials_df[mfdf_cols[0]]['Income Tax Expense']/master_financials_df[mfdf_cols[0]]['Earnings']
+                    eff_tax_rate = master_financials_df[mfdf_cols[0]]['Income Tax Expense'] / \
+                                   master_financials_df[mfdf_cols[0]]['Earnings']
                 elif 'Revenue' in master_financials_df.index:
-                    eff_tax_rate = master_financials_df[mfdf_cols[0]]['Income Tax Expense']/master_financials_df[mfdf_cols[0]]['Revenue']
+                    eff_tax_rate = master_financials_df[mfdf_cols[0]]['Income Tax Expense'] / \
+                                   master_financials_df[mfdf_cols[0]]['Revenue']
                 elif 'Total Revenue' in master_financials_df.index:
                     eff_tax_rate = master_financials_df[mfdf_cols[0]]['Income Tax Expense'] / \
                                    master_financials_df[mfdf_cols[0]]['Total Revenue']
@@ -472,7 +477,7 @@ def update_fundamentals_UI(stock_symbol):
         if avg_revenue <= 0:
             ebit_margin = avg_ebit / 1
         else:
-            ebit_margin = avg_ebit/avg_revenue
+            ebit_margin = avg_ebit / avg_revenue
 
         income_growth_rate = (((master_financials_df[mfdf_cols[0]]['Revenue'] /
                                 master_financials_df[mfdf_cols[mf_years - 1]]['Revenue']) * (1 / mf_years)) - 1) * 100
@@ -495,7 +500,6 @@ def update_fundamentals_UI(stock_symbol):
         elif totAssetsCheck and totLiabCheck:
             total_equity = master_financials_df[mfdf_cols[0]]['Total Assets'] - master_financials_df[mfdf_cols[0]][
                 'Total Liab']  # Shareholders Equity
-
 
         if 'Long Term Debt' in master_financials_df.index and 'Short Long Term Debt' in master_financials_df.index:
             total_debt = master_financials_df[mfdf_cols[0]]['Long Term Debt'] + master_financials_df[mfdf_cols[0]][
@@ -710,7 +714,7 @@ def update_fundamentals_UI(stock_symbol):
     financialRatioDF.index.rename('Financials', inplace=True)
     financialRatioDF.reset_index(inplace=True)
 
-    industyRatioDF = pd.read_csv('./data/IndustryRatios_Aug22_2021.csv', )  # TODO Update to 2023 Data.
+    industyRatioDF = pd.read_csv(INDUSTRY_RATIOS)  # TODO Update to 2023 Data.
     financialRatioDF = pd.merge(financialRatioDF, industyRatioDF, how='left', left_on=financialRatioDF['Financials'],
                                 right_on=industyRatioDF['Industry Ratios'])
 
@@ -731,6 +735,14 @@ def update_fundamentals_UI(stock_symbol):
     return candlestick_figure, call_datatable, put_datatable, company_name, stock_symbol, stock_price, stock_sector, \
            stock_subsector, master_financials, financial_ratios, business_summary, profit_margin_figure
 
+
+# Registering the Dash Page
+dash.register_page(__name__,
+                   path='/fundamental-analysis',
+                   name='Fundamental Analysis',
+                   title='Stock Screener - Fundamental Analysis - ATB Analytics Group',
+                   description='Fundamental Analysis of Stocks'
+                   )
 
 '''
 Layout of our Dash Application - the Bones of the App 
@@ -865,7 +877,7 @@ layout = dbc.Container(
         ]),
 
         dbc.Row([
-            html.H1(id='master-financials-heading', children=[
+            html.H1(id='master-financial-heading', children=[
                 "{} Financials".format(stock_symbol)
             ]),
             html.Br(),
@@ -880,7 +892,7 @@ layout = dbc.Container(
                                     html.H2("Master Financials"),
                                     html.Br(),
                                     dcc.Loading(
-                                        id='master-financials',
+                                        id='master-financial',
                                         type="circle",
                                         color='lightseagreen'
                                     ),
@@ -935,14 +947,6 @@ layout = dbc.Container(
 
     ])
 
-# Registering the Dash Page
-dash.register_page(__name__,
-                   path='/fundamental-analysis',
-                   name='Fundamental Analysis',
-                   title='Stock Screener - Fundamental Analysis - ATB Analytics Group',
-                   description='Fundamental Analysis of Stocks'
-                   )
-
 '''
 
 Dash Callback that allows for interactivity between UI, API and DB
@@ -952,7 +956,7 @@ Dash Callback that allows for interactivity between UI, API and DB
 
 @callback(
     Output('stock-name-heading', 'children'),
-    Output('master-financials-heading', 'children'),
+    Output('master-financial-heading', 'children'),
     Input('stock-storage', 'data'),
     State('stock-storage', 'data')
 )
@@ -976,7 +980,7 @@ def update_layout_w_storage_data(data, data1):
           Output('fundamentals-stock-price', 'children'),
           Output('fundamentals-stock-sector', 'children'),
           Output('fundamentals-stock-subsector', 'children'),
-          Output('master-financials', 'children'),
+          Output('master-financial', 'children'),
           Output('financial-ratios', 'children'),
           Output('business-summary', 'children'),
           Output('profit-margin-chart', 'figure'),

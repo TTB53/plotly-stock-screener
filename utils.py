@@ -989,7 +989,7 @@ def generate_master_financials(financials, balanceSheet, cashflows, earnings, ma
     else:
         earnings = earnings.transpose()
 
-    # converting the years into the same format as the other financials mm/yyyy format
+    # converting the years into the same format as the other financial mm/yyyy format
     for c in earnings.columns:
         # Checking for timestamp objects. Might need to check for DateTime Objects as well.
         if type(c) is pd.Timestamp:

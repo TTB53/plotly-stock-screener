@@ -13,13 +13,16 @@ DB_FILE = "./stock-db.db"
 SnP500_FILE = "./data/s&p500_stocks_Jun18_2021.csv"
 
 balance_sheet_table_sql = "./data/SQL/create/BalanceSheet.sql"
-basic_info_table_sql = "./data/SQL/create/BasicInfo.sql"
+basic_info_table_sql = "./data/SQL/create/CompanyInfo.sql"
 cashflow_table_sql = "./data/SQL/create/Cashflow.sql"
 earnings_table_sql = "./data/SQL/create/Earnings.sql"
 financials_table_sql = "./data/SQL/create/Financials.sql"
 prices_table_sql = "./data/SQL/create/Prices.sql"
 stock_table_sql = "./data/SQL/create/Stock.sql"
 sector_ratios_sql = "./data/SQL/sector_analysis/SectorRatios.sql"
+
+basic_info_table_insert = "./data/SQL/update/cashflowsInsert.sql"
+
 
 insert_stock_table_data = """
 INSERT INTO stock(symbol, company, nasdaq_sector, gcis_sector,gcis_subsector,headquarters,date_added,CIK,founded) 
@@ -41,6 +44,7 @@ INSERT INTO stock_balance_sheet(stock_id, year,'Intangible Assets', 'Capital Sur
 VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,)
 """
 
+#TODO need to find out where to get some of this information as it is no longer included in the Yahoo Finance API.
 insert_stock_basic_info_data = """
 INSERT INTO stock_basic_info(stock_id,sector,fullTimeEmployees,longBusinessSummary,website,city, state, zip,industry,
 targetLowPrice, targetMeanPrice, targetHighPrice, shortName, longName,quoteType,symbol,fiftyTwoWeekChange, 
@@ -103,8 +107,7 @@ class DBConnection:
             conn = sqlite3.connect(db_file)
             return conn
         except Error as e:
-            logging.info(e)
-
+            logging.info(f"There was an error when trying to connect to {db_file} database | {e}")
         return conn
 
     """ 
@@ -122,7 +125,7 @@ class DBConnection:
             logging.info("Table was Dropped Successfully.")
 
         except Error as e:
-            logging.info(e)
+            logging.info(f"There was an error when trying to drop the table with the following query.\n{drop_table_sql}\n|{e}")
 
     """ create a table from the create_table_sql statement
     :param conn: Connection object
@@ -142,7 +145,7 @@ class DBConnection:
             conn.commit()
             c.close()
         except Error as e:
-            logging.info("ERROR OCCURRED WHEN CREATING TABLE----ERROR\n{}\nClosing Connection to DB".format(e))
+            logging.info(f"ERROR OCCURRED WHEN CREATING TABLE----ERROR\n{e}\nClosing Connection to DB")
             conn.close()
 
     # conn.close()
@@ -400,7 +403,7 @@ class DBConnection:
             self.create_table(self, conn, earnings_table_sql)
             self.check_table(self, conn, "stock_earnings")
 
-            # financials table
+            # financial table
             self.create_table(self, conn, financials_table_sql)
             self.check_table(self, conn, "stock_financials")
 

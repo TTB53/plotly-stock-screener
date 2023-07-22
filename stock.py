@@ -204,18 +204,18 @@ class MyStock:
 
     '''
     This function returns all the data that is needed to analyze a stock using the yFinance API, including
-    options, financials, cashflows, earnings, and balance sheets.
+    options, financial, cashflows, earnings, and balance sheets.
 
     :param stock_symbol:
     :param options:
-    :param financials:
+    :param financial:
     :param cashflows:
     :param earnings:
     :param balanceSheet:
     :param save_data:
     :return:
 
-        :returns a Dictionary for the Options( Dict holds puts and calls, and the exp dates), financials,
+        :returns a Dictionary for the Options( Dict holds puts and calls, and the exp dates), financial,
         cashflows, earnings, and balanceSheet are all pandas dataframes
 
 
@@ -227,7 +227,7 @@ class MyStock:
 
         data = yf.Ticker(ticker=stock_symbol)
 
-        # Note as of yFinan ce 0.2.22 earnings is now lumped into the financials, so instead of being separate,
+        # Note as of yFinan ce 0.2.22 earnings is now lumped into the financial, so instead of being separate,
         # it will have to be created from the Financials Data.
         if data is not None:
             if options and financials and cashflows and balanceSheet:
@@ -333,7 +333,7 @@ class MyStock:
                         financials_cpy.to_sql('stock_financials', conn, index=False, if_exists='append')
                         logging.info("Financials records appended to the database.")
                     except Error as e:
-                        logging.error("Error Occurred when trying to update/append the financials.")
+                        logging.error("Error Occurred when trying to update/append the financial.")
                         # balanceSheet_cpy.to_sql('stock_balance_sheet', conn, index=False, if_exists='append',)
                         logging.error(e)
                     finally:
