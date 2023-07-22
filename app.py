@@ -34,7 +34,7 @@ FONTS = './assets/css/fonts.css'
 BOOTSTRAP_THEME = dbc.themes.CYBORG
 MAIN_STYLESHEET = "assets/css/style.css"
 
-external_stylesheets = [ATBDEFAULTTHEME, FONTS, MAIN_STYLESHEET]
+external_stylesheets = [ATBDEFAULTTHEME, BOOTSTRAP_THEME, FONTS, MAIN_STYLESHEET]
 
 ALLOWED_TYPES = (
     "text", "number", "password", "email", "search",
@@ -90,6 +90,20 @@ app = dash.Dash(__name__,
                 assets_folder="./assets",
                 )
 
+navbar_menu = html.Div(
+    dbc.Collapse(
+        dbc.Nav(
+            [
+                dbc.NavLink(f"{page['name']} ", href=page["relative_path"]) for page in
+                dash.page_registry.values() if page["module"] != "pages.not_found_404"
+            ],
+            # vertical=True,
+            pills=True,
+        ),
+        id="collapse",
+        is_open=True,
+    ),
+),
 sidebar_header = dbc.Row(
     [
         dbc.Col(
@@ -98,6 +112,7 @@ sidebar_header = dbc.Row(
                     html.Img(id='logoImg', src=ATB_ANALYTICS_GRP_LOGO, alt="ATB Analytics Group Logo")
                 ], href="https://www.atb-analytics-group.webflow.io"),
             ],
+            width=2,
         ),
 
         dbc.Col(
@@ -107,29 +122,48 @@ sidebar_header = dbc.Row(
                     html.Span(className="navbar-toggler-icon"),
                     className="navbar-toggler",
                     # the navbar-toggler classes don't set color
-                    style={
-                        "color": "rgba(0,0,0,.5)",
-                        "border-color": "rgba(0,0,0,.1)",
-                    },
+                    # style={
+                    #     "color": "rgba(0,0,0,.5)",
+                    #     "border-color": "rgba(0,0,0,.1)",
+                    # },
                     id="navbar-toggle",
+
                 ),
-                html.Button(
-                    # use the Bootstrap navbar-toggler classes to style
-                    html.Span(className="navbar-toggler-icon"),
-                    className="navbar-toggler",
-                    # the navbar-toggler classes don't set color
-                    style={
-                        "color": "rgba(0,0,0,.5)",
-                        "border-color": "rgba(0,0,0,.1)",
-                    },
-                    id="sidebar-toggle",
-                ),
+
+                # html.Button(
+                #     # use the Bootstrap navbar-toggler classes to style
+                #     html.Span(className="navbar-toggler-icon"),
+                #     className="navbar-toggler",
+                #     # the navbar-toggler classes don't set color
+                #     # style={
+                #     #     "color": "rgba(0,0,0,.5)",
+                #     #     "border-color": "rgba(0,0,0,.1)",
+                #     # },
+                #     id="sidebar-toggle",
+                # ),
             ],
             # the column containing the toggle will be only as wide as the
             # toggle, resulting in the toggle being right aligned
             width="auto",
             # vertically align the toggle in the center
             align="center",
+        ),
+        dbc.Col(
+            [
+                dbc.Collapse(
+                    dbc.Nav(
+                        [
+                            dbc.NavLink(f"{page['name']} ", href=page["relative_path"]) for page in
+                            dash.page_registry.values() if page["module"] != "pages.not_found_404"
+                        ],
+                        # vertical=True,
+                        pills=True,
+                        horizontal=True,
+                    ),
+                    id="collapse",
+                    is_open=True,
+                ),
+            ]
         ),
         dbc.Col([
             html.Br(),
@@ -151,10 +185,10 @@ sidebar = dbc.Col(
     id='sidebar',
     # className='col-md-4',
     children=[
-        html.Div(
+        html.Br(),
+        sidebar_header,
+        dbc.Row(
             [
-                html.Br(),
-                sidebar_header,
                 html.Br(),
                 html.Div(
                     id="blurb",
@@ -168,23 +202,23 @@ sidebar = dbc.Col(
 
                 ),
                 html.Hr(),
-                dbc.Collapse(
-                    dbc.Nav(
-                        [
-                            dbc.NavLink(f"{page['name']} ", href=page["relative_path"]) for page in
-                            dash.page_registry.values() if page["module"] != "pages.not_found_404"
-                        ],
-                        vertical=True,
-                        pills=True,
-                    ),
-                    id="collapse",
-                ),
+
+                # dbc.Nav(
+                #     [
+                #         dbc.NavLink(f"{page['name']} ", href=page["relative_path"]) for page in
+                #         dash.page_registry.values() if page["module"] != "pages.not_found_404"
+                #     ],
+                #     vertical=True,
+                #     pills=True,
+                # ),
+
                 html.Div(stock_row_info, )
                 # theme_switch,
             ]
         ),
 
-    ]
+    ],
+    # width=12
 )
 
 content = dbc.Col(
@@ -192,7 +226,7 @@ content = dbc.Col(
     children=[dash.page_container],
     # className='col-md-8',
     # style=CONTENT_STYLE,
-    # width='auto',
+    width="auto",
 )
 
 # Application Layout
@@ -204,6 +238,7 @@ app.layout = dbc.Container(
             type="dot",
             color="AQUAMARINE",
         ),
+
         dbc.Row(
             children=[
                 sidebar,

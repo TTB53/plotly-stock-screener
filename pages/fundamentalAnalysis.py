@@ -87,6 +87,7 @@ def update_fundamentals_UI(stock_symbol):
 
             if company_info_df.empty:
                 # This takes us to adding the new symbol to our stocks table in the DB TODO needs to be handled better
+                logging.error(f"{stock_symbol} Company Info DF is Empty {company_info_df}")
                 raise Error
             else:
                 stock_id = company_info_df['id'][0]
@@ -271,6 +272,7 @@ def update_fundamentals_UI(stock_symbol):
         master_financials_df.set_index('Financials', inplace=True)
         master_financials_df.sort_index(ascending=True, inplace=True)
         master_financials_df.fillna(0, inplace=True)
+        master_financials_df.drop_duplicates(inplace=True)
         mfdf_cols = master_financials_df.columns
 
         dividendsPaid = 0
@@ -339,48 +341,80 @@ def update_fundamentals_UI(stock_symbol):
         priceToBook = 0
         cashRatio = 0
         quickRatio = 0
+        grossProfit = 0
+        currAccExp = 0
+        preTaxIncome = 0
+        netIncome = 0
+        depreciation = 0
+        capEx = 0
+        totAssets = 0
+        totLiab = 0
+
 
         mf_years = master_financials_df.columns.size
 
         profit_margin_chart_dict = {}
 
         for col in range(0, mf_years):
-            if 'EBIT' in master_financials_df.index or 'ebit' in master_financials_df.index:
-                ebit += master_financials_df[mfdf_cols[col]]['Net Income']
+            if 'EBIT' in master_financials_df.index or 'Ebit' in master_financials_df.index:
+                if 'Ebit' in master_financials_df.index:
+                    ebit += master_financials_df[mfdf_cols[col]]['Ebit']
+                else:
+                    ebit += master_financials_df[mfdf_cols[col]]['EBIT']
 
-            if 'Gross Profit' in master_financials_df.index:
-                profit_combined += master_financials_df[mfdf_cols[col]]['Gross Profit']
+            if 'Net Income' in master_financials_df.index:
+                netIncome = master_financials_df[mfdf_cols[col]]['Net Income']
+            else:
+                netIncome = 1
 
             if 'Depreciation' in master_financials_df.index:
-                depreciation_combined += master_financials_df[mfdf_cols[col]]['Depreciation']
+                depreciation = master_financials_df[mfdf_cols[col]]['Depreciation']
+                depreciation_combined += depreciation
 
             if 'Capital Expenditures' in master_financials_df.index:
-                total_capex += master_financials_df[mfdf_cols[col]]['Capital Expenditures']
+                capEx = master_financials_df[mfdf_cols[col]]['Capital Expenditures']
+                total_capex += capEx
 
             if 'Revenue' in master_financials_df.index or 'revenue' in master_financials_df.index:
                 if 'revenue' in master_financials_df.index:
                     master_financials_df.rename({'revenue': 'Revenue'}, inplace=True)
-                    revenue_combined += master_financials_df[mfdf_cols[col]]['Revenue']
+                    revenue = master_financials_df[mfdf_cols[col]]['Revenue']
+                    revenue_combined += revenue
                 else:
-                    revenue_combined += master_financials_df[mfdf_cols[col]]['Revenue']
+                    revenue = master_financials_df[mfdf_cols[col]]['Revenue']
+                    revenue_combined += revenue
             else:
                 revenue = 1
 
-            profit_margin_chart_dict[mfdf_cols[col]] = {
-                'profit margin': (master_financials_df[mfdf_cols[col]]['Net Income'] /
-                                  master_financials_df[mfdf_cols[col]]['Total Revenue']) * 100,
+            if 'Gross Profit' in master_financials_df.index:
+                grossProfit = master_financials_df[mfdf_cols[col]]['Gross Profit']
+                profit_combined += grossProfit
+            else:
+                if 'Cost of Goods Sold' in master_financials_df.index:
+                    grossProfit = revenue - master_financials_df[mfdf_cols[col]]['Cost Of Goods Sold']
+                    grossProfit = grossProfit / revenue
+                    profit_combined += grossProfit
+                else:
+                    grossProfit = master_financials_df[mfdf_cols[col]]['Revenue']
+                    profit_combined += grossProfit
 
-                'net profit margin': ((master_financials_df[mfdf_cols[col]]['Total Revenue'] -
-                                       master_financials_df[mfdf_cols[col]]['Total Expenses']) /
-                                      master_financials_df[mfdf_cols[col]]['Total Revenue']) * 100,
+            if 'Pretax Income' in master_financials_df.index:
+                preTaxIncome = master_financials_df[mfdf_cols[col]]['Pretax Income']
+            else:
+                if 'Income Before Tax' in master_financials_df.index:
+                    preTaxIncome = master_financials_df[mfdf_cols[col]]['Income Before Tax']
+                else:
+                    preTaxIncome = master_financials_df[mfdf_cols[col]]['Revenue']
+
+            profit_margin_chart_dict[mfdf_cols[col]] = {
+                'profit margin': (netIncome / revenue) * 100,
+
+                'net profit margin': ((revenue - currAccExp) / revenue) * 100,
 
                 'operating margin':
-                    (master_financials_df[mfdf_cols[col]]['Operating Income'] / master_financials_df[mfdf_cols[col]][
-                        'Total Revenue']) * 100,
-
+                    (preTaxIncome / revenue) * 100,
                 'gross margin':
-                    (master_financials_df[mfdf_cols[col]]['Gross Profit'] /
-                     master_financials_df[mfdf_cols[col]]['Revenue']) * 100,
+                    (grossProfit / revenue) * 100,
             }
 
         if profit_margin_chart_dict:
@@ -416,20 +450,34 @@ def update_fundamentals_UI(stock_symbol):
 
             # profit_margin_figure = utils.generate_bar_graph(pm_chart_df, title='Margin Analysis', x_column='Years',
             #                                                 y_column='Profit Margin')  # WORKING CODE
+        if 'Tax Rate for Calcs' in master_financials_df.index:
+            eff_tax_rate = master_financials_df[mfdf_cols[0]]['Tax Rate For Calcs']
+        else:
+            if 'Income Tax Expense' in master_financials_df.index:
+                if 'Earnings' in master_financials_df.index:
+                    eff_tax_rate = master_financials_df[mfdf_cols[0]]['Income Tax Expense']/master_financials_df[mfdf_cols[0]]['Earnings']
+                elif 'Revenue' in master_financials_df.index:
+                    eff_tax_rate = master_financials_df[mfdf_cols[0]]['Income Tax Expense']/master_financials_df[mfdf_cols[0]]['Revenue']
+                elif 'Total Revenue' in master_financials_df.index:
+                    eff_tax_rate = master_financials_df[mfdf_cols[0]]['Income Tax Expense'] / \
+                                   master_financials_df[mfdf_cols[0]]['Total Revenue']
 
-        eff_tax_rate = master_financials_df[mfdf_cols[0]]['Tax Rate For Calcs']
-
+            else:
+                eff_tax_rate = 1
         avg_ebit = ebit / mf_years
         avg_profit = profit_combined / mf_years
         avg_depreciation = depreciation_combined / mf_years
         avg_revenue = revenue_combined / mf_years
 
-        ebit_margin = avg_ebit / avg_revenue
+        if avg_revenue <= 0:
+            ebit_margin = avg_ebit / 1
+        else:
+            ebit_margin = avg_ebit/avg_revenue
 
         income_growth_rate = (((master_financials_df[mfdf_cols[0]]['Revenue'] /
                                 master_financials_df[mfdf_cols[mf_years - 1]]['Revenue']) * (1 / mf_years)) - 1) * 100
 
-        normalized_ebit = master_financials_df[mfdf_cols[0]]['Total Revenue'] * ebit_margin
+        normalized_ebit = master_financials_df[mfdf_cols[0]]['Revenue'] * ebit_margin
         after_tax_normalized_ebit = normalized_ebit * (1 - eff_tax_rate)
         adj_depreciation = ((1 / mf_years) * eff_tax_rate) * avg_depreciation
         normalized_profit = after_tax_normalized_ebit + adj_depreciation
@@ -438,8 +486,16 @@ def update_fundamentals_UI(stock_symbol):
 
         adj_earnings = normalized_profit - avg_capex
 
-        total_equity = master_financials_df[mfdf_cols[0]]['Total Assets'] - master_financials_df[mfdf_cols[0]][
-            'Total Liabilities Net Minority Interest']  # Shareholders Equity
+        liabNetMinorityInterest = utils.checkForColinDF(master_financials_df, 'Total Liabilities Net Minority Interest')
+        totAssetsCheck = utils.checkForColinDF(master_financials_df, 'Total Assets')
+        totLiabCheck = utils.checkForColinDF(master_financials_df, 'Total Liab')
+        if liabNetMinorityInterest and totAssetsCheck:
+            total_equity = master_financials_df[mfdf_cols[0]]['Total Assets'] - master_financials_df[mfdf_cols[0]][
+                'Total Liabilities Net Minority Interest']  # Shareholders Equity
+        elif totAssetsCheck and totLiabCheck:
+            total_equity = master_financials_df[mfdf_cols[0]]['Total Assets'] - master_financials_df[mfdf_cols[0]][
+                'Total Liab']  # Shareholders Equity
+
 
         if 'Long Term Debt' in master_financials_df.index and 'Short Long Term Debt' in master_financials_df.index:
             total_debt = master_financials_df[mfdf_cols[0]]['Long Term Debt'] + master_financials_df[mfdf_cols[0]][
@@ -474,10 +530,10 @@ def update_fundamentals_UI(stock_symbol):
 
             market_cap = price * sharesOutstanding
 
-            returnOnInvestedCapital = (master_financials_df[mfdf_cols[0]]['Net Income'] - dividendsPaid) / total_value
+            returnOnInvestedCapital = (netIncome - dividendsPaid) / total_value
 
             # Financial Ratios that needed to be calculated.
-            earningsPerShare = (master_financials_df[mfdf_cols[0]]['Net Income'] + dividendsPaid) / sharesOutstanding
+            earningsPerShare = (netIncome + dividendsPaid) / sharesOutstanding
             priceToEarnings = price / earningsPerShare  # Should be < 15
 
             if stock_info['Values']['quoteType'] != 'ETF':
@@ -531,6 +587,8 @@ def update_fundamentals_UI(stock_symbol):
                         cashRatio = master_financials_df[mfdf_cols[0]]['Cash And Cash Equivalents'] / \
                                     master_financials_df[mfdf_cols[0]][
                                         'Total Current Liabilities']
+                    else:
+                        netCurrAssetVal = 1
 
             else:
 
@@ -554,9 +612,9 @@ def update_fundamentals_UI(stock_symbol):
             bookValue = (total_equity / sharesOutstanding)  # Should be < 2
             priceToBook = price / bookValue
             debtToEquity = master_financials_df[mfdf_cols[0]]['Total Liabilities Net Minority Interest'] / total_equity
-            returnOnAssets = master_financials_df[mfdf_cols[0]]['Net Income'] / master_financials_df[mfdf_cols[0]][
+            returnOnAssets = netIncome / master_financials_df[mfdf_cols[0]][
                 'Total Assets']
-            returnOnEquity = master_financials_df[mfdf_cols[0]]['Net Income'] / total_equity
+            returnOnEquity = netIncome / total_equity
 
             if not stock_info.empty:
 
@@ -885,7 +943,6 @@ dash.register_page(__name__,
                    description='Fundamental Analysis of Stocks'
                    )
 
-
 '''
 
 Dash Callback that allows for interactivity between UI, API and DB
@@ -900,7 +957,7 @@ Dash Callback that allows for interactivity between UI, API and DB
     State('stock-storage', 'data')
 )
 def update_layout_w_storage_data(data, data1):
-    if data is None:
+    if data is None or len(data) == 0:
         raise PreventUpdate
 
     stockNameHeading = data['company']

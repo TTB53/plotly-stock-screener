@@ -25,8 +25,13 @@ body{
     background-color: var(--DIMGREY);
 }
 
+#navbar-toggle{
+    background-color:var(--IVORY);
+    border: var(--DARKSLATEGREEN) .1em solid;
+}
+
 #sidebar-toggle{
-        background-color:var(--DIMGREY);
+    background-color:var(--IVORY);
 }
 
 .card {

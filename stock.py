@@ -247,7 +247,7 @@ class MyStock:
 
                 financials = data.financials
                 cashflows = data.cashflow
-                if financials is not None:
+                if financials is not None and financials.empty is not True:
                     # Need to get the revenue and after-tax net income to match the pervious earnings information
                     earnings = financials.loc[['Net Income', 'Total Revenue']]
                     earnings = earnings.rename({'Net Income': 'earnings', 'Total Revenue': 'revenue'})
