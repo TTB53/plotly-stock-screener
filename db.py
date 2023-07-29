@@ -7,22 +7,30 @@ import logging
 
 import pandas as pd
 
+
+def open_and_read_sql(filename):
+    f = open(filename, 'r')
+    read_sql_file = f.read()
+    f.close()
+
+    return read_sql_file
+
+
 # Create Table SQL statements
 
 DB_FILE = "./stock-db.db"
 SnP500_FILE = "./data/s&p500_stocks_Jun18_2021.csv"
 
-balance_sheet_table_sql = "./data/SQL/create/BalanceSheet.sql"
-basic_info_table_sql = "./data/SQL/create/CompanyInfo.sql"
-cashflow_table_sql = "./data/SQL/create/Cashflow.sql"
-earnings_table_sql = "./data/SQL/create/Earnings.sql"
-financials_table_sql = "./data/SQL/create/Financials.sql"
+balance_sheet_table_sql = "./data/SQL/create/balnce_sheet/BalanceSheet.sql"
+basic_info_table_sql = "./data/SQL/create/comapny_information/CompanyInfo.sql"
+cashflow_table_sql = "./data/SQL/create/cashflow/Cashflow.sql"
+earnings_table_sql = "./data/SQL/create/financial/Earnings.sql"
+financials_table_sql = "./data/SQL/create/financial/Financials.sql"
 prices_table_sql = "./data/SQL/create/Prices.sql"
 stock_table_sql = "./data/SQL/create/Stock.sql"
-sector_ratios_sql = "./data/SQL/sector_analysis/SectorRatios.sql"
+sector_ratios_sql = "./data/SQL/read/sector_analysis/SectorRatios.sql"
 
-basic_info_table_insert = "./data/SQL/update/cashflowsInsert.sql"
-
+basic_info_table_insert = "./data/SQL/update/company_information/companyInformationInsert.sql"
 
 insert_stock_table_data = """
 INSERT INTO stock(symbol, company, nasdaq_sector, gcis_sector,gcis_subsector,headquarters,date_added,CIK,founded) 
@@ -34,7 +42,9 @@ INSERT INTO stock_price(date, Open, High, Low, Close, adjusted_close,Volume, sto
 VALUES (?,?,?.?,?,?,?,)
 """
 
-insert_stock_balance_sheet_data = """
+insert_stock_balance_sheet_data = open_and_read_sql('./data/SQL/update/balance_sheet/balanceSheetInsert.sql')
+
+"""
 INSERT INTO stock_balance_sheet(stock_id, year,'Intangible Assets', 'Capital Surplus', 'Total Liab',
 'Total Stockholder Equity','Minority Interest','Other Current Liab','Total Assets','Common Stock','Other Current Assets'
 , 'Retained Earnings','Other Liab','Good Will','Treasury Stock','Other Assets','Cash','Total Current Liabilities',
@@ -44,8 +54,9 @@ INSERT INTO stock_balance_sheet(stock_id, year,'Intangible Assets', 'Capital Sur
 VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,)
 """
 
-#TODO need to find out where to get some of this information as it is no longer included in the Yahoo Finance API.
-insert_stock_basic_info_data = """
+# TODO need to find out where to get some of this information as it is no longer included in the Yahoo Finance API.
+insert_stock_basic_info_data = open_and_read_sql('./data/SQL/update/company_information/CompanyInformationInsert.sql')
+"""
 INSERT INTO stock_basic_info(stock_id,sector,fullTimeEmployees,longBusinessSummary,website,city, state, zip,industry,
 targetLowPrice, targetMeanPrice, targetHighPrice, shortName, longName,quoteType,symbol,fiftyTwoWeekChange, 
 sharesOutstanding, sharesShort, SandP52WeekChange, yield, beta, lastDividendDate, twoHundredDayAverage, divdendRate,
@@ -53,7 +64,8 @@ sharesOutstanding, sharesShort, SandP52WeekChange, yield, beta, lastDividendDate
 VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,)
 """
 
-insert_stock_cashflows_data = """
+insert_stock_cashflows_data = open_and_read_sql('./data/SQL/update/cashflow/cashflowsInsert.sql')
+"""
 INSERT INTO stock_cashflows(stock_id, 'Investments','Change To Liabilities','Total Cashflows from Investing Activities',
 'Net Borrowings','Total Cash from Financing Activities','Change To Operating Activities','Net Income',
 'Change In Cash','Repurchase of Stock','Effect Of Exchange Rate','Total Cash From Operating Activities','Depreciation',
@@ -63,11 +75,14 @@ INSERT INTO stock_cashflows(stock_id, 'Investments','Change To Liabilities','Tot
 VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,)
 """
 
-insert_earnings_data = """
+insert_earnings_data = open_and_read_sql('./data/SQL/update/financial/earningsInsert.sql')
+"""
 INSERT INTO stock_earnings(stock_id,Year, Earnings, Revenue, 'date') VALUES(?,?,?,?,?,)
 """
 
-insert_financials_data = """
+insert_financials_data = open_and_read_sql('./data/SQL/update/financial/financialsInsert.sql')
+
+"""
 INSERT INTO stock_financials(stock_id, 'Research Development', 'Effect Of Accounting Charges','Income Before Tax',
 'Minority Interest','Net Income','Selling General Administrative','Gross Profit','Ebit','Operating Income',
 'Other Operating Expenses','Interest Expense','Extraordinary Items','Non Recurring','Other Items','Income Tax Expense',
@@ -125,7 +140,8 @@ class DBConnection:
             logging.info("Table was Dropped Successfully.")
 
         except Error as e:
-            logging.info(f"There was an error when trying to drop the table with the following query.\n{drop_table_sql}\n|{e}")
+            logging.info(
+                f"There was an error when trying to drop the table with the following query.\n{drop_table_sql}\n|{e}")
 
     """ create a table from the create_table_sql statement
     :param conn: Connection object
@@ -321,7 +337,7 @@ class DBConnection:
 
     def check_for_table(self, conn, table_name):
 
-        msg = "{} exists. It is good to be used.".format(table_name)
+        msg = f"{table_name} exists. It is good to be used."
 
         try:
             c = conn.cursor()
@@ -330,7 +346,7 @@ class DBConnection:
             if c.getone()[0] == 1:
                 return msg
         except:
-            msg = "The {} does not exist in the database.".format(table_name)
+            msg = f"The {table_name} does not exist in the database."
 
         return msg
 

@@ -32,9 +32,18 @@ BS = "https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
 ATB_ANALYTICS_GRP_LOGO = './assets/img/logo/atb-analytics-group-logo.png'
 FONTS = './assets/css/fonts.css'
 BOOTSTRAP_THEME = dbc.themes.CYBORG
+BOOTSTRAP_ICONS = dbc.icons.BOOTSTRAP
+FA_ICONS = dbc.icons.FONT_AWESOME
 MAIN_STYLESHEET = "assets/css/style.css"
 
-external_stylesheets = [ATBDEFAULTTHEME, BOOTSTRAP_THEME, FONTS, MAIN_STYLESHEET]
+external_stylesheets = [
+    BOOTSTRAP_THEME,
+    BOOTSTRAP_ICONS,
+    FA_ICONS,
+    ATBDEFAULTTHEME,
+    FONTS,
+    MAIN_STYLESHEET
+]
 
 ALLOWED_TYPES = (
     "text", "number", "password", "email", "search",
@@ -90,103 +99,127 @@ app = dash.Dash(__name__,
                 assets_folder="./assets",
                 )
 
-navbar_menu = html.Div(
-    dbc.Collapse(
-        dbc.Nav(
-            [
-                dbc.NavLink(f"{page['name']} ", href=page["relative_path"]) for page in
-                dash.page_registry.values() if page["module"] != "pages.not_found_404"
-            ],
-            # vertical=True,
-            pills=True,
-        ),
-        id="collapse",
-        is_open=True,
-    ),
-),
-sidebar_header = dbc.Row(
-    [
-        dbc.Col(
-            [
-                dcc.Link([
-                    html.Img(id='logoImg', src=ATB_ANALYTICS_GRP_LOGO, alt="ATB Analytics Group Logo")
-                ], href="https://www.atb-analytics-group.webflow.io"),
-            ],
-            width=2,
-        ),
-
-        dbc.Col(
-            [
-                html.Button(
-                    # use the Bootstrap navbar-toggler classes to style
-                    html.Span(className="navbar-toggler-icon"),
-                    className="navbar-toggler",
-                    # the navbar-toggler classes don't set color
-                    # style={
-                    #     "color": "rgba(0,0,0,.5)",
-                    #     "border-color": "rgba(0,0,0,.1)",
-                    # },
-                    id="navbar-toggle",
-
+navbar_sticky = dbc.Navbar(
+    dbc.Container(
+        [
+            html.A(
+                # Use row and col to control vertical alignment of logo / brand
+                dbc.Row(
+                    [
+                        dbc.Col(html.Img(src=ATB_ANALYTICS_GRP_LOGO, height="30px")),
+                        dbc.Col(dbc.NavbarBrand("ATB Analytics Group", className="ms-2")),
+                    ],
+                    align="center",
+                    className="g-0",
                 ),
-
-                # html.Button(
-                #     # use the Bootstrap navbar-toggler classes to style
-                #     html.Span(className="navbar-toggler-icon"),
-                #     className="navbar-toggler",
-                #     # the navbar-toggler classes don't set color
-                #     # style={
-                #     #     "color": "rgba(0,0,0,.5)",
-                #     #     "border-color": "rgba(0,0,0,.1)",
-                #     # },
-                #     id="sidebar-toggle",
-                # ),
-            ],
-            # the column containing the toggle will be only as wide as the
-            # toggle, resulting in the toggle being right aligned
-            width="auto",
-            # vertically align the toggle in the center
-            align="center",
-        ),
-        dbc.Col(
-            [
-                dbc.Collapse(
-                    dbc.Nav(
-                        [
-                            dbc.NavLink(f"{page['name']} ", href=page["relative_path"]) for page in
-                            dash.page_registry.values() if page["module"] != "pages.not_found_404"
-                        ],
-                        # vertical=True,
-                        pills=True,
-                        horizontal=True,
-                    ),
-                    id="collapse",
-                    is_open=True,
+                href="https://www.atb-analytics-group.webflow.io",
+                style={"textDecoration": "none"},
+            ),
+            dbc.NavbarToggler(id="navbar-toggler2", n_clicks=0),
+            dbc.Collapse(
+                dbc.Nav(
+                    [
+                        dbc.NavLink(f"{page['name']} ", href=page["relative_path"]) for page in
+                        dash.page_registry.values() if page["module"] != "pages.not_found_404"
+                    ],
+                    className="ms-auto",
+                    navbar=True,
                 ),
-            ]
-        ),
-        dbc.Col([
-            html.Br(),
-            html.H2(
-                id='sidebar-menu-name',
-                children=["Home"],
-                # className="display-5",
+                id="navbar-collapse2",
+                navbar=True,
+                # is_open=True,
             ),
         ],
-            width=12,
-        ),
-
-    ]
+    ),
+    color=ATBDEFAULTTHEME.DIMGREY,
+    dark=True,
+    sticky='top',
+    className="mb-5",
 )
 
-stock_row_info = utils.get_sidebar("", companies_df, page_stock_info_ids)
+# sidebar_header = dbc.Row(
+#     [
+#         dbc.Col(
+#             [
+#                 dcc.Link([
+#                     html.Img(id='logoImg', src=ATB_ANALYTICS_GRP_LOGO, alt="ATB Analytics Group Logo")
+#                 ], href="https://www.atb-analytics-group.webflow.io"),
+#             ],
+#             width=2,
+#         ),
+#
+#         dbc.Col(
+#             [
+#                 html.Button(
+#                     # use the Bootstrap navbar-toggler classes to style
+#                     html.Span(className="navbar-toggler-icon"),
+#                     className="navbar-toggler",
+#                     # the navbar-toggler classes don't set color
+#                     # style={
+#                     #     "color": "rgba(0,0,0,.5)",
+#                     #     "border-color": "rgba(0,0,0,.1)",
+#                     # },
+#                     id="navbar-toggle",
+#
+#                 ),
+#
+#                 # html.Button(
+#                 #     # use the Bootstrap navbar-toggler classes to style
+#                 #     html.Span(className="navbar-toggler-icon"),
+#                 #     className="navbar-toggler",
+#                 #     # the navbar-toggler classes don't set color
+#                 #     # style={
+#                 #     #     "color": "rgba(0,0,0,.5)",
+#                 #     #     "border-color": "rgba(0,0,0,.1)",
+#                 #     # },
+#                 #     id="sidebar-toggle",
+#                 # ),
+#             ],
+#             # the column containing the toggle will be only as wide as the
+#             # toggle, resulting in the toggle being right aligned
+#             width="auto",
+#             # vertically align the toggle in the center
+#             align="center",
+#         ),
+#         dbc.Col(
+#             [
+#                 dbc.Collapse(
+#                     dbc.Nav(
+#                         [
+#                             dbc.NavLink(f"{page['name']} ", href=page["relative_path"]) for page in
+#                             dash.page_registry.values() if page["module"] != "pages.not_found_404"
+#                         ],
+#                         # vertical=True,
+#                         pills=True,
+#                         horizontal=True,
+#                     ),
+#                     id="collapse",
+#                     is_open=True,
+#                 ),
+#             ]
+#         ),
+#         dbc.Col([
+#             html.Br(),
+#             html.H2(
+#                 id='sidebar-menu-name',
+#                 children=["Home"],
+#                 # className="display-5",
+#             ),
+#         ],
+#             width=12,
+#         ),
+#
+#     ]
+# )
+
+# stock_row_info = utils.get_sidebar("", companies_df, page_stock_info_ids)
 
 sidebar = dbc.Col(
     id='sidebar',
     # className='col-md-4',
     children=[
         html.Br(),
-        sidebar_header,
+        # sidebar_header,
         dbc.Row(
             [
                 html.Br(),
@@ -212,7 +245,7 @@ sidebar = dbc.Col(
                 #     pills=True,
                 # ),
 
-                html.Div(stock_row_info, )
+                # html.Div(stock_row_info, )
                 # theme_switch,
             ]
         ),
@@ -233,15 +266,24 @@ content = dbc.Col(
 app.layout = dbc.Container(
     children=[
         dcc.Loading(
-            children=[dcc.Store(id='stock-storage', storage_type='session', data=[])],
+            children=[
+                dcc.Store(
+                    id='stock-storage',
+                    storage_type='session',
+                    data=[]
+                )
+            ],
             fullscreen=True,
             type="dot",
-            color="AQUAMARINE",
+            color=ATBDEFAULTTHEME.AQUAMARINE,
         ),
 
         dbc.Row(
             children=[
-                sidebar,
+                navbar_sticky,
+                # html.Div(stock_row_info,),
+                # navbar_header,
+                # sidebar,
                 content
             ],
         )
@@ -269,22 +311,22 @@ def add_stock_data_to_storage(stock_symbol, data=None):
     return data
 
 
-@callback(
-    Output("sidebar", "className"),
-    [Input("sidebar-toggle", "n_clicks")],
-    [State("sidebar", "className")],
-    suppress_callback_exceptions=True,
-    prevent_initial_callbacks=True,
-)
-def toggle_classname(n, classname):
-    if n and classname == "":
-        return "collapsed"
-    return ""
+# @callback(
+#     Output("sidebar", "className"),
+#     [Input("sidebar-toggle", "n_clicks")],
+#     [State("sidebar", "className")],
+#     suppress_callback_exceptions=True,
+#     prevent_initial_callbacks=True,
+# )
+# def toggle_classname(n, classname):
+#     if n and classname == "":
+#         return "collapsed"
+#     return ""
 
 
 @callback(
     Output("collapse", "is_open"),
-    [Input("navbar-toggle", "n_clicks")],
+    [Input("navbar-toggler2", "n_clicks")],
     [State("collapse", "is_open")],
     suppress_callback_exceptions=True,
     prevent_initial_callbacks=True,
@@ -313,7 +355,7 @@ def update_sidebar_menu(data, page_content):
     elif pathname == '/technical-analysis':
         menu_name = "Technical Analysis "
         blurb = """
-                Tehnical Analysis is...
+                Technical Analysis is...
             """
     #     elif pathname == '/contact':
     #         menu_name = "Contact ATB Analytics Group"

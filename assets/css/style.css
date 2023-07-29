@@ -4,21 +4,24 @@ Styles to be applied to the app globally
 
 */
 :root{
-    --IVORY :#FEFFF1;
     --AQUAMARINE :#9BCEB5;
-    --DIMGREY :#42403f;
     --DARKCYAN :#388895;
     --DARKSLATEGREEN :#4d675a;
     --AZURE :#E4F2EF;
     --CADETBLUE :#709784;
     --DARKSLATECYAN :#1f4f57;
     --GOLDENROD : #cfa42f;
+    --LIGHTGOLDENROD: #d6c79f;
+    --ROSYBROWN : #ce9b9b;
+
+    --IVORY :#FEFFF1;
+    --DIMGREY :#42403f;
     --BLACK : #333333;
 }
 
 body{
     background-color: var(--DIMGREY);
-    color:var(--IVORY);
+    /*color:var(--IVORY);*/
 }
 
 #sidebar{
@@ -37,8 +40,17 @@ body{
 .card {
     margin:2em 0;
     padding:1em;
+    display:flex;
 }
 
 .btn {
-    background-color:'lightseagreen';
+    background-color:var(--DARKSLATEGREEN);
+    color:var(--IVORY);
+    border:var(--BLACK);
 }
+
+#logoImg{
+   width:3.75rem;
+   height:3.75rem;
+}
+

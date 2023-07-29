@@ -501,7 +501,7 @@ layout = dbc.Container(
     State('stock-storage', 'data')
 )
 def update_layout_w_storage_data(data, dataState):
-    if data is None:
+    if data is None or len(data) == 0:
         raise PreventUpdate
 
     stockNameHeading = data['company']
@@ -511,25 +511,25 @@ def update_layout_w_storage_data(data, dataState):
 
 
 @callback(Output('candlestick-graph', 'figure'),
-              Output('obv-chart', 'figure'),
-              Output('atr-chart', 'figure'),
-              Output('macd-graph', 'figure'),
-              Output('calls-table', 'children'),
-              Output('puts-table', 'children'),
-              Output('stock-name', 'children'),
-              Output('stock-title', 'children'),
-              Output('stock-price', 'children'),
-              Output('stock-sector', 'children'),
-              Output('stock-subsector', 'children'),
-              Input('get_stock_btn', 'n_clicks'),
-              Input('ticker_input', 'value'),
-              Input('companies_dropdown', 'value'),
-              Input('stock-storage', 'data'),
-              # [Input(str(stock_symbol + "-" + str(options['option_dates'][i])), 'n_clicks') for i in
-              #  range(0, len(options['option_dates']))],
-              State('ticker_input', 'value'),
-              # State('companies-dropdown', 'value'),
-              )
+          Output('obv-chart', 'figure'),
+          Output('atr-chart', 'figure'),
+          Output('macd-graph', 'figure'),
+          Output('calls-table', 'children'),
+          Output('puts-table', 'children'),
+          Output('stock-name', 'children'),
+          Output('stock-title', 'children'),
+          Output('stock-price', 'children'),
+          Output('stock-sector', 'children'),
+          Output('stock-subsector', 'children'),
+          Input('get_stock_btn', 'n_clicks'),
+          Input('ticker_input', 'value'),
+          Input('companies_dropdown', 'value'),
+          Input('stock-storage', 'data'),
+          # [Input(str(stock_symbol + "-" + str(options['option_dates'][i])), 'n_clicks') for i in
+          #  range(0, len(options['option_dates']))],
+          State('ticker_input', 'value'),
+          # State('companies-dropdown', 'value'),
+          )
 def update_layout(n_clicks, ticker_input_value, companies_dropdown, ticker_input, data):
     # Returns the updated information after entering a Stock Ticker into the Input Box
     if type(ticker_input) is dict:

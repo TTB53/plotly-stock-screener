@@ -13,6 +13,8 @@ AZURE = '#E4F2EF'
 CADETBLUE = '#709784'  # This is actually a dark version for Aquamarine and a light version for DarkSlateGreen
 DARKSLATECYAN = '#1f4f57'
 GOLDENROD = '#cfa42f'
+LIGHTGOLDENROD = "#d6c79f"
+ROSYBROWN = "#ce9b9b"  # Red for Red-Green Contrasts
 
 # Default Font and  Heading Sizes
 HEADING_FONT_1 = 'BebasNeue-Regular'
@@ -143,6 +145,22 @@ pio.templates["atbAnalyticsGroupDefaultDark"] = go.layout.Template(
             }
         },
         'colorscale': {
+            # Aquamarine to Rosy Red
+            # 'diverging': [
+            #     [0, '#9bceb5'],
+            #     [0.1, '#a9d2bd'],
+            #     [0.2, '#b7d5c6'],
+            #     [0.3, '#c5d9ce'],
+            #     [0.4, '#d2dcd7'],
+            #     [0.5, '#dfdfdf'],
+            #     [0.6, '#ddd2d1'],
+            #     [0.7, '#dac4c4'],
+            #     [0.8, '#d6b6b6'],
+            #     [0.9, '#d2a9a8'],
+            #     [1, '#ce9b9b']
+            # ],
+
+            # Dark Cyan to Aquamarine
             'diverging': [
                 [0, '#1F4F57'],
                 [0.1, '#2B5C60'],
@@ -156,6 +174,7 @@ pio.templates["atbAnalyticsGroupDefaultDark"] = go.layout.Template(
                 [0.9, '#8FC1AC'],
                 [1, '#9BCEB5']
             ],
+            # Goldenrod to Aquamarine
             # 'diverging': [
             #     [0, '#CFA42F'],
             #     [0.1, '#CAA83C'],
@@ -169,6 +188,8 @@ pio.templates["atbAnalyticsGroupDefaultDark"] = go.layout.Template(
             #     [0.9, '#A0CAA8'],
             #     [1, '#9BCEB5']
             # ],
+
+            # Dark Cyan to Aquamarine
             # 'diverging': [
             #     [0, '#388895'],
             #     [0.1, '#428F98'],
@@ -183,6 +204,7 @@ pio.templates["atbAnalyticsGroupDefaultDark"] = go.layout.Template(
             #     [1, '#9BCEB5']
             # ],
 
+            # Cadet Blue to Aquamarine
             'sequential': [
                 [0.0, '#709784'],
                 [0.1111111111111111, '#749C89'],
@@ -195,6 +217,8 @@ pio.templates["atbAnalyticsGroupDefaultDark"] = go.layout.Template(
                 [0.8888888888888888, '#92C3AB'],
                 [1.0, '#9BCEB5']
             ],
+
+            # Cadet Blue to Aquamarine reveresed
             'sequentialminus': [
                 [0.0, '#709784'],
                 [0.1111111111111111, '#749C89'],
@@ -210,13 +234,16 @@ pio.templates["atbAnalyticsGroupDefaultDark"] = go.layout.Template(
 
         },
         'colorway': [
-            DARKSLATEGREEN,
-            CADETBLUE,
-            DARKSLATECYAN,
-            DARKCYAN,
+            GOLDENROD,
+            ROSYBROWN,
+            LIGHTGOLDENROD,
             AZURE,
             AQUAMARINE,
-            GOLDENROD,
+            CADETBLUE,
+            DARKSLATEGREEN,
+            DARKCYAN,
+            DARKSLATECYAN,
+            IVORY,  # Would be Dimgrey for the light version.
         ],
         # Keep adding others as needed below
         'hovermode': 'x unified',
@@ -243,7 +270,7 @@ pio.templates["atbAnalyticsGroupDefaultDark"] = go.layout.Template(
             'showspikes': True,
             'spikethickness': 2,
             'spikedash': "dot",
-            'spikecolor': DARKSLATECYAN,
+            'spikecolor': IVORY,
             'spikemode': "across",
 
         },

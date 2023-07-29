@@ -20,7 +20,7 @@ dbObj = db.DBConnection()
 
 # DB Queries
 INDUSTRY_RATIOS = "./data/IndustryRatios_Aug22_2021.csv"
-SECTOR_RATIOS = "./data/SQL/sector_analysis/SectorRatios.sql"
+SECTOR_RATIOS = "./data/SQL/read/sector_analysis/SectorRatios.sql"
 
 # Interacts with the yFinance API
 StockObj = MyStock()
@@ -77,7 +77,10 @@ def update_fundamentals_UI(stock_symbol):
     candlestick_figure, calls, puts, data, call_datatable, put_datatable, = None, None, None, None, None, None
     company_name, stock_sector, stock_subsector, stock_info, profit_margin_figure = None, None, None, None, None
 
-    COMPANY_INFO_QRY = "SELECT symbol, id, company, gics_sector, gics_subsector FROM stock"
+    # f = open('./data/SQL/read/company_information/CompanyInformation.sql', 'r')
+    COMPANY_INFO_QRY = utils.open_and_read_sql('./data/SQL/read/company_information/CompanyInformation.sql')
+    # f.close()
+    # COMPANY_INFO_QRY = "SELECT symbol, id, company, gics_sector, gics_subsector FROM stock"
 
     if stock_symbol is not None:
 
@@ -87,11 +90,12 @@ def update_fundamentals_UI(stock_symbol):
 
             # Getting record for company - If no record returned we create one and get data.
             company_info_df = pd.read_sql_query(
-                COMPANY_INFO_QRY+ f" WHERE stock.symbol={stock_symbol}", conn)
+                COMPANY_INFO_QRY + f" WHERE stock.symbol=\"{stock_symbol}\"", conn)
 
             if company_info_df.empty:
                 # This takes us to adding the new symbol to our stocks table in the DB TODO needs to be handled better
-                logging.error(f"{COMPANY_INFO_QRY} WHERE stock.symbol = {stock_symbol} Company Info DF is Empty {company_info_df}")
+                logging.error(
+                    f"{COMPANY_INFO_QRY} WHERE stock.symbol = {stock_symbol} Company Info DF is Empty {company_info_df}")
                 raise Error
             else:
                 stock_id = company_info_df['id'][0]
@@ -113,7 +117,7 @@ def update_fundamentals_UI(stock_symbol):
                                                   add_bb=True)
 
         except Error as e:
-            logging.error(e)
+            logging.error(f"Error Occurred while trying accessing the database | {e}")
 
             # Get the Stock Price Data from YFinance for the Newly Entered Ticker
             data = StockObj.get_ticker_all(stock_symbol=stock_symbol, add_ma=False, add_bb=False,
@@ -398,7 +402,7 @@ def update_fundamentals_UI(stock_symbol):
                     grossProfit = grossProfit / revenue
                     profit_combined += grossProfit
                 else:
-                    grossProfit = master_financials_df[mfdf_cols[col]]['Revenue']
+                    grossProfit = revenue
                     profit_combined += grossProfit
 
             if 'Pretax Income' in master_financials_df.index:
@@ -407,7 +411,7 @@ def update_fundamentals_UI(stock_symbol):
                 if 'Income Before Tax' in master_financials_df.index:
                     preTaxIncome = master_financials_df[mfdf_cols[col]]['Income Before Tax']
                 else:
-                    preTaxIncome = master_financials_df[mfdf_cols[col]]['Revenue']
+                    preTaxIncome = revenue
 
             profit_margin_chart_dict[mfdf_cols[col]] = {
                 'profit margin': (netIncome / revenue) * 100,
@@ -479,10 +483,47 @@ def update_fundamentals_UI(stock_symbol):
         else:
             ebit_margin = avg_ebit / avg_revenue
 
-        income_growth_rate = (((master_financials_df[mfdf_cols[0]]['Revenue'] /
-                                master_financials_df[mfdf_cols[mf_years - 1]]['Revenue']) * (1 / mf_years)) - 1) * 100
+        revenueCheck = utils.checkForColinDF(master_financials_df, 'Revenue')
+        ebitCheck = utils.checkForColinDF(master_financials_df, 'Ebit') or utils.checkForColinDF(master_financials_df, 'EBIT')
+        netIncomeCheck = utils.checkForColinDF(master_financials_df, 'Net Income')
+        incomeBeforeTax = utils.checkForColinDF(master_financials_df, 'Income Before Tax')
 
-        normalized_ebit = master_financials_df[mfdf_cols[0]]['Revenue'] * ebit_margin
+        if revenueCheck:
+            income_growth_rate = (((master_financials_df[mfdf_cols[0]]['Revenue'] /
+                                    master_financials_df[mfdf_cols[mf_years - 1]]['Revenue']) * (1 / mf_years)) - 1) * 100
+        else:
+            if ebitCheck:
+                if 'Ebit' in master_financials_df.index:
+                    income_growth_rate = (((master_financials_df[mfdf_cols[0]]['Ebit'] /
+                                        master_financials_df[mfdf_cols[mf_years - 1]]['Ebit']) * (
+                                                   1 / mf_years)) - 1) * 100
+                else:
+                    income_growth_rate = (((master_financials_df[mfdf_cols[0]]['EBIT'] /
+                                            master_financials_df[mfdf_cols[mf_years - 1]]['EBIT']) * (
+                                                       1 / mf_years)) - 1) * 100
+            elif netIncomeCheck:
+                if 'Net Income' in master_financials_df.index:
+                    income_growth_rate = (((master_financials_df[mfdf_cols[0]]['Net Income'] /
+                                        master_financials_df[mfdf_cols[mf_years - 1]]['Net Income']) * (
+                                                   1 / mf_years)) - 1) * 100
+            elif incomeBeforeTax:
+                income_growth_rate = (((master_financials_df[mfdf_cols[0]]['Income Before Tax'] /
+                                        master_financials_df[mfdf_cols[mf_years - 1]]['Income Before Tax']) * (
+                                               1 / mf_years)) - 1) * 100
+            else:
+                income_growth_rate = 1
+        if revenueCheck:
+            normalized_ebit = master_financials_df[mfdf_cols[0]]['Revenue'] * ebit_margin
+        elif ebitCheck:
+            if 'Ebit' in master_financials_df.index:
+                normalized_ebit = master_financials_df[mfdf_cols[0]]['Ebit'] * ebit_margin
+            else:
+                normalized_ebit = master_financials_df[mfdf_cols[0]]['EBIT'] * ebit_margin
+        elif netIncomeCheck:
+            normalized_ebit = master_financials_df[mfdf_cols[0]]['Net Income'] * ebit_margin
+        elif incomeBeforeTax:
+            normalized_ebit = master_financials_df[mfdf_cols[0]]['Income Before Tax'] * ebit_margin
+
         after_tax_normalized_ebit = normalized_ebit * (1 - eff_tax_rate)
         adj_depreciation = ((1 / mf_years) * eff_tax_rate) * avg_depreciation
         normalized_profit = after_tax_normalized_ebit + adj_depreciation
@@ -494,12 +535,16 @@ def update_fundamentals_UI(stock_symbol):
         liabNetMinorityInterest = utils.checkForColinDF(master_financials_df, 'Total Liabilities Net Minority Interest')
         totAssetsCheck = utils.checkForColinDF(master_financials_df, 'Total Assets')
         totLiabCheck = utils.checkForColinDF(master_financials_df, 'Total Liab')
+
+
         if liabNetMinorityInterest and totAssetsCheck:
-            total_equity = master_financials_df[mfdf_cols[0]]['Total Assets'] - master_financials_df[mfdf_cols[0]][
-                'Total Liabilities Net Minority Interest']  # Shareholders Equity
+            totLiab = master_financials_df[mfdf_cols[0]]['Total Liabilities Net Minority Interest']
+            total_equity = master_financials_df[mfdf_cols[0]]['Total Assets'] - totLiab  # Shareholders Equity
         elif totAssetsCheck and totLiabCheck:
-            total_equity = master_financials_df[mfdf_cols[0]]['Total Assets'] - master_financials_df[mfdf_cols[0]][
-                'Total Liab']  # Shareholders Equity
+            totLiab = master_financials_df[mfdf_cols[0]]['Total Liab']
+            total_equity = master_financials_df[mfdf_cols[0]]['Total Assets'] - totLiab  # Shareholders Equity
+        else:
+            totLiab = 1
 
         if 'Long Term Debt' in master_financials_df.index and 'Short Long Term Debt' in master_financials_df.index:
             total_debt = master_financials_df[mfdf_cols[0]]['Long Term Debt'] + master_financials_df[mfdf_cols[0]][
@@ -615,7 +660,7 @@ def update_fundamentals_UI(stock_symbol):
             NCAVperShare = netCurrAssetVal / sharesOutstanding
             bookValue = (total_equity / sharesOutstanding)  # Should be < 2
             priceToBook = price / bookValue
-            debtToEquity = master_financials_df[mfdf_cols[0]]['Total Liabilities Net Minority Interest'] / total_equity
+            debtToEquity = totLiab / total_equity
             returnOnAssets = netIncome / master_financials_df[mfdf_cols[0]][
                 'Total Assets']
             returnOnEquity = netIncome / total_equity
@@ -992,6 +1037,8 @@ def update_layout_w_storage_data(data, data1):
           #  range(0, len(options['option_dates']))],
           State('ticker_input', 'value'),
           # State('companies-dropdown', 'value'),
+          suppress_callback_exceptions=True,
+          prevent_initial_callbacks=True,
           )
 def update_layout(n_clicks, ticker_input_value, companies_dropdown, ticker_input, data):
     # Returns the updated information after entering a Stock Ticker into the Input Box

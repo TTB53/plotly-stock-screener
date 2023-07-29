@@ -14,6 +14,8 @@ from plotly.subplots import make_subplots
 
 import db
 
+import assets.templates.atbanalyticsgrp_dark as ATBDEFAULTTHEME
+
 SIDEBAR_STYLE = {
     "position": "fixed",
     "top": 0,
@@ -42,7 +44,11 @@ def get_nav(app):
         id='navigation',
         children=[
 
-            dbc.NavLink("Home", href="/", active="exact"),
+            dbc.NavLink(
+                children=["Home"],
+                href="/",
+                active="exact",
+            ),
             dbc.NavLink("Fundamental Analysis", href="/pages/fundamentals",
                         active="exact"),
             dbc.NavLink("Technical Analysis", href="/pages/technical",
@@ -90,37 +96,6 @@ def get_sidebar(app, dataframe, page_stock_info_ids={}):
         children=[
 
             dbc.Col(
-                id="sb-stock-info-column",
-                # className='col-md-4',
-                children=[
-                    dbc.Card(
-                        className='mb-2 mt-2 pl-2 pr-2',
-                        children=[
-                            # dbc.CardImg(src="/static/images/placeholder286x180.png", top=True),
-                            dbc.CardBody(
-                                className='pl-2 pr-2',
-                                children=[
-                                    html.H4(id=page_stock_info_ids['stock-name'], className='text-left', ),
-                                    # Company Name
-                                    html.H5(id=page_stock_info_ids['stock-title'], className='text-left', ),
-                                    # Stock symbol
-                                    html.H5(id=page_stock_info_ids['stock-price'], className='text-left', ),
-                                    html.Br(),
-                                    html.H6(id=page_stock_info_ids['stock-sector'], className='text-left', ),
-                                    html.H6(id=page_stock_info_ids['stock-subsector'], className='text-left', ),
-
-                                    # dbc.Button("Go somewhere", color="primary"),
-                                    # dbc.CardLink("Card link", href="#"),
-                                    # dbc.CardLink("External link", href="https://google.com"),
-
-                                ],
-                            ),
-
-                        ],
-                    ),
-                ]
-            ),
-            dbc.Col(
                 id="sb-stock-select-column",
                 # className='col-md-4',
                 children=[
@@ -154,6 +129,40 @@ def get_sidebar(app, dataframe, page_stock_info_ids={}):
                     ),
                 ]
             ),
+
+            dbc.Col(
+                id="sb-stock-info-column",
+                # className='col-md-4',
+                children=[
+                    dbc.Card(
+                        className='mb-2 mt-2 pl-2 pr-2',
+                        children=[
+                            # dbc.CardImg(src="/static/images/placeholder286x180.png", top=True),
+                            dbc.CardBody(
+                                className='pl-2 pr-2',
+                                children=[
+                                    html.H4(id=page_stock_info_ids['stock-name'], className='text-left', ),
+                                    # Company Name
+                                    html.H5(id=page_stock_info_ids['stock-title'], className='text-left', ),
+                                    # Stock symbol
+                                    html.H5(id=page_stock_info_ids['stock-price'], className='text-left', ),
+                                    html.Br(),
+                                    html.H6(id=page_stock_info_ids['stock-sector'], className='text-left', ),
+                                    html.H6(id=page_stock_info_ids['stock-subsector'], className='text-left', ),
+
+                                    # dbc.Button("Go somewhere", color="primary"),
+                                    # dbc.CardLink("Card link", href="#"),
+                                    # dbc.CardLink("External link", href="https://google.com"),
+
+                                ],
+                            ),
+
+                        ],
+                    ),
+                ],
+                width=12,
+            ),
+
         ],
     ),
 
@@ -422,7 +431,7 @@ def generate_option_dash_datatable(dataframe, id, ):
                     'filter_query': '{inTheMoney} contains "true"',
                     # 'column_id': 'inTheMoney'
                 },
-                'backgroundColor': 'lightGreen',
+                'backgroundColor': ATBDEFAULTTHEME.AQUAMARINE,
                 'color': 'white'
             },
             {
@@ -430,7 +439,7 @@ def generate_option_dash_datatable(dataframe, id, ):
                     'filter_query': '{inTheMoney} contains "false"',
                     # 'column_id': 'inTheMoney'
                 },
-                'backgroundColor': 'Red',
+                'backgroundColor': ATBDEFAULTTHEME.ROSYBROWN,
                 'color': 'black'
             },
 
@@ -487,9 +496,13 @@ def generate_candlestick_graph(dataframe, stock_symbol):
                            high=dataframe['High'],
                            low=dataframe['Low'],
                            close=dataframe['Close'],
-                           name="{}".format(stock_symbol))
+                           name="{}".format(stock_symbol),
+                           increasing_line_color=ATBDEFAULTTHEME.AQUAMARINE,
+                           decreasing_line_color=ATBDEFAULTTHEME.ROSYBROWN,
+                           )
 
-    volume = go.Bar(x=dataframe.date, y=dataframe.Volume, name='Volume', opacity=.7, marker_color='teal')
+    volume = go.Bar(x=dataframe.date, y=dataframe.Volume, name='Volume', opacity=.7,
+                    marker_color=ATBDEFAULTTHEME.DARKCYAN)
 
     # Adding the traces to the candlestick figure that will populate our graph mutli-plot graph Setting one of the traces
     # on the secondary axis to true allows for a nice multiplot
@@ -514,7 +527,7 @@ def generate_candlestick_graph(dataframe, stock_symbol):
             ]),
             font_color="#000000",
             bgcolor="#c4c4c4",
-            activecolor="lightgoldenrodyellow",
+            activecolor=ATBDEFAULTTHEME.LIGHTGOLDENROD,
 
         ),
         rangebreaks=[
@@ -573,7 +586,10 @@ def generate_candlestick_graph_w_indicators(dataframe, stock_symbol):
                            high=dataframe['High'],
                            low=dataframe['Low'],
                            close=dataframe['Close'],
-                           name="{}".format(stock_symbol))
+                           name="{}".format(stock_symbol),
+                           increasing_line_color=ATBDEFAULTTHEME.AQUAMARINE,
+                           decreasing_line_color=ATBDEFAULTTHEME.ROSYBROWN
+                           )
 
     '''
 
@@ -599,22 +615,26 @@ def generate_candlestick_graph_w_indicators(dataframe, stock_symbol):
     '''
 
     sell_line = go.Scatter(x=dataframe.date, y=dataframe['Bollinger-Upper'],
-                           line=dict(color='plum', dash='solid'), opacity=.75,
+                           line=dict(color=ATBDEFAULTTHEME.DARKSLATECYAN, dash='solid'), opacity=.75,
                            name='BB Upper (Sell)', visible='legendonly')
     mid_line = go.Scatter(x=dataframe.date, y=dataframe['Bollinger-Middle'],
-                          line=dict(color='goldenrod', dash='solid'), opacity=.75,
+                          line=dict(color=ATBDEFAULTTHEME.GOLDENROD, dash='solid'), opacity=.75,
                           name='BB T3 EMA', visible='legendonly')
     buy_line = go.Scatter(x=dataframe.date, y=dataframe['Bollinger-Lower'],
-                          line=dict(color='salmon', dash='solid'), opacity=.75,
+                          line=dict(color=ATBDEFAULTTHEME.CADETBLUE, dash='solid'), opacity=.75,
                           name='BB Lower (Buy)', visible='legendonly')
 
-    volume = go.Bar(x=dataframe.date, y=dataframe.Volume, name='Volume', opacity=.7, marker_color='dimgrey')
+    volume = go.Bar(x=dataframe.date, y=dataframe.Volume, name='Volume', opacity=.7,
+                    marker_color=ATBDEFAULTTHEME.DARKCYAN)
 
-    MA200 = go.Scatter(x=dataframe['date'], y=dataframe['MA200'], name='200 MA', line=dict(color='seagreen', ),
+    MA200 = go.Scatter(x=dataframe['date'], y=dataframe['MA200'], name='200 MA',
+                       line=dict(color=ATBDEFAULTTHEME.AZURE, ),
                        visible='legendonly')
-    MA72 = go.Scatter(x=dataframe['date'], y=dataframe['MA72'], name='72 MA', line=dict(color='lightseagreen', ),
+    MA72 = go.Scatter(x=dataframe['date'], y=dataframe['MA72'], name='72 MA',
+                      line=dict(color=ATBDEFAULTTHEME.CADETBLUE, ),
                       visible='legendonly')
-    MA50 = go.Scatter(x=dataframe['date'], y=dataframe['MA50'], name='50 MA', line=dict(color='darkseagreen', ),
+    MA50 = go.Scatter(x=dataframe['date'], y=dataframe['MA50'], name='50 MA',
+                      line=dict(color=ATBDEFAULTTHEME.DARKSLATECYAN, ),
                       visible='legendonly')
 
     # Adding the traces to the candlestick figure that will populate our graph mutli-plot graph Setting one of the
@@ -646,7 +666,7 @@ def generate_candlestick_graph_w_indicators(dataframe, stock_symbol):
             ]),
             font_color="#000000",
             bgcolor="#c4c4c4",
-            activecolor="lightgoldenrodyellow",
+            activecolor=ATBDEFAULTTHEME.LIGHTGOLDENROD,
 
         ),
         rangebreaks=[
@@ -686,12 +706,12 @@ def generate_scatter_graph(dataframe, x_column, y_column, secondary_y_column, ti
 
     if len(secondary_y_column) > 0:
         secondary_y_bar = go.Bar(x=dataframe[x_column], y=dataframe[secondary_y_column], name='Volume', opacity=.7,
-                                 marker_color='dimgrey')
+                                 marker_color=ATBDEFAULTTHEME.DIMGREY)
         scatter_chart.add_trace(secondary_y_bar, secondary_y=True)
 
     if (0 < upper_bound <= y_col_series.max()) or (0 <= lower_bound < y_col_series.max()):
-        scatter_chart.add_hline(y=lower_bound, line_color='green', opacity=.5)
-        scatter_chart.add_hline(y=upper_bound, line_color='red', opacity=.5)
+        scatter_chart.add_hline(y=lower_bound, line_color=ATBDEFAULTTHEME.AQUAMARINE, opacity=.5)
+        scatter_chart.add_hline(y=upper_bound, line_color=ATBDEFAULTTHEME.ROSYBROWN, opacity=.5)
 
         scatter_chart.update_xaxes(
             rangeslider_visible=True,
@@ -709,7 +729,7 @@ def generate_scatter_graph(dataframe, x_column, y_column, secondary_y_column, ti
                 ]),
                 font_color="#000000",
                 bgcolor="#c4c4c4",
-                activecolor="lightgoldenrodyellow",
+                activecolor=ATBDEFAULTTHEME.LIGHTGOLDENROD,
             ),
 
             rangebreaks=[
@@ -755,11 +775,11 @@ def generate_scatter_graph_no_bar(dataframe, x_column, y_column, secondary_y_col
                                xaxis={'range': [x_col_series.min(), x_col_series.max()]},
                                yaxis={'range': [y_col_series.min(), y_col_series.max()]},
                                height=400,
-                               paper_bgcolor="#000000",
-                               plot_bgcolor="#000000",
-                               font={
-                                   'color': '#FFFFFF',
-                               }
+                               # paper_bgcolor="#000000",
+                               # plot_bgcolor="#000000",
+                               # font={
+                               #     'color': '#FFFFFF',
+                               # }
                                )
 
     scatter_chart.add_trace(scatter)
@@ -773,16 +793,18 @@ def generate_scatter_graph_no_bar(dataframe, x_column, y_column, secondary_y_col
                 low=dataframe['Low'],
                 close=dataframe['Close'],
                 name='Price',
+                increasing_line_color=ATBDEFAULTTHEME.AQUAMARINE,
+                decreasing_line_color=ATBDEFAULTTHEME.ROSYBROWN,
             )
         else:
             secondary_y_scatter = go.Scatter(x=dataframe[x_column], y=dataframe[secondary_y_column], name='Price',
                                              opacity=.7,
-                                             marker_color='seagreen')
+                                             marker_color=ATBDEFAULTTHEME.DARKSLATEGREEN)
         scatter_chart.add_trace(secondary_y_scatter, secondary_y=True)
 
     if (0 < upper_bound <= y_col_series.max()) or (0 <= lower_bound < y_col_series.max()):
-        scatter_chart.add_hline(y=lower_bound, line_color='green', opacity=.5)
-        scatter_chart.add_hline(y=upper_bound, line_color='red', opacity=.5)
+        scatter_chart.add_hline(y=lower_bound, line_color=ATBDEFAULTTHEME.AQUAMARINE, opacity=.5)
+        scatter_chart.add_hline(y=upper_bound, line_color=ATBDEFAULTTHEME.ROSYBROWN, opacity=.5)
 
         scatter_chart.update_xaxes(
             rangeslider_visible=True,
@@ -800,7 +822,7 @@ def generate_scatter_graph_no_bar(dataframe, x_column, y_column, secondary_y_col
                 ]),
                 font_color="#000000",
                 bgcolor="#c4c4c4",
-                activecolor="lightgoldenrodyellow",
+                activecolor=ATBDEFAULTTHEME.LIGHTGOLDENROD,
             ),
 
             rangebreaks=[
@@ -824,6 +846,53 @@ Generates a Dash Bar Graph from a dataframe that is passed in will return the ba
 :returns: Plotly Bar Graph Object
 
 '''
+
+
+# Generate Heatmap
+def generate_heatmap(dataframe, title, x_column, y_column, z_values):
+    heatmap_figure = make_subplots(specs=[[{'secondary_y': True}]])
+
+    x_col_series = dataframe[x_column]
+    y_col_series = dataframe[y_column]
+
+    logging.info("X Column Max {}\nY Column Max {}".format(x_col_series.max(), y_col_series.max()))
+
+    heatmap_layout = go.Layout(
+        title=title,
+        autosize=True,
+        xaxis={'range': [x_col_series.min(), x_col_series.max()]},
+        yaxis={'range': [y_col_series.min(), y_col_series.max()]},
+        height=400,
+        # paper_bgcolor="#000000",
+        # plot_bgcolor="#000000",
+        # font={
+        #     'color': '#FFFFFF',
+        # },
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.05,
+            xanchor="left",
+            x=1
+        ),
+
+        margin=dict(
+            t=5,
+            b=5,
+            l=5,
+            r=5,
+        ),
+    )
+
+    heatmap_graph = go.Heatmap(
+        z=dataframe[z_values],
+        x=dataframe[x_column],
+        y=dataframe[y_column]
+    )
+
+    heatmap_figure.add_traces(heatmap_graph)
+    heatmap_figure.update_layout(heatmap_layout)
+    return heatmap_figure
 
 
 def generate_bar_graph(dataframe, title, x_column, y_column, secondary_y_column=None, upper_bound=None,
@@ -862,11 +931,11 @@ def generate_bar_graph(dataframe, title, x_column, y_column, secondary_y_column=
                            ),
                            )
     profit_graph = go.Bar(x=dataframe[x_column], y=dataframe[y_column], name=str(y_column), opacity=.7,
-                          marker_color='plum')
+                          marker_color='#d6c79f')
     operating_graph = go.Bar(x=dataframe[x_column], y=dataframe['Operating Margin'], name=str('Operating Margin'),
-                             opacity=.8, marker_color='salmon')
+                             opacity=.8, marker_color='#E4F2EF')
     gross_graph = go.Bar(x=dataframe[x_column], y=dataframe['Gross Margin'], name=str('Gross Margin'), opacity=.9,
-                         marker_color='goldenrod')
+                         marker_color='#cfa42f')
 
     bar_figure.add_traces(profit_graph)
     bar_figure.add_traces(operating_graph)
@@ -1031,11 +1100,11 @@ def generate_macd_chart(dataframe):
         title='MACD (Moving Average Convergence-Divergence)',
         barmode='stack',
         autosize=True,
-        paper_bgcolor="#000000",
-        plot_bgcolor="#000000",
-        font={
-            'color': '#FFFFFF',
-        },
+        # paper_bgcolor="#000000",
+        # plot_bgcolor="#000000",
+        # font={
+        #     'color': '#FFFFFF',
+        # },
         # xaxis={'range': [x_col_series.min(), x_col_series.max()]},
         # yaxis={'range': [y_col_series.min(), y_col_series.max()]},
         # title='MACD (Moving Average Convergence-Divergence',
@@ -1054,7 +1123,7 @@ def generate_macd_chart(dataframe):
             y=dataframe['macd_hist'],
             name='MACD-HIST',
             opacity=.7,
-            marker_color='dimgrey',
+            marker_color='#388895',
         ),
     )
 
@@ -1080,7 +1149,7 @@ def generate_macd_chart(dataframe):
             x=['date'],
             y=['200MA'],
             name='200MA',
-            marker_color='honeydew',
+            marker_color='#9BCEB5',
         ),
     )
 
@@ -1194,3 +1263,32 @@ def checkForColinDF(df, col_name):
             return ans
     else:
         return ans
+
+
+def open_and_read_sql(filename):
+    f = open(filename, 'r')
+    read_sql_file = f.read()
+    f.close()
+
+    return read_sql_file
+
+
+''' Returns a loading wrapped component can be a single component or a group of nested components'''
+def loading_wrapper(component, id=''):
+    random_color = [
+        ATBDEFAULTTHEME.AQUAMARINE,
+        ATBDEFAULTTHEME.CADETBLUE,
+        ATBDEFAULTTHEME.GOLDENROD,
+        ATBDEFAULTTHEME.AZURE,
+        ATBDEFAULTTHEME.AQUAMARINE,
+    ]
+    rand = random.randrange(0, len(random_color)-1)
+
+    return dcc.Loading(
+        id=id,
+        children=[
+            component
+        ],
+        type='circle',
+        color=random_color[rand]
+    )

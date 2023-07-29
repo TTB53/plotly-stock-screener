@@ -13,6 +13,7 @@ AZURE = '#E4F2EF'
 CADETBLUE = '#709784'  # This is actually a dark version for Aquamarine and a light version for DarkSlateGreen
 DARKSLATECYAN = '#1f4f57'
 GOLDENROD = '#cfa42f'
+ROSYBROWN = "#ce9b9b" # Red for Red-Green Contrasts.
 
 # Default Font and  Heading Sizes
 HEADING_FONT_1 = 'BebasNeue-Regular'
