@@ -98,10 +98,11 @@ def update_fundamentals_UI(stock_symbol):
                     f"{COMPANY_INFO_QRY} WHERE stock.symbol = {stock_symbol} Company Info DF is Empty {company_info_df}")
                 raise Error
             else:
-                stock_id = company_info_df['id'][0]
-                stock_sector = company_info_df['gics_sector'][0]
-                stock_subsector = company_info_df['gics_subsector'][0]
-                company_name = company_info_df['company'][0]
+                company_info_df = company_info_df.query(f'symbol == "{stock_symbol}"')
+                stock_id = company_info_df['id'].values[0]
+                stock_sector = company_info_df['gics_sector'].values[0]
+                stock_subsector = company_info_df['gics_subsector'].values[0]
+                company_name = company_info_df['company'].values[0]
 
             # Getting Stock Price Data from the DB by the Stock ID(FK)
             data = dbObj.select_record(conn, 'stock_price', stock_id)
@@ -189,7 +190,7 @@ def update_fundamentals_UI(stock_symbol):
             }, inplace=True)
             data['stock_id'] = stock_id
 
-            data.to_sql('stock_price', conn, if_exists='append', index=False)  # TODO DB HIT
+            data.to_sql('stock_price', conn, if_exists='append', index=False)  # TODO DB HIT, check into chunkSizing
 
             data = StockObj.get_ticker_all_add_df(dataframe=data, conn=conn, stock_id=stock_id)  # TODO API HIT
 
@@ -484,27 +485,29 @@ def update_fundamentals_UI(stock_symbol):
             ebit_margin = avg_ebit / avg_revenue
 
         revenueCheck = utils.checkForColinDF(master_financials_df, 'Revenue')
-        ebitCheck = utils.checkForColinDF(master_financials_df, 'Ebit') or utils.checkForColinDF(master_financials_df, 'EBIT')
+        ebitCheck = utils.checkForColinDF(master_financials_df, 'Ebit') or utils.checkForColinDF(master_financials_df,
+                                                                                                 'EBIT')
         netIncomeCheck = utils.checkForColinDF(master_financials_df, 'Net Income')
         incomeBeforeTax = utils.checkForColinDF(master_financials_df, 'Income Before Tax')
 
         if revenueCheck:
             income_growth_rate = (((master_financials_df[mfdf_cols[0]]['Revenue'] /
-                                    master_financials_df[mfdf_cols[mf_years - 1]]['Revenue']) * (1 / mf_years)) - 1) * 100
+                                    master_financials_df[mfdf_cols[mf_years - 1]]['Revenue']) * (
+                                               1 / mf_years)) - 1) * 100
         else:
             if ebitCheck:
                 if 'Ebit' in master_financials_df.index:
                     income_growth_rate = (((master_financials_df[mfdf_cols[0]]['Ebit'] /
-                                        master_financials_df[mfdf_cols[mf_years - 1]]['Ebit']) * (
+                                            master_financials_df[mfdf_cols[mf_years - 1]]['Ebit']) * (
                                                    1 / mf_years)) - 1) * 100
                 else:
                     income_growth_rate = (((master_financials_df[mfdf_cols[0]]['EBIT'] /
                                             master_financials_df[mfdf_cols[mf_years - 1]]['EBIT']) * (
-                                                       1 / mf_years)) - 1) * 100
+                                                   1 / mf_years)) - 1) * 100
             elif netIncomeCheck:
                 if 'Net Income' in master_financials_df.index:
                     income_growth_rate = (((master_financials_df[mfdf_cols[0]]['Net Income'] /
-                                        master_financials_df[mfdf_cols[mf_years - 1]]['Net Income']) * (
+                                            master_financials_df[mfdf_cols[mf_years - 1]]['Net Income']) * (
                                                    1 / mf_years)) - 1) * 100
             elif incomeBeforeTax:
                 income_growth_rate = (((master_financials_df[mfdf_cols[0]]['Income Before Tax'] /
@@ -535,7 +538,6 @@ def update_fundamentals_UI(stock_symbol):
         liabNetMinorityInterest = utils.checkForColinDF(master_financials_df, 'Total Liabilities Net Minority Interest')
         totAssetsCheck = utils.checkForColinDF(master_financials_df, 'Total Assets')
         totLiabCheck = utils.checkForColinDF(master_financials_df, 'Total Liab')
-
 
         if liabNetMinorityInterest and totAssetsCheck:
             totLiab = master_financials_df[mfdf_cols[0]]['Total Liabilities Net Minority Interest']
@@ -777,8 +779,7 @@ def update_fundamentals_UI(stock_symbol):
 
     logging.info(financialRatioDF)
 
-    return candlestick_figure, call_datatable, put_datatable, company_name, stock_symbol, stock_price, stock_sector, \
-           stock_subsector, master_financials, financial_ratios, business_summary, profit_margin_figure
+    return candlestick_figure, call_datatable, put_datatable, master_financials, financial_ratios, business_summary, profit_margin_figure
 
 
 # Registering the Dash Page
@@ -799,6 +800,7 @@ layout = dbc.Container(
     children=[
 
         # utils.get_sidebar("", companies_df, page_stock_info_ids),
+        html.Div(utils.get_sidebar("", companies_df, page_stock_info_ids)),
 
         dbc.Row(
             children=[
@@ -1020,11 +1022,11 @@ def update_layout_w_storage_data(data, data1):
 @callback(Output('fundamentals-candlestick-graph', 'figure'),
           Output('fundamentals-calls-table', 'children'),
           Output('fundamentals-puts-table', 'children'),
-          Output('fundamentals-stock-name', 'children'),
-          Output('fundamentals-stock-title', 'children'),
-          Output('fundamentals-stock-price', 'children'),
-          Output('fundamentals-stock-sector', 'children'),
-          Output('fundamentals-stock-subsector', 'children'),
+          # Output('fundamentals-stock-name', 'children'),
+          # Output('fundamentals-stock-title', 'children'),
+          # Output('fundamentals-stock-price', 'children'),
+          # Output('fundamentals-stock-sector', 'children'),
+          # Output('fundamentals-stock-subsector', 'children'),
           Output('master-financial', 'children'),
           Output('financial-ratios', 'children'),
           Output('business-summary', 'children'),

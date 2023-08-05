@@ -285,6 +285,7 @@ class MyStock:
                     # Establish Connection to DB
                     try:
                         conn
+                        logging.info("Connection to database established")
                     except Error as e:
                         logging.error(e)
                         conn = db.DBConnection.create_connection()

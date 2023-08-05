@@ -1,7 +1,7 @@
 import random
 from sqlite3 import Error
 import logging
-
+import dash
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
@@ -39,43 +39,198 @@ ATB_ANALYTICS_GRP_LOGO = './assets/img/logo/atb-analytics-group-logo.png'
 dbObj = db.DBConnection()
 
 
-def get_nav(app):
+def get_nav(nav_selection):
     nav = dbc.Nav(
         id='navigation',
         children=[
 
             dbc.NavLink(
-                children=["Home"],
+                children=
+                [
+                    html.I(
+                        children=[],
+                        className="bi bi-house"
+                    ),
+                    "Home"
+                ],
                 href="/",
                 active="exact",
             ),
-            dbc.NavLink("Fundamental Analysis", href="/pages/fundamentals",
-                        active="exact"),
-            dbc.NavLink("Technical Analysis", href="/pages/technical",
-                        active="exact"),
+            dbc.NavLink(
+                [
+                    html.I(
+                        children=[],
+                        className="bi bi-clipboard-data"
+                    ),
+                    "Fundamental Analysis"
+                ], href="/pages/fundamentals",
+                active="exact"),
+            dbc.NavLink(
+                [
+                    html.I(
+                        children=[],
+                        className="bi bi-graph-up-arrow"
+                    ),
+                    "Technical Analysis"
+                ], href="/pages/technical",
+                active="exact"),
         ],
         pills=True,
         fill=True,
     ),
 
-    navbar = dbc.Navbar(
-        html.A(
-            # Use row and col to control vertical alignment of logo / brand
-            dbc.Row(
+    navbar_objs = {
+        1: dbc.Navbar(
+            dbc.Container(
                 [
-                    dbc.Col(html.Img(src=ATB_ANALYTICS_GRP_LOGO, height="30px"), width=4),
-                    # dbc.Col(dbc.NavbarBrand("Navbar", className="ml-2")),
-                    dbc.Col(nav, width=8),
+                    html.A(
+                        # Use row and col to control vertical alignment of logo / brand
+                        dbc.Row(
+                            [
+                                dbc.Col(html.Img(src=ATB_ANALYTICS_GRP_LOGO, height="30px")),
+                                dbc.Col(dbc.NavbarBrand("ATB Analytics Group", className="ms-2")),
+                            ],
+                            align="center",
+                            className="g-0",
+                        ),
+                        href="https://www.atb-analytics-group.webflow.io",
+                        style={"textDecoration": "none"},
+                    ),
+                    dbc.NavbarToggler(id="navbar-toggler2", n_clicks=0),
+                    dbc.Collapse(
+                        dbc.Nav(
+                            [
+                                dbc.NavLink(f"{page['name']} ", href=page["relative_path"]) for page in
+                                dash.page_registry.values() if page["module"] != "pages.not_found_404"
+                            ],
+                            id='navigation',
+                            className="ms-auto",
+                            navbar=True,
+                        ),
+                        id="navbar-collapse2",
+                        navbar=True,
+                        # is_open=True,
+                    ),
                 ],
-                align="center",
-                # no_gutters=True,
             ),
-            href="https://plotly.com",
+            color=ATBDEFAULTTHEME.DIMGREY,
+            dark=True,
+            sticky='top',
+            className="mb-5",
         ),
+        2: dbc.Nav(
+            id='navigation',
+            children=[
 
-    ),
+                dbc.NavLink(
+                    children=[
+                        html.I(
+                            children=[],
+                            className="fa-solid fa-home"
+                        ),
+                        "Home"],
+                    href="/",
+                    active="exact",
+                ),
+                dbc.NavLink(
+                    [
+                        html.I(
+                            children=[],
+                            className="fa-solid fa-house"
+                        ), "Fundamental Analysis"
+                    ], href="/pages/fundamentals",
+                    active="exact"),
+                dbc.NavLink(
+                    [
+                        html.I(
+                            children=[],
+                            className="fa-solid fa-house"
+                        ), "Technical Analysis"
+                    ], href="/pages/technical",
+                    active="exact"),
+            ],
+            pills=True,
+            fill=True,
+        ),
+        3: dbc.Navbar(
+            html.A(
+                # Use row and col to control vertical alignment of logo / brand
+                dbc.Row(
+                    [
+                        dbc.Col(html.Img(src=ATB_ANALYTICS_GRP_LOGO, height="30px"), width=4),
+                        # dbc.Col(dbc.NavbarBrand("Navbar", className="ml-2")),
+                        dbc.Col(nav, width=8),
+                    ],
+                    align="center",
+                    # no_gutters=True,
+                ),
+                href="https://plotly.com",
+            ),
 
-    return navbar
+        ),
+    }
+
+    if nav_selection > len(navbar_objs):
+        logging.error(f"{nav_selection} greater than the navbar_objs has objects.({len(navbar_objs)})")
+
+    # navbar_sticky = dbc.Navbar(
+    #     dbc.Container(
+    #         [
+    #             html.A(
+    #                 # Use row and col to control vertical alignment of logo / brand
+    #                 dbc.Row(
+    #                     [
+    #                         dbc.Col(html.Img(src=ATB_ANALYTICS_GRP_LOGO, height="30px")),
+    #                         dbc.Col(dbc.NavbarBrand("ATB Analytics Group", className="ms-2")),
+    #                     ],
+    #                     align="center",
+    #                     className="g-0",
+    #                 ),
+    #                 href="https://www.atb-analytics-group.webflow.io",
+    #                 style={"textDecoration": "none"},
+    #             ),
+    #             dbc.NavbarToggler(id="navbar-toggler2", n_clicks=0),
+    #             dbc.Collapse(
+    #                 dbc.Nav(
+    #                     [
+    #                         dbc.NavLink(f"{page['name']} ", href=page["relative_path"]) for page in
+    #                         dash.page_registry.values() if page["module"] != "pages.not_found_404"
+    #                     ],
+    #                     id='navigation',
+    #                     className="ms-auto",
+    #                     navbar=True,
+    #                 ),
+    #                 id="navbar-collapse2",
+    #                 navbar=True,
+    #                 # is_open=True,
+    #             ),
+    #         ],
+    #     ),
+    #     color=ATBDEFAULTTHEME.DIMGREY,
+    #     dark=True,
+    #     sticky='top',
+    #     className="mb-5",
+    # )
+
+    #
+    # navbar = dbc.Navbar(
+    #     html.A(
+    #         # Use row and col to control vertical alignment of logo / brand
+    #         dbc.Row(
+    #             [
+    #                 dbc.Col(html.Img(src=ATB_ANALYTICS_GRP_LOGO, height="30px"), width=4),
+    #                 # dbc.Col(dbc.NavbarBrand("Navbar", className="ml-2")),
+    #                 dbc.Col(nav, width=8),
+    #             ],
+    #             align="center",
+    #             # no_gutters=True,
+    #         ),
+    #         href="https://plotly.com",
+    #     ),
+    #
+    # ),
+
+    return navbar_objs[nav_selection]
 
 
 '''
@@ -94,74 +249,106 @@ def get_sidebar(app, dataframe, page_stock_info_ids={}):
 
     sidebar = dbc.Row(
         children=[
-
-            dbc.Col(
-                id="sb-stock-select-column",
-                # className='col-md-4',
+            html.H4('Select a Stock'),
+            html.Br(),
+            html.P("Select a company from the list below, or enter a stock ticker into the search box."),
+            html.Br(),
+            dbc.CardGroup(
                 children=[
-                    dbc.Card(
-                        className='mb-2 mt-2',
+                    dbc.Col(
+                        id="sb-stock-select-column",
+                        # className='col-md-4',
                         children=[
-                            dbc.CardBody(
-                                className='pl-2 pr-2',
+                            dbc.Card(
+                                className='mb-2 mt-2',
                                 children=[
-                                    html.H4('Select a Stock'),
-                                    html.Br(),
-                                    html.P("Select a company from the list below."),
-                                    dcc.Dropdown(
-                                        id='companies_dropdown',
-                                        value='Company Ticker Symbol',
-                                        options=[
-                                            {'label': company, 'value': company} for company in
-                                            sorted(dataframe.company.unique())
+                                    dbc.CardBody(
+                                        className='pl-2 pr-2',
+                                        children=[
+                                            html.P("Select a Company from the Dropdown below."),
+                                            html.Br(),
+                                            dcc.Dropdown(
+                                                id='companies_dropdown',
+                                                value='Company Ticker Symbol',
+                                                options=[
+                                                    {'label': company, 'value': company} for company in
+                                                    sorted(dataframe.company.unique())
+                                                ],
+                                                optionHeight=35,
+                                                searchable=True,
+                                            ),
+                                            # html.P("or enter the ticker symbol of the stock you wish to research"),
+                                            # html.Br(),
+                                            # dcc.Input(id="ticker_input", type="text",
+                                            #           placeholder="Enter a Stock Ticker"),
+                                            # html.Button('Submit', id='get_stock_btn'),
                                         ],
-                                        optionHeight=35,
-                                        searchable=True,
                                     ),
-                                    html.P("or enter the ticker symbol of the stock you wish to research"),
-                                    html.Br(),
-                                    dcc.Input(id="ticker_input", type="text",
-                                              placeholder="Enter a Stock Ticker"),
-                                    html.Button('Submit', id='get_stock_btn'),
                                 ],
                             ),
                         ],
+                        width=6,
                     ),
+
+                    dbc.Col(
+                        children=[
+                            dbc.Card(
+                                className='mb-2 mt-2',
+                                children=[
+                                    dbc.CardBody(
+                                        children=
+                                        [
+                                            html.P("Enter the ticker symbol of the stock you wish to research"),
+                                            html.Br(),
+                                            dcc.Input(id="ticker_input", type="text",
+                                                      placeholder="Enter a Stock Ticker"),
+                                            html.Button(
+                                                ['Submit'],
+                                                id='get_stock_btn',
+                                                className='btn ml-2 p-2',
+                                            ),
+                                        ]
+                                    )
+                                ]
+                            )
+                        ],
+                        width=6
+                    )
                 ]
             ),
 
-            dbc.Col(
-                id="sb-stock-info-column",
-                # className='col-md-4',
-                children=[
-                    dbc.Card(
-                        className='mb-2 mt-2 pl-2 pr-2',
-                        children=[
-                            # dbc.CardImg(src="/static/images/placeholder286x180.png", top=True),
-                            dbc.CardBody(
-                                className='pl-2 pr-2',
-                                children=[
-                                    html.H4(id=page_stock_info_ids['stock-name'], className='text-left', ),
-                                    # Company Name
-                                    html.H5(id=page_stock_info_ids['stock-title'], className='text-left', ),
-                                    # Stock symbol
-                                    html.H5(id=page_stock_info_ids['stock-price'], className='text-left', ),
-                                    html.Br(),
-                                    html.H6(id=page_stock_info_ids['stock-sector'], className='text-left', ),
-                                    html.H6(id=page_stock_info_ids['stock-subsector'], className='text-left', ),
-
-                                    # dbc.Button("Go somewhere", color="primary"),
-                                    # dbc.CardLink("Card link", href="#"),
-                                    # dbc.CardLink("External link", href="https://google.com"),
-
-                                ],
-                            ),
-
-                        ],
-                    ),
-                ],
-                width=12,
-            ),
+            # dbc.Col(
+            #     id="sb-stock-info-column",
+            #     # className='col-md-4',
+            #     children=[
+            #         dbc.Card(
+            #             className='mb-2 mt-2 pl-2 pr-2',
+            #             children=[
+            #                 # dbc.CardImg(src="/static/images/placeholder286x180.png", top=True),
+            #                 dbc.CardBody(
+            #                     className='pl-2 pr-2',
+            #                     children=[
+            #                         html.H4(id=page_stock_info_ids['stock-name'], className='text-left', ),
+            #                         # Company Name
+            #                         html.H5(id=page_stock_info_ids['stock-title'], className='text-left', ),
+            #                         # Stock symbol
+            #                         html.H5(id=page_stock_info_ids['stock-price'], className='text-left', ),
+            #                         html.Br(),
+            #                         html.H6(id=page_stock_info_ids['stock-sector'], className='text-left', ),
+            #                         html.H6(id=page_stock_info_ids['stock-subsector'], className='text-left', ),
+            #
+            #                         # dbc.Button("Go somewhere", color="primary"),
+            #                         # dbc.CardLink("Card link", href="#"),
+            #                         # dbc.CardLink("External link", href="https://google.com"),
+            #
+            #                     ],
+            #                 ),
+            #
+            #             ],
+            #         ),
+            #     ],
+            #     width=12,
+            # ),
 
         ],
     ),
@@ -1274,6 +1461,8 @@ def open_and_read_sql(filename):
 
 
 ''' Returns a loading wrapped component can be a single component or a group of nested components'''
+
+
 def loading_wrapper(component, id=''):
     random_color = [
         ATBDEFAULTTHEME.AQUAMARINE,
@@ -1282,7 +1471,7 @@ def loading_wrapper(component, id=''):
         ATBDEFAULTTHEME.AZURE,
         ATBDEFAULTTHEME.AQUAMARINE,
     ]
-    rand = random.randrange(0, len(random_color)-1)
+    rand = random.randrange(0, len(random_color) - 1)
 
     return dcc.Loading(
         id=id,
@@ -1292,3 +1481,19 @@ def loading_wrapper(component, id=''):
         type='circle',
         color=random_color[rand]
     )
+
+
+def get_random_color():
+    random_color = ATBDEFAULTTHEME.dark_colorway_all
+    #     [
+    #     ATBDEFAULTTHEME.AQUAMARINE,
+    #     ATBDEFAULTTHEME.CADETBLUE,
+    #     ATBDEFAULTTHEME.GOLDENROD,
+    #     ATBDEFAULTTHEME.AZURE,
+    #     ATBDEFAULTTHEME.AQUAMARINE,
+    # ]
+    rand = random.randrange(0, len(random_color) - 1)
+
+    random_color_choice = random_color[rand]
+
+    return random_color_choice

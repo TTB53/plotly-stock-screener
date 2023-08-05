@@ -16,13 +16,141 @@ GOLDENROD = '#cfa42f'
 LIGHTGOLDENROD = "#d6c79f"
 ROSYBROWN = "#ce9b9b"  # Red for Red-Green Contrasts
 
+# various Colorscales based on Theme Colors. l
+
+aqua_to_rosy = [
+    [0, AQUAMARINE],
+    [0.1, '#a9d2bd'],
+    [0.2, '#b7d5c6'],
+    [0.3, '#c5d9ce'],
+    [0.4, '#d2dcd7'],
+    [0.5, '#dfdfdf'],
+    [0.6, '#ddd2d1'],
+    [0.7, '#dac4c4'],
+    [0.8, '#d6b6b6'],
+    [0.9, '#d2a9a8'],
+    [1, ROSYBROWN]
+]
+dark_slate_cyan_to_aqua = [
+    [0, DARKSLATECYAN],
+    [0.1, '#2B5C60'],
+    [0.2, '#38686A'],
+    [0.3, '#447573'],
+    [0.4, '#51827D'],
+    [0.5, '#5D8F86'],
+    [0.6, '#699B8F'],
+    [0.7, '#76A899'],
+    [0.8, '#82B5A2'],
+    [0.9, '#8FC1AC'],
+    [1, AQUAMARINE]
+]
+gold_to_aqua = [
+    [0, GOLDENROD],
+    [0.1, '#CAA83C'],
+    [0.2, '#C5AC4A'],
+    [0.3, '#BFB157'],
+    [0.4, '#BAB565'],
+    [0.5, '#B5B972'],
+    [0.6, '#B0BD7F'],
+    [0.7, '#ABC18D'],
+    [0.8, '#A5C69A'],
+    [0.9, '#A0CAA8'],
+    [1, AQUAMARINE]
+]
+dark_cyan_to_aqua = [
+    [0, DARKCYAN],
+    [0.1, '#428F98'],
+    [0.2, '#4C969B'],
+    [0.3, '#569D9F'],
+    [0.4, '#60A4A2'],
+    [0.5, '#6AABA5'],
+    [0.6, '#73B2A8'],
+    [0.7, '#7DB9AB'],
+    [0.8, '#87C0AF'],
+    [0.9, '#91C7B2'],
+    [1, AQUAMARINE]
+]
+cadet_to_aqua_seq = [
+                        [0.0, CADETBLUE],
+                        [0.1111111111111111, '#749C89'],
+                        [0.2222222222222222, '#79A28E'],
+                        [0.3333333333333333, '#7DA893'],
+                        [0.4444444444444444, '#81AD98'],
+                        [0.5555555555555556, '#86B39D'],
+                        [0.6666666666666666, '#8AB8A1'],
+                        [0.7777777777777778, '#8EBEA6'],
+                        [0.8888888888888888, '#92C3AB'],
+                        [1.0, AQUAMARINE]
+                    ]
+cadet_to_aqua_seq_min = [
+    [0.0, CADETBLUE],
+    [0.1111111111111111, '#749C89'],
+    [0.2222222222222222, '#79A28E'],
+    [0.3333333333333333, '#7DA893'],
+    [0.4444444444444444, '#81AD98'],
+    [0.5555555555555556, '#86B39D'],
+    [0.6666666666666666, '#8AB8A1'],
+    [0.7777777777777778, '#8EBEA6'],
+    [0.8888888888888888, '#92C3AB'],
+    [1.0, AQUAMARINE]
+]  # Reverse of seq
+gol_to_aqua_seq = [
+    [0.0, '#CFA42F'],
+    [0.1111111111111111, '#CAA83C'],
+    [0.2222222222222222, '#C5AC4A'],
+    [0.3333333333333333, '#BFB157'],
+    [0.4444444444444444, '#BAB565'],
+    [0.5555555555555556, '#B5B972'],
+    [0.6666666666666666, '#B0BD7F'],
+    [0.7777777777777778, '#ABC18D'],
+    [0.8888888888888888, '#A5C69A'],
+    [1.0, '#9BCEB5']
+]
+dark_slate_green_to_aqua_seq = [
+    [0.0, '#CFA42F'],
+    [0.1111111111111111, '#CAA83C'],
+    [0.2222222222222222, '#C5AC4A'],
+    [0.3333333333333333, '#BFB157'],
+    [0.4444444444444444, '#BAB565'],
+    [0.5555555555555556, '#B5B972'],
+    [0.6666666666666666, '#B0BD7F'],
+    [0.7777777777777778, '#ABC18D'],
+    [0.8888888888888888, '#A5C69A'],
+    [1.0, '#9BCEB5']
+]
+
+light_colorway_all = [
+    GOLDENROD,
+    ROSYBROWN,
+    LIGHTGOLDENROD,
+    AZURE,
+    AQUAMARINE,
+    CADETBLUE,
+    DARKSLATEGREEN,
+    DARKCYAN,
+    DARKSLATECYAN,
+    DIMGREY,  # Would be Ivory for the dark version.
+]
+dark_colorway_all = [
+    GOLDENROD,
+    ROSYBROWN,
+    LIGHTGOLDENROD,
+    AZURE,
+    AQUAMARINE,
+    CADETBLUE,
+    DARKSLATEGREEN,
+    DARKCYAN,
+    DARKSLATECYAN,
+    IVORY,  # Would be Dimgrey for the light version.
+]
+
 # Default Font and  Heading Sizes
 HEADING_FONT_1 = 'BebasNeue-Regular'
 SUBHEADING_FONT_1 = 'Bebas Neue'
 BODY_FONT_1 = 'Montserrat'
 
 TITLE_SIZE = 48
-FONT_SIZE = 16
+FONT_SIZE = 18
 MIN_TXT_SIZE = 16
 
 """
@@ -35,7 +163,8 @@ COLORS_MAPPER = {
 }
 
 pio.templates["atbAnalyticsGroupDefaultDark"] = go.layout.Template(
-    # LAYOUT
+    # ORIG LAYOUT Object
+    #
     # {
     #     'annotationdefaults': {'arrowcolor': '#2a3f5f', 'arrowhead': 0, 'arrowwidth': 1},
     #     'autotypenumbers': 'strict',
@@ -145,6 +274,9 @@ pio.templates["atbAnalyticsGroupDefaultDark"] = go.layout.Template(
             }
         },
         'colorscale': {
+            'diverging': dark_cyan_to_aqua,
+            'sequential': cadet_to_aqua_seq,
+            'sequentialminus': cadet_to_aqua_seq_min
             # Aquamarine to Rosy Red
             # 'diverging': [
             #     [0, '#9bceb5'],
@@ -161,19 +293,19 @@ pio.templates["atbAnalyticsGroupDefaultDark"] = go.layout.Template(
             # ],
 
             # Dark Cyan to Aquamarine
-            'diverging': [
-                [0, '#1F4F57'],
-                [0.1, '#2B5C60'],
-                [0.2, '#38686A'],
-                [0.3, '#447573'],
-                [0.4, '#51827D'],
-                [0.5, '#5D8F86'],
-                [0.6, '#699B8F'],
-                [0.7, '#76A899'],
-                [0.8, '#82B5A2'],
-                [0.9, '#8FC1AC'],
-                [1, '#9BCEB5']
-            ],
+            # 'diverging': [
+            #     [0, '#1F4F57'],
+            #     [0.1, '#2B5C60'],
+            #     [0.2, '#38686A'],
+            #     [0.3, '#447573'],
+            #     [0.4, '#51827D'],
+            #     [0.5, '#5D8F86'],
+            #     [0.6, '#699B8F'],
+            #     [0.7, '#76A899'],
+            #     [0.8, '#82B5A2'],
+            #     [0.9, '#8FC1AC'],
+            #     [1, '#9BCEB5']
+            # ],
             # Goldenrod to Aquamarine
             # 'diverging': [
             #     [0, '#CFA42F'],
@@ -205,52 +337,54 @@ pio.templates["atbAnalyticsGroupDefaultDark"] = go.layout.Template(
             # ],
 
             # Cadet Blue to Aquamarine
-            'sequential': [
-                [0.0, '#709784'],
-                [0.1111111111111111, '#749C89'],
-                [0.2222222222222222, '#79A28E'],
-                [0.3333333333333333, '#7DA893'],
-                [0.4444444444444444, '#81AD98'],
-                [0.5555555555555556, '#86B39D'],
-                [0.6666666666666666, '#8AB8A1'],
-                [0.7777777777777778, '#8EBEA6'],
-                [0.8888888888888888, '#92C3AB'],
-                [1.0, '#9BCEB5']
-            ],
-
-            # Cadet Blue to Aquamarine reveresed
-            'sequentialminus': [
-                [0.0, '#709784'],
-                [0.1111111111111111, '#749C89'],
-                [0.2222222222222222, '#79A28E'],
-                [0.3333333333333333, '#7DA893'],
-                [0.4444444444444444, '#81AD98'],
-                [0.5555555555555556, '#86B39D'],
-                [0.6666666666666666, '#8AB8A1'],
-                [0.7777777777777778, '#8EBEA6'],
-                [0.8888888888888888, '#92C3AB'],
-                [1.0, '#9BCEB5']
-            ],
-
+            # 'sequential': [
+            #     [0.0, '#709784'],
+            #     [0.1111111111111111, '#749C89'],
+            #     [0.2222222222222222, '#79A28E'],
+            #     [0.3333333333333333, '#7DA893'],
+            #     [0.4444444444444444, '#81AD98'],
+            #     [0.5555555555555556, '#86B39D'],
+            #     [0.6666666666666666, '#8AB8A1'],
+            #     [0.7777777777777778, '#8EBEA6'],
+            #     [0.8888888888888888, '#92C3AB'],
+            #     [1.0, '#9BCEB5']
+            # ],
+            #
+            # # Cadet Blue to Aquamarine reveresed
+            # 'sequentialminus': [
+            #     [0.0, '#709784'],
+            #     [0.1111111111111111, '#749C89'],
+            #     [0.2222222222222222, '#79A28E'],
+            #     [0.3333333333333333, '#7DA893'],
+            #     [0.4444444444444444, '#81AD98'],
+            #     [0.5555555555555556, '#86B39D'],
+            #     [0.6666666666666666, '#8AB8A1'],
+            #     [0.7777777777777778, '#8EBEA6'],
+            #     [0.8888888888888888, '#92C3AB'],
+            #     [1.0, '#9BCEB5']
+            # ],
         },
-        'colorway': [
-            GOLDENROD,
-            ROSYBROWN,
-            LIGHTGOLDENROD,
-            AZURE,
-            AQUAMARINE,
-            CADETBLUE,
-            DARKSLATEGREEN,
-            DARKCYAN,
-            DARKSLATECYAN,
-            IVORY,  # Would be Dimgrey for the light version.
-        ],
+        'colorway': dark_colorway_all,
+
+        #     [
+        #     GOLDENROD,
+        #     ROSYBROWN,
+        #     LIGHTGOLDENROD,
+        #     AZURE,
+        #     AQUAMARINE,
+        #     CADETBLUE,
+        #     DARKSLATEGREEN,
+        #     DARKCYAN,
+        #     DARKSLATECYAN,
+        #     IVORY,  # Would be Dimgrey for the light version.
+        # ],
+
         # Keep adding others as needed below
         'hovermode': 'x unified',
         'hoverlabel': {
             'align': 'left',
             'bgcolor': DIMGREY,
-            'font_size': 16,
+            'font_size': FONT_SIZE,
             'font_family': BODY_FONT_1
         },
         'hoverdistance': 100,
@@ -299,34 +433,6 @@ pio.templates["atbAnalyticsGroupDefaultDark"] = go.layout.Template(
     data={
         # Each graph object must be in a tuple or list for each trace
 
-        #
-        # 'sequentialGoldAqua':
-        # [
-        #     [0.0, '#CFA42F'],
-        #     [0.1111111111111111, '#CAA83C'],
-        #     [0.2222222222222222, '#C5AC4A'],
-        #     [0.3333333333333333, '#BFB157'],
-        #     [0.4444444444444444, '#BAB565'],
-        #     [0.5555555555555556, '#B5B972'],
-        #     [0.6666666666666666, '#B0BD7F'],
-        #     [0.7777777777777778, '#ABC18D'],
-        #     [0.8888888888888888, '#A5C69A'],
-        #     [1.0, '#9BCEB5']
-        # ],
-        # 'sequentialSlateGreenAqua':
-        #     [
-        #         [0.0, '#CFA42F'],
-        #         [0.1111111111111111, '#CAA83C'],
-        #         [0.2222222222222222, '#C5AC4A'],
-        #         [0.3333333333333333, '#BFB157'],
-        #         [0.4444444444444444, '#BAB565'],
-        #         [0.5555555555555556, '#B5B972'],
-        #         [0.6666666666666666, '#B0BD7F'],
-        #         [0.7777777777777778, '#ABC18D'],
-        #         [0.8888888888888888, '#A5C69A'],
-        #         [1.0, '#9BCEB5']
-        #     ],
-
         # {
         #     'bar': [{'error_x': {'color': '#2a3f5f'},
         #              'error_y': {'color': '#2a3f5f'},
@@ -366,19 +472,20 @@ pio.templates["atbAnalyticsGroupDefaultDark"] = go.layout.Template(
                         'outlinewidth': 0,
                         'ticks': ''
                     },
-                'colorscale': [
-                    [0, '#CFA42F'],
-                    [0.1, '#CAA83C'],
-                    [0.2, '#C5AC4A'],
-                    [0.3, '#BFB157'],
-                    [0.4, '#BAB565'],
-                    [0.5, '#B5B972'],
-                    [0.6, '#B0BD7F'],
-                    [0.7, '#ABC18D'],
-                    [0.8, '#A5C69A'],
-                    [0.9, '#A0CAA8'],
-                    [1, '#9BCEB5']
-                ],
+                'colorscale': aqua_to_rosy,
+                #     [
+                #     [0, '#CFA42F'],
+                #     [0.1, '#CAA83C'],
+                #     [0.2, '#C5AC4A'],
+                #     [0.3, '#BFB157'],
+                #     [0.4, '#BAB565'],
+                #     [0.5, '#B5B972'],
+                #     [0.6, '#B0BD7F'],
+                #     [0.7, '#ABC18D'],
+                #     [0.8, '#A5C69A'],
+                #     [0.9, '#A0CAA8'],
+                #     [1, '#9BCEB5']
+                # ],
                 'type': 'heatmap'
             }
         ],

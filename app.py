@@ -99,43 +99,7 @@ app = dash.Dash(__name__,
                 assets_folder="./assets",
                 )
 
-navbar_sticky = dbc.Navbar(
-    dbc.Container(
-        [
-            html.A(
-                # Use row and col to control vertical alignment of logo / brand
-                dbc.Row(
-                    [
-                        dbc.Col(html.Img(src=ATB_ANALYTICS_GRP_LOGO, height="30px")),
-                        dbc.Col(dbc.NavbarBrand("ATB Analytics Group", className="ms-2")),
-                    ],
-                    align="center",
-                    className="g-0",
-                ),
-                href="https://www.atb-analytics-group.webflow.io",
-                style={"textDecoration": "none"},
-            ),
-            dbc.NavbarToggler(id="navbar-toggler2", n_clicks=0),
-            dbc.Collapse(
-                dbc.Nav(
-                    [
-                        dbc.NavLink(f"{page['name']} ", href=page["relative_path"]) for page in
-                        dash.page_registry.values() if page["module"] != "pages.not_found_404"
-                    ],
-                    className="ms-auto",
-                    navbar=True,
-                ),
-                id="navbar-collapse2",
-                navbar=True,
-                # is_open=True,
-            ),
-        ],
-    ),
-    color=ATBDEFAULTTHEME.DIMGREY,
-    dark=True,
-    sticky='top',
-    className="mb-5",
-)
+navbar_sticky = utils.get_nav(1)
 
 # sidebar_header = dbc.Row(
 #     [
@@ -275,7 +239,7 @@ app.layout = dbc.Container(
             ],
             fullscreen=True,
             type="dot",
-            color=ATBDEFAULTTHEME.AQUAMARINE,
+            color=utils.get_random_color(),
         ),
 
         dbc.Row(
@@ -337,47 +301,47 @@ def toggle_collapse(n, is_open):
     return is_open
 
 
-@callback(
-    Output('sidebar-menu-name', 'children'),
-    Output('blurb', 'children'),
-    Input('stock-storage', 'data'),
-    Input('page-content', 'children'),
-    suppress_callback_exceptions=True,
-    prevent_initial_callbacks=True,
-)
-def update_sidebar_menu(data, page_content):
-    pathname = page_content[0]['props']['children'][0]['props']['pathname']
-    logging.info(f"{pathname} | {page_content}")
-
-    if pathname == '/fundamental-analysis':
-        menu_name = "Fundamental Analysis"
-        blurb = "Fundamental Analysis is ..."
-    elif pathname == '/technical-analysis':
-        menu_name = "Technical Analysis "
-        blurb = """
-                Technical Analysis is...
-            """
-    #     elif pathname == '/contact':
-    #         menu_name = "Contact ATB Analytics Group"
-    #         blurb = """
-    #                         Ready to do more with your data?
-    #                         Looking to have something similar created for your business.
-    #                         Get in touch with us today.
-    #                     """
-    #     elif pathname == '/about':
-    #         menu_name = "About"
-    #         blurb = """
-    # This is a little history on OList and the Economy of Brazil at the time that this dataset was published.
-    #                         """
-    #     elif pathname == '/marketing-analysis':
-    #         menu_name = "Marketing Analysis"
-    #         blurb = """
-    #                            This is the Marketing Campaign Data that was provided by OList.
-    #                        """
-    else:
-        menu_name = "Stock Screener"
-        blurb = "A Simpler way to view and learn about the stock market."
-    return menu_name, blurb
+# @callback(
+#     Output('sidebar-menu-name', 'children'),
+#     Output('blurb', 'children'),
+#     Input('stock-storage', 'data'),
+#     Input('page-content', 'children'),
+#     suppress_callback_exceptions=True,
+#     prevent_initial_callbacks=True,
+# )
+# def update_sidebar_menu(data, page_content):
+#     pathname = page_content[0]['props']['children'][0]['props']['pathname']
+#     logging.info(f"{pathname} | {page_content}")
+#
+#     if pathname == '/fundamental-analysis':
+#         menu_name = "Fundamental Analysis"
+#         blurb = "Fundamental Analysis is ..."
+#     elif pathname == '/technical-analysis':
+#         menu_name = "Technical Analysis "
+#         blurb = """
+#                 Technical Analysis is...
+#             """
+#     #     elif pathname == '/contact':
+#     #         menu_name = "Contact ATB Analytics Group"
+#     #         blurb = """
+#     #                         Ready to do more with your data?
+#     #                         Looking to have something similar created for your business.
+#     #                         Get in touch with us today.
+#     #                     """
+#     #     elif pathname == '/about':
+#     #         menu_name = "About"
+#     #         blurb = """
+#     # This is a little history on OList and the Economy of Brazil at the time that this dataset was published.
+#     #                         """
+#     #     elif pathname == '/marketing-analysis':
+#     #         menu_name = "Marketing Analysis"
+#     #         blurb = """
+#     #                            This is the Marketing Campaign Data that was provided by OList.
+#     #                        """
+#     else:
+#         menu_name = "Stock Screener"
+#         blurb = "A Simpler way to view and learn about the stock market."
+#     return menu_name, blurb
 
 
 # @callback(Output('page-content', 'children'),

@@ -91,7 +91,12 @@ def serve_layout():
                     children=[
                         html.Div(
                             [
-                                html.H1("Simple Screener"),
+                                html.H1(
+                                    children=[
+                                        "Simple Screener",
+                                    ],
+                                    className='display-1',
+                                ),
                                 html.H3("Keeping it simple when it comes to screening stocks."),
                                 html.Img(
                                     src='./assets/img/oren-elbaz-Wf1opKy4iaI-unsplash.jpg',
@@ -127,7 +132,7 @@ def serve_layout():
                                 'min-height': '20vh',
                             },
                             id='app-instructions-wrapper',
-                            className='mb-5 p-5'
+                            className='mb-2 p-5'
                         ),
 
                     ],
@@ -154,7 +159,7 @@ def serve_layout():
                         html.Hr(),
                     ],
                     id='market-analysis info wrapper',
-                    className='mb-5 p-5'
+                    className='mb-2 p-5'
                 ),
                 html.Br(),
                 dbc.Col(
@@ -242,182 +247,185 @@ def serve_layout():
                     width=6,
                 )
             ],
-                className='mb-5 p-5'
+                className='mb-2 p-5'
             ),
 
             html.Br(),
             # Fundamental and Technical Analysis selection cards.
-            dbc.Row([
-                dbc.Col(
-                    children=[
-                        html.Div(
-                            children=
-                            [
-                                html.H2("Fundamental and Technical Analysis"),
-                                html.P(
-                                    """
-                                    Fundamental Analysis and Technical Analysis are of two differing schools of thought,
-                                    however their disciplines tend to overlap quite often when it comes to making
-                                    financially sound decisions.
-                                    """
-                                ),
-                                html.P(
-                                    """
-                                    
-                                    """
-                                ),
-                                html.Div(utils.get_sidebar("", companies_df, page_stock_info_ids)),
-                                html.Hr(),
-                            ],
-                            id='fun-tech-info-wrapper',
-                            className='mb-2 p-5',
-                        ),
+            dbc.Row(
+                [
+                    dbc.Col(
+                        children=[
+                            html.Div(
+                                children=
+                                [
+                                    html.H2("Fundamental and Technical Analysis"),
+                                    html.P(
+                                        """
+                                        Fundamental Analysis and Technical Analysis are of two differing schools of thought,
+                                        however their disciplines tend to overlap quite often when it comes to making
+                                        financially sound decisions.
+                                        """
+                                    ),
+                                    html.P(
+                                        """
+                                        
+                                        """
+                                    ),
+                                    html.Div(utils.get_sidebar("", companies_df, page_stock_info_ids)),
+                                    html.Hr(),
 
-                        # Quick indicators from the latest db data if possible on the stock selected.
-                        dbc.CardGroup(
-                            children=[
-                                dbc.Card(
-                                    className="card",
-                                    children=[
-                                        html.H4("Liquidity", className='p-2'),
-                                        # dbc.CardImg(src="assets/img/technicalAnalysis.png"),
-                                        utils.loading_wrapper(dcc.Graph(
-                                            id='liquidity-kpi',  # figure=[],
-                                            style={
-                                                'height': '200px',
-                                                'padding': '2px'
-                                            }
+                                    # Quick indicators from the latest db data if possible on the stock selected.
+                                    dbc.CardGroup(
+                                        children=[
+                                            dbc.Card(
+                                                className="card",
+                                                children=[
+                                                    html.H4("Liquidity", className='p-2'),
+                                                    # dbc.CardImg(src="assets/img/technicalAnalysis.png"),
+                                                    utils.loading_wrapper(dcc.Graph(
+                                                        id='liquidity-kpi',  # figure=[],
+                                                        style={
+                                                            'height': '200px',
+                                                            'padding': '2px'
+                                                        }
 
-                                        ), )
-                                        # dbc.CardBody(
-                                        #     children=[
-                                        #         html.H4("Technical Analysis"),
-                                        #         html.P(
-                                        #             "Fundamental Analysis is a method of measuring a security's intrinsic value "
-                                        #             "by examining related economic and financial factors"
-                                        #             ""),
-                                        #     ]
-                                        # ),
-                                    ],
-                                ),
-                                dbc.Card(
-                                    className="card",
-                                    children=[
-                                        html.H4("Solvency", className='p-2'),
-                                        # dbc.CardImg(src="assets/img/technicalAnalysis.png"),
-                                        utils.loading_wrapper(dcc.Graph(
-                                            id='solvency-kpi',
-                                            # figure=[],
-                                            style={
-                                                'height': '200px',
-                                                'padding': '2px'
-                                            }
-                                        ), )
-                                        # dbc.CardBody(
-                                        #     children=[
-                                        #         html.H4("Technical Analysis"),
-                                        #         html.P(
-                                        #             "Fundamental Analysis is a method of measuring a security's intrinsic value "
-                                        #             "by examining related economic and financial factors"
-                                        #             ""),
-                                        #     ]
-                                        # ),
-                                    ],
-                                ),
-                                dbc.Card(
-                                    className="card",
-                                    children=[
-                                        html.H4("Activity", className='p-2'),
-                                        utils.loading_wrapper(dcc.Graph(
-                                            id='activity-kpi',
-                                            # figure=[],
-                                            style={
-                                                'height': '200px',
-                                                'padding': '2px'
-                                            }
-                                        ), )
-                                    ],
-                                ),
-                                dbc.Card(
-                                    className="card",
-                                    children=[
-                                        html.H4("Profitability", className='p-2'),
-                                        # dbc.CardImg(src="assets/img/technicalAnalysis.png"),
-                                        utils.loading_wrapper(
-                                            dcc.Graph(
-                                                id='profitability-kpi',
-                                                # figure=[],
-                                                style={
-                                                    'height': '200px',
-                                                    'padding': '2px'
-                                                }
+                                                    ), )
+                                                    # dbc.CardBody(
+                                                    #     children=[
+                                                    #         html.H4("Technical Analysis"),
+                                                    #         html.P(
+                                                    #             "Fundamental Analysis is a method of measuring a security's intrinsic value "
+                                                    #             "by examining related economic and financial factors"
+                                                    #             ""),
+                                                    #     ]
+                                                    # ),
+                                                ],
                                             ),
-                                        )
-                                        # dbc.CardBody(
-                                        #     children=[
-                                        #         html.H4("Technical Analysis"),
-                                        #         html.P(
-                                        #             "Fundamental Analysis is a method of measuring a security's intrinsic value "
-                                        #             "by examining related economic and financial factors"
-                                        #             ""),
-                                        #     ]
-                                        # ),
-                                    ],
-                                ),
-                            ],
-                            className='p-5'
-                        ),
+                                            dbc.Card(
+                                                className="card",
+                                                children=[
+                                                    html.H4("Solvency", className='p-2'),
+                                                    # dbc.CardImg(src="assets/img/technicalAnalysis.png"),
+                                                    utils.loading_wrapper(dcc.Graph(
+                                                        id='solvency-kpi',
+                                                        # figure=[],
+                                                        style={
+                                                            'height': '200px',
+                                                            'padding': '2px'
+                                                        }
+                                                    ), )
+                                                    # dbc.CardBody(
+                                                    #     children=[
+                                                    #         html.H4("Technical Analysis"),
+                                                    #         html.P(
+                                                    #             "Fundamental Analysis is a method of measuring a security's intrinsic value "
+                                                    #             "by examining related economic and financial factors"
+                                                    #             ""),
+                                                    #     ]
+                                                    # ),
+                                                ],
+                                            ),
+                                            dbc.Card(
+                                                className="card",
+                                                children=[
+                                                    html.H4("Activity", className='p-2'),
+                                                    utils.loading_wrapper(dcc.Graph(
+                                                        id='activity-kpi',
+                                                        # figure=[],
+                                                        style={
+                                                            'height': '200px',
+                                                            'padding': '2px'
+                                                        }
+                                                    ), )
+                                                ],
+                                            ),
+                                            dbc.Card(
+                                                className="card",
+                                                children=[
+                                                    html.H4("Profitability", className='p-2'),
+                                                    # dbc.CardImg(src="assets/img/technicalAnalysis.png"),
+                                                    utils.loading_wrapper(
+                                                        dcc.Graph(
+                                                            id='profitability-kpi',
+                                                            # figure=[],
+                                                            style={
+                                                                'height': '200px',
+                                                                'padding': '2px'
+                                                            }
+                                                        ),
+                                                    )
+                                                    # dbc.CardBody(
+                                                    #     children=[
+                                                    #         html.H4("Technical Analysis"),
+                                                    #         html.P(
+                                                    #             "Fundamental Analysis is a method of measuring a security's intrinsic value "
+                                                    #             "by examining related economic and financial factors"
+                                                    #             ""),
+                                                    #     ]
+                                                    # ),
+                                                ],
+                                            ),
+                                        ],
+                                        className='p-5'
+                                    ),
+                                ],
+                                id='fun-tech-info-wrapper',
+                                className='mb-1 p-5',
+                            ),
 
-                        # Deeper Analysis of the selected stock.
-                        dbc.CardGroup(
-                            children=[
-                                dbc.Card(
-                                    className="card",
-                                    children=[
-                                        dbc.CardImg(src="assets/img/fundamentalAnalysis.png"),
-                                        dbc.CardBody(
-                                            children=[
-                                                html.H4("Fundamental Analysis"),
-                                                html.P(
-                                                    "Fundamental Analysis is a method of measuring a security's intrinsic value "
-                                                    "by examining related economic and financial factors"
-                                                    ""),
-                                            ]
-                                        ),
-                                        html.A(className="btn btn-primary", href="/pages/fundamentalAnalysis",
-                                               children=["Fundamental Analysis"]),
+                            # Deeper Analysis of the selected stock.
+                            dbc.CardGroup(
+                                children=[
+                                    dbc.Card(
+                                        className="card",
+                                        children=[
+                                            dbc.CardImg(src="assets/img/fundamentalAnalysis.png"),
+                                            dbc.CardBody(
+                                                # className='cardbody',
+                                                children=[
+                                                    html.H4("Fundamental Analysis"),
+                                                    html.P(
+                                                        ["Fundamental Analysis is a method of measuring a security's "
+                                                         "intrinsic value or fair market value."
+                                                         "by examining related economic and financial factors"
+                                                         ""]),
+                                                ]
+                                            ),
+                                            html.A(className="btn btn-primary", href="/fundamental-analysis",
+                                                   children=["Fundamental Analysis"]),
 
-                                    ],
+                                        ],
 
-                                ),
-                                dbc.Card(
-                                    className="card",
-                                    children=[
-                                        dbc.CardImg(src="assets/img/technicalAnalysis.png", ),
-                                        dbc.CardBody(
-                                            # className ='cardbody',
-                                            children=[
-                                                html.H4("Technical Analysis"),
-                                                html.P(
-                                                    "Fundamental Analysis is a method of measuring a security's intrinsic value "
-                                                    "by examining related economic and financial factors"
-                                                    ""),
-                                            ]
-                                        ),
-                                        html.A(className="btn btn-primary", href="/pages/technicalAnalysis",
-                                               children=["Technical Analysis"]),
-                                        # dbc.CardLink("Card link", href="/pages/technical"),
-                                    ],
+                                    ),
+                                    dbc.Card(
+                                        className="card",
+                                        children=[
+                                            dbc.CardImg(src="assets/img/technicalAnalysis.png", ),
+                                            dbc.CardBody(
+                                                # className ='cardbody',
+                                                children=[
+                                                    html.H4("Technical Analysis"),
+                                                    html.P(
+                                                        "Fundamental Analysis is a method of measuring a security's intrinsic value "
+                                                        "by examining related economic and financial factors"
+                                                        ""),
+                                                ]
+                                            ),
+                                            html.A(className="btn btn-primary", href="/technical-analysis",
+                                                   children=["Technical Analysis"]),
+                                            # dbc.CardLink("Card link", href="/pages/technical"),
+                                        ],
 
-                                ),
-                            ],
-                            className='p-5'
-                        ),
-                    ],
-                    align='center',
-                    # width=12,
-                ),
-            ]),
+                                    ),
+                                ],
+                                className='p-5'
+                            ),
+                        ],
+                        align='center',
+                        # width=12,
+                    ),
+                ]),
             html.Br(),
             # Candlestick Patterns Selection Row
             dbc.Row([
@@ -448,7 +456,7 @@ def serve_layout():
                         ),
                     ],
                     id='cs-pattern-info-wrapper',
-                    className='mb-5 p-5',
+                    className='mb-2 p-5',
                 ),
 
                 html.Hr(),
@@ -531,45 +539,47 @@ def serve_layout():
             ],
             ),
             html.Br(),
-            dbc.Row([
-                # dbc.Col(
-                #     children=[
-                #         html.Div(
-                #             children=[
-                #                 dcc.Loading(
-                #                     children=[
-                #                         dbc.Card(
-                #                             id='chart-pattern-card',
-                #                             className="card",
-                #                             children=[
-                #                                 html.Div(id='chart-pattern-container'),
-                #                                 html.Center(
-                #                                     html.Div(
-                #                                         dcc.Graph(
-                #                                             id='empty',
-                #                                             figure={}
-                #                                         ),
-                #                                         style={'display': 'none'},
-                #                                     ),
-                #                                 ),
-                #                             ],
-                #                             style={
-                #                                 'width': '100%',
-                #                                 # 'height': '25vh',
-                #                             }
-                #                         )
-                #                     ],
-                #                     type='circle',
-                #                     color=ATBDEFAULTTHEME.CADETBLUE,
-                #                 ),
-                #
-                #             ]
-                #         ),
-                #     ],
-                #     align='center',
-                #     width=12,
-                # ),
-            ]),
+            dbc.Row(
+                [
+                    # dbc.Col(
+                    #     children=[
+                    #         html.Div(
+                    #             children=[
+                    #                 dcc.Loading(
+                    #                     children=[
+                    #                         dbc.Card(
+                    #                             id='chart-pattern-card',
+                    #                             className="card",
+                    #                             children=[
+                    #                                 html.Div(id='chart-pattern-container'),
+                    #                                 html.Center(
+                    #                                     html.Div(
+                    #                                         dcc.Graph(
+                    #                                             id='empty',
+                    #                                             figure={}
+                    #                                         ),
+                    #                                         style={'display': 'none'},
+                    #                                     ),
+                    #                                 ),
+                    #                             ],
+                    #                             style={
+                    #                                 'width': '100%',
+                    #                                 # 'height': '25vh',
+                    #                             }
+                    #                         )
+                    #                     ],
+                    #                     type='circle',
+                    #                     color=ATBDEFAULTTHEME.CADETBLUE,
+                    #                 ),
+                    #
+                    #             ]
+                    #         ),
+                    #     ],
+                    #     align='center',
+                    #     width=12,
+                    # ),
+                ]
+            ),
             html.Br(),
 
         ]
@@ -610,30 +620,19 @@ def update_quick_kpis(stock_symbol):
         #     GROUP BY stock_balance_sheet.year
         #     --AND stock_balance_sheet.year >=2020
         # """
-        stock_financials = f"""
-        SELECT id, company, A.year, A."Total Assets", A."Total Current Assets",A."Stockholders Equity", A."Net Income", A."Total Revenue", A."Total Liab"
-        FROM stock LEFT JOIN 
-        (SELECT stock_balance_sheet.stock_id, stock_balance_sheet."year", "Total Assets", 
-        stock_balance_sheet."Total Current Assets", "Total Current Liabilities", 
-        "Stockholders Equity", "Net Income", "Total Revenue", "Total Liab"
-        FROM stock_balance_sheet 
-        LEFT JOIN stock_financials
-        WHERE stock_balance_sheet.stock_id = stock_financials.stock_id
-        )as A
-        WHERE stock.company = '{stock_symbol}'
-        AND stock.id = A.stock_id 
-        --GROUP BY A.year >= 2020
-        --LIMIT 1; 
-        
-        """
+        stock_financials = dbObj.create_sql_string('./data/SQL/read/company_information/QuickRatios.sql')
+        stock_financials += f"\nAND company='{stock_symbol}'"
         stock_financials = pd.read_sql(stock_financials, conn)
 
         max_year = stock_financials['year'].max()
         stock_financials = stock_financials[stock_financials['year'] == max_year].fillna(1)
 
-        if 'Total Current Assets' in stock_financials.columns and len(stock_financials) > 0:
-            curr_ratio = stock_financials['Total Current Assets'] / stock_financials['Total Liab']
-            curr_ratio.shape
+        if 'Current_Ratio' in stock_financials.columns and len(stock_financials) > 0:
+            curr_ratio = stock_financials['Current_Ratio']
+
+            if len(curr_ratio) < 1:
+                curr_ratio = pd.Series(data={0: 1})
+
             curr_ratio_go = go.Indicator(
                 value=curr_ratio.iloc[0],
                 title='Curr Ratio'
@@ -643,28 +642,36 @@ def update_quick_kpis(stock_symbol):
             curr_ratio = 1
             curr_ratio_go = go.Indicator(
                 value=curr_ratio,
-                title='Curr Ratio'
+                title='Check Curr Ratio'
             )
             liquidity_kpi_fig.add_traces(curr_ratio_go)
 
-        if 'Total Assets' in stock_financials.columns and 'Total Liab' in stock_financials.columns:
-            shareholders_equity = stock_financials['Total Assets'] - stock_financials['Total Liab']
-            tot_debt_ratio = (stock_financials['Total Assets'] - shareholders_equity) / stock_financials['Total Assets']
+        if 'Debt_to_Equity' in stock_financials.columns:
+            # shareholders_equity = stock_financials['Total Assets'] - stock_financials['Total Liab']
+            tot_debt_ratio = stock_financials['Debt_to_Equity']
+
+            if len(tot_debt_ratio) < 1:
+                tot_debt_ratio = pd.Series(data={0: 1})
+
             tot_debt_ratio_go = go.Indicator(
                 value=tot_debt_ratio.iloc[0],
-                title='Tot Debt Ratio'
+                title='Debt/Equity Ratio'
             )
             solvency_kpi_fig.add_traces(tot_debt_ratio_go)
         else:
             tot_debt_ratio = 1
             tot_debt_ratio_go = go.Indicator(
                 value=tot_debt_ratio,
-                title='Tot Debt Ratio'
+                title='Check D/E Ratio'
             )
             solvency_kpi_fig.add_traces(tot_debt_ratio_go)
 
-        if 'Total Assets' in stock_financials.columns and 'Total Revenue' in stock_financials.columns:
-            tot_asset_turnover = (stock_financials['Total Revenue']) / stock_financials['Total Assets']
+        if 'Asset Turnover' in stock_financials.columns:
+            tot_asset_turnover = stock_financials['Asset_Turnover']
+
+            if len(tot_asset_turnover) < 1:
+                tot_asset_turnover = pd.Series(data={0: 1})
+
             tot_asset_turnover_go = go.Indicator(
                 value=tot_asset_turnover.iloc[0],
                 title='Tot Asset Turnover'
@@ -678,8 +685,12 @@ def update_quick_kpis(stock_symbol):
             )
             activity_kpi_fig.add_traces(tot_asset_turnover_go)
 
-        if 'Net Income' in stock_financials.columns and 'Total Revenue' in stock_financials.columns:
-            profit_margin = (stock_financials['Net Income']) / stock_financials['Total Revenue']
+        if 'Profit_Margin' in stock_financials.columns:
+            profit_margin = stock_financials['Profit_Margin']
+
+            if len(profit_margin) < 1:
+                profit_margin = pd.Series(data={0: 1})
+
             profit_margin_go = go.Indicator(
                 value=profit_margin.iloc[0],
                 title='Profit Margin'
@@ -739,7 +750,7 @@ def update_quick_kpis(stock_symbol):
     # State('chart-pattern-container', 'children'),
 
 )
-def display_graph(pattern_value):
+def display_candlestick_graph(pattern_value):
     pattern_graphs = []
     if pattern_value is None:
         pass
@@ -807,62 +818,85 @@ def display_graph(pattern_value):
 
 @callback(
     Output('stock-rois-chart', 'children'),
-    Input('candlestick-pattern-dropdown', 'value'),
+    Input('heatmap-sector-dropdown', 'value'),
     # State('page-content', 'children')
 )
-def update_roi_chart(pattern_value):
+def update_securities_in_sector_chart(pattern_value):
     if pattern_value:
         conn = dbObj.create_connection(dbObj.DB_FILE)
         # all_price_sql = dbObj.create_sql_string('data/SQL/AllStockPricesByCompanyDate.sql')
 
-        all_price_sql = '''
+        stocks_in_sector_sql = dbObj.create_sql_string('./data/SQL/read/company_information/QuickRatios.sql')
+        stocks_in_sector_sql += f"\nAND gics_sector = '{pattern_value}' ORDER BY stock_balance_sheet.year DESC"
+
+        '''
         SELECT stock_price.*, stock.company
         FROM stock_price, stock
         WHERE stock_price.stock_id = stock.id
         ORDER BY stock.company    
         '''
 
-        roi_df = pd.read_sql(all_price_sql, conn)
-        roi_df = utils.add_daily_return_to_df(roi_df)
-        roi_df['daily_return'] = roi_df['daily_return'] * 100
+        roi_df = pd.read_sql(stocks_in_sector_sql, conn)
+        # roi_df = utils.add_daily_return_to_df(roi_df)
+        # roi_df['daily_return'] = roi_df['daily_return'] * 100
+        #
+        # roi_df_copy = roi_df.copy()
+        # roi_df_copy['max_date'] = roi_df.groupby(by="company", sort=False).date.transform('max')
+        # roi_df_copy['min_date'] = roi_df.groupby(by='company', sort=False).date.transform('min')
+        # logging.info(roi_df_copy.head())
+        #
+        # roi_df_copy = roi_df_copy[['date', 'company', 'adjusted_close', 'daily_return', 'max_date', 'min_date']]
+        #
+        # roi_df_copy.drop_duplicates(subset=['date', 'company'], inplace=True)
+        #
+        # min_roi_df = pd.DataFrame()
+        # max_roi_df = pd.DataFrame()
+        #
+        # for index, row in roi_df_copy.iterrows():
+        #     if roi_df_copy[(roi_df_copy['date'][index] == row['max_date'])]:
+        #         max = roi_df_copy[(roi_df_copy['date'][index] == row['max_date'])][
+        #             (roi_df_copy['company'] == row['company'])]
+        #         # logging.info(max.head())
+        #         max_roi_df = max_roi_df._append(max, ignore_index=True)
+        #         logging.info("Max ROI DF\n{}\n".format(max_roi_df.head()))
+        #
+        #     min = roi_df_copy[(roi_df_copy['date'] == row['min_date'])][(roi_df_copy['company'] == row['company'])]
+        #     # logging.info(min.head())
+        #     min_roi_df = min_roi_df._append(min, ignore_index=True)
+        #     logging.info("Min ROI DF\n{}\n".format(min_roi_df.head()))
+        #
+        # max_roi_df.drop_duplicates(inplace=True)
+        # min_roi_df.drop_duplicates(inplace=True)
+        #
+        # roi_df_copy = pd.concat([max_roi_df, min_roi_df])
+        #
+        # roi_df_copy['total_return'] = roi_df_copy.apply(
+        #     lambda row: utils.roi_between_dates_df(roi_df_copy, row['company'],
+        #                                            row['max_date'],
+        #                                            row['min_date']), axis=1)
 
-        roi_df_copy = roi_df.copy()
-        roi_df_copy['max_date'] = roi_df.groupby(by="company", sort=False).date.transform('max')
-        roi_df_copy['min_date'] = roi_df.groupby(by='company', sort=False).date.transform('min')
-        logging.info(roi_df_copy.head())
-
-        roi_df_copy = roi_df_copy[['date', 'company', 'adjusted_close', 'daily_return', 'max_date', 'min_date']]
-
-        roi_df_copy.drop_duplicates(subset=['date', 'company'], inplace=True)
-
-        min_roi_df = pd.DataFrame()
-        max_roi_df = pd.DataFrame()
-
-        for index, row in roi_df_copy.iterrows():
-            if roi_df_copy[(roi_df_copy['date'][index] == row['max_date'])]:
-                max = roi_df_copy[(roi_df_copy['date'][index] == row['max_date'])][
-                    (roi_df_copy['company'] == row['company'])]
-                # logging.info(max.head())
-                max_roi_df = max_roi_df._append(max, ignore_index=True)
-                logging.info("Max ROI DF\n{}\n".format(max_roi_df.head()))
-
-            min = roi_df_copy[(roi_df_copy['date'] == row['min_date'])][(roi_df_copy['company'] == row['company'])]
-            # logging.info(min.head())
-            min_roi_df = min_roi_df._append(min, ignore_index=True)
-            logging.info("Min ROI DF\n{}\n".format(min_roi_df.head()))
-
-        max_roi_df.drop_duplicates(inplace=True)
-        min_roi_df.drop_duplicates(inplace=True)
-
-        roi_df_copy = pd.concat([max_roi_df, min_roi_df])
-
-        roi_df_copy['total_return'] = roi_df_copy.apply(
-            lambda row: utils.roi_between_dates_df(roi_df_copy, row['company'],
-                                                   row['max_date'],
-                                                   row['min_date']), axis=1)
+        roi_heatmap = utils.generate_heatmap(roi_df,
+                                             title='',
+                                             z_values='Profit_Margin',
+                                             x_column='year',
+                                             y_column='company',
+                                             )
+        roi_heatmap_fig = dcc.Graph(
+            figure=roi_heatmap,
+            animate=True,
+            clear_on_unhover=True,
+            responsive=True
+        )
 
         roi_df = utils.generate_generic_dash_datatable(roi_df, id='sector-margins-data-table')
-        return utils.loading_wrapper(roi_df)
+        return utils.loading_wrapper(html.Div(
+            [
+                roi_heatmap_fig,
+                html.Br(),
+                roi_df,
+            ]
+        )
+        )
 
         # dcc.Loading(
         # children=[roi_df],
@@ -872,60 +906,78 @@ def update_roi_chart(pattern_value):
         conn = dbObj.create_connection(dbObj.DB_FILE)
         # all_price_sql = dbObj.create_sql_string('data/SQL/AllStockPricesByCompanyDate.sql')
 
-        all_price_sql = '''
+        stocks_in_sector_sql = dbObj.create_sql_string('./data/SQL/read/company_information/QuickRatios.sql')
+        stocks_in_sector_sql += f"\nAND gics_sector = 'Energy' ORDER BY stock_balance_sheet.year DESC"
+
+        '''
                 SELECT stock_price.*, stock.company
                 FROM stock_price, stock
                 WHERE stock_price.stock_id = stock.id 
                 AND gics_sector = "Energy"
-                ORDER BY stock.company    
+                ORDER BY stock.company
+                AND stock_price.date    
                 '''
 
-        roi_df = pd.read_sql(all_price_sql, conn)
-        roi_df = utils.add_daily_return_to_df(roi_df)
-        roi_df['daily_return'] = roi_df['daily_return'] * 100
+        roi_df = pd.read_sql(stocks_in_sector_sql, conn)
+        # roi_df = utils.add_daily_return_to_df(roi_df)
+        # roi_df['daily_return'] = roi_df['daily_return'] * 100
+        #
+        # roi_df_copy = roi_df.copy()
+        # roi_df_copy['max_date'] = roi_df.groupby(by="company", sort=False).date.transform('max')
+        # roi_df_copy['min_date'] = roi_df.groupby(by='company', sort=False).date.transform('min')
+        # logging.info(f"RoI DF Data \n {roi_df_copy.head()}")
+        #
+        # roi_df_copy = roi_df_copy[['date', 'company', 'adjusted_close', 'daily_return', 'max_date', 'min_date']]
+        #
+        # roi_df_copy.drop_duplicates(subset=['date', 'company'], inplace=True)
+        #
+        # min_roi_df = pd.DataFrame()
+        # max_roi_df = pd.DataFrame()
+        #
+        # for index, row in roi_df_copy.iterrows():
+        #     if (roi_df_copy['date'][index] == row['max_date']):
+        #         max = roi_df_copy[(roi_df_copy['date'] == row['max_date'])][(roi_df_copy['company'] == row['company'])]
+        #         # logging.info(max.head())
+        #         max_roi_df = max_roi_df._append(max, ignore_index=True)
+        #         logging.info(f"Max RoI DF\n{max_roi_df.head()}\n")
+        #
+        #     min = roi_df_copy[(roi_df_copy['date'] == row['min_date'])][(roi_df_copy['company'] == row['company'])]
+        #     # logging.info(min.head())
+        #     min_roi_df = min_roi_df._append(min, ignore_index=True)
+        #     logging.info(f"Min RoI DF\n{min_roi_df.head()}\n")
+        #
+        # max_roi_df.drop_duplicates(inplace=True)
+        # min_roi_df.drop_duplicates(inplace=True)
+        #
+        # roi_df_copy = pd.concat([max_roi_df, min_roi_df])
+        #
+        # roi_df_copy['total_return'] = roi_df_copy.apply(
+        #     lambda row: utils.roi_between_dates_df(roi_df_copy, row['company'],
+        #                                            row['max_date'],
+        #                                            row['min_date']), axis=1)
 
-        roi_df_copy = roi_df.copy()
-        roi_df_copy['max_date'] = roi_df.groupby(by="company", sort=False).date.transform('max')
-        roi_df_copy['min_date'] = roi_df.groupby(by='company', sort=False).date.transform('min')
-        logging.info(f"RoI DF Data \n {roi_df_copy.head()}")
-
-        roi_df_copy = roi_df_copy[['date', 'company', 'adjusted_close', 'daily_return', 'max_date', 'min_date']]
-
-        roi_df_copy.drop_duplicates(subset=['date', 'company'], inplace=True)
-
-        min_roi_df = pd.DataFrame()
-        max_roi_df = pd.DataFrame()
-
-        for index, row in roi_df_copy.iterrows():
-            if (roi_df_copy['date'][index] == row['max_date']):
-                max = roi_df_copy[(roi_df_copy['date'] == row['max_date'])][(roi_df_copy['company'] == row['company'])]
-                # logging.info(max.head())
-                max_roi_df = max_roi_df._append(max, ignore_index=True)
-                logging.info(f"Max RoI DF\n{max_roi_df.head()}\n")
-
-            min = roi_df_copy[(roi_df_copy['date'] == row['min_date'])][(roi_df_copy['company'] == row['company'])]
-            # logging.info(min.head())
-            min_roi_df = min_roi_df._append(min, ignore_index=True)
-            logging.info(f"Min RoI DF\n{min_roi_df.head()}\n")
-
-        max_roi_df.drop_duplicates(inplace=True)
-        min_roi_df.drop_duplicates(inplace=True)
-
-        roi_df_copy = pd.concat([max_roi_df, min_roi_df])
-
-        roi_df_copy['total_return'] = roi_df_copy.apply(
-            lambda row: utils.roi_between_dates_df(roi_df_copy, row['company'],
-                                                   row['max_date'],
-                                                   row['min_date']), axis=1)
+        roi_heatmap = utils.generate_heatmap(roi_df,
+                                             title='',
+                                             z_values='Profit_Margin',
+                                             x_column='year',
+                                             y_column='company',
+                                             )
+        roi_heatmap_fig = dcc.Graph(
+            figure=roi_heatmap,
+            animate=True,
+            clear_on_unhover=True,
+            responsive=True
+        )
 
         roi_df = utils.generate_generic_dash_datatable(roi_df, id='sector-margins-data-table')
 
-        return dcc.Loading(
-            children=[
-                roi_df
-            ],
-            type='circle',
-            color=ATBDEFAULTTHEME.CADETBLUE
+        return utils.loading_wrapper(html.Div(
+            [
+                roi_heatmap_fig,
+                html.Br(),
+                roi_df,
+            ]
+        )
         )
 
 
@@ -934,56 +986,87 @@ def update_roi_chart(pattern_value):
     Input('heatmap-sector-dropdown', 'value'),
     # State('page-content', 'children')
 )
-def update_sector_roi_chart(sector):
-    if sector:
+def update_sector_chart(sector):
+    if sector and sector is not None:
         conn = dbObj.create_connection(dbObj.DB_FILE)
-        sector_balancesheet_sql = dbObj.create_sql_string(
-            'data/SQL/create/sector_analysis/SectorandSubsectorTotalsTable.sql')
-        sector_earnings_sql = dbObj.create_sql_string('data/SQL/read/sector_analysis/SectorandSubsectorEarnings.sql')
+        # sector_balancesheet_sql = dbObj.create_sql_string(
+        #     'data/SQL/create/sector_analysis/SectorandSubsectorTotalsTable.sql')
+        # sector_earnings_sql = dbObj.create_sql_string('data/SQL/read/sector_analysis/SectorandSubsectorEarnings.sql')
+        #
+        # sector_balancesheet_sql = '''
+        # SELECT * FROM sector_subsector_totals;
+        # '''
 
-        sector_balancesheet_sql = '''
-        SELECT * FROM sector_subsector_totals;
-        '''
-
+        sector_balancesheet_sql = dbObj.create_sql_string('./data/SQL/read/sector_analysis/SectorQuickRatios.sql')
+        sector_balancesheet_sql += f"\nAND gics_sector ='{sector}' GROUP BY stock_balance_sheet.year"
         sector_bs_df = pd.read_sql(sector_balancesheet_sql, conn)
         # sector_earn_df = pd.read_sql(sector_earnings_sql, conn)
         # roi_df = pd.melt(frames=[sector_bs_df, sector_earn_df],)
         roi_df = sector_bs_df
-        roi_df = utils.generate_generic_dash_datatable(roi_df, id='sector-margins-data-table')
+
+        roi_heatmap = utils.generate_heatmap(roi_df,
+                                             title='',
+                                             z_values='Profit_Margin',
+                                             x_column='year',
+                                             y_column='gics_sector',
+                                             )
+        roi_heatmap_fig = dcc.Graph(
+            figure=roi_heatmap,
+            animate=True,
+            clear_on_unhover=True,
+            responsive=True
+        )
+
+        roi_df = utils.generate_generic_dash_datatable(
+            roi_df,
+            id='sector-margins-data-table')
 
         return dcc.Loading(
             children=[
-                html.Div(roi_df,
+                html.Div(roi_heatmap_fig,
                          # style={'height': '25vh'}
 
                          )
             ],
             type='circle',
-            color=ATBDEFAULTTHEME.AZURE
+            color=utils.get_random_color()
         )
     else:
         conn = dbObj.create_connection(dbObj.DB_FILE)
-        sector_balancesheet_sql = dbObj.create_sql_string(
-            'data/SQL/create/sector_analysis/SectorandSubsectorTotalsTable.sql')
-        sector_earnings_sql = dbObj.create_sql_string('data/SQL/read/sector_analysis/SectorandSubsectorEarnings.sql')
+        # sector_balancesheet_sql = dbObj.create_sql_string(
+        #     'data/SQL/create/sector_analysis/SectorandSubsectorTotalsTable.sql')
+        # sector_earnings_sql = dbObj.create_sql_string('data/SQL/read/sector_analysis/SectorandSubsectorEarnings.sql')
 
-        sector_balancesheet_sql = '''
-                SELECT * FROM sector_subsector_totals;
-                '''
-
+        sector_balancesheet_sql = dbObj.create_sql_string('./data/SQL/read/sector_analysis/SectorQuickRatios.sql')
+        sector_balancesheet_sql += f"\n ORDER BY stock_balance_sheet.year AND gics_sector"
         sector_bs_df = pd.read_sql(sector_balancesheet_sql, conn)
         # sector_earn_df = pd.read_sql(sector_earnings_sql, conn)
         # roi_df = pd.melt(frames=[sector_bs_df, sector_earn_df],)
         roi_df = sector_bs_df
+        roi_heatmap = utils.generate_heatmap(roi_df,
+                                             title='',
+                                             z_values='Profit_Margin',
+                                             x_column='year',
+                                             y_column='gics_sector')
+
         roi_df = utils.generate_generic_dash_datatable(roi_df, id='sector-margins-data-table')
 
+        roi_heatmap_fig = dcc.Graph(
+            figure=roi_heatmap,
+            animate=True,
+            clear_on_unhover=True,
+            responsive=True
+        )
         return dcc.Loading(
             children=[
-                html.Div(roi_df,
-                         # style={'height': '25vh'}
-
-                         )
+                html.Div(
+                    [
+                        roi_heatmap_fig,
+                        html.Br(),
+                        roi_df,
+                    ]
+                )
             ],
             type='circle',
-            color=ATBDEFAULTTHEME.DARKCYAN
+            color=utils.get_random_color()
         )
