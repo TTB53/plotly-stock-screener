@@ -1,3 +1,19 @@
+"""
+
+Fundamental Analysis
+
+------------------------------------------------------------------------------
+Program Description
+-------------------------------------------------------------------------------
+
+Analyze the long-term viability of a company based on their financials reported
+to various sources and determines based on your personal criteria, whether they are
+actually good companies, and if so, how, and when we should enter a position in them
+if they are suitable for our strategies.
+
+----------------------------------------------------------------------------------
+
+"""
 from sqlite3 import Error
 import logging
 
@@ -11,26 +27,27 @@ from dash import callback
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 
+# import app
 import db
-import utils
+from utils import Utils as utils
 from stock import MyStock
 
-# Interacts with the Database
-dbObj = db.DBConnection()
+# Object that interacts with the Database
+dbObj = db.DBConnection
 
 # DB Queries
 INDUSTRY_RATIOS = "./data/IndustryRatios_Aug22_2021.csv"
 SECTOR_RATIOS = "./data/SQL/read/sector_analysis/SectorRatios.sql"
 
-# Interacts with the yFinance API
+# Interacts with the yFinance API and deals with the Stock related information
 StockObj = MyStock()
 conn = None
 
 # Connect to DB and Load Data
-DB_FILE = "./stock-db.db"
+DB_FILE = dbObj.DB_FILE
 
 try:
-    conn = dbObj.create_connection(db_file=DB_FILE)
+    conn = dbObj.create_connection(dbObj, db_file=DB_FILE)
     logging.info("Successfully Connected to the DB from Fundamental Analysis.")
     # stock_price_df = pd.read_sql('SELECT * FROM stock_price, stock WHERE stock_id= stock.id', conn)
 except Error as e:
@@ -38,7 +55,8 @@ except Error as e:
 
 # TODO Feature Enhancement add ability to automatically show how security of interest does against whatever the industry
 #  3 year rolling averages are. Similar to Grad School Corp Finance Project.
-companies_df = dbObj.select_table_data(conn=conn, table_name='stock')
+companies_df = dbObj.select_table_data(dbObj, conn=conn, table_name='stock')
+logging.info(f"Companies Dataframe {companies_df.head(20)}\n{companies_df.tail(20)}")
 
 options = {'options': [], 'option_dates': []}
 
@@ -78,7 +96,8 @@ def update_fundamentals_UI(stock_symbol):
     company_name, stock_sector, stock_subsector, stock_info, profit_margin_figure = None, None, None, None, None
 
     # f = open('./data/SQL/read/company_information/CompanyInformation.sql', 'r')
-    COMPANY_INFO_QRY = utils.open_and_read_sql('./data/SQL/read/company_information/CompanyInformation.sql')
+    COMPANY_INFO_QRY = utils.open_and_read_sql(utils, './data/SQL/read/company_information/CompanyInformation.sql')
+    logging.info(f"{stock_symbol} will be used with the COMPANY INFO QRY that is being Read\n{COMPANY_INFO_QRY}")
     # f.close()
     # COMPANY_INFO_QRY = "SELECT symbol, id, company, gics_sector, gics_subsector FROM stock"
 
@@ -86,7 +105,7 @@ def update_fundamentals_UI(stock_symbol):
 
         try:
             # Connect to database
-            conn = dbObj.create_connection(DB_FILE)
+            conn = dbObj.create_connection(dbObj, DB_FILE)
 
             # Getting record for company - If no record returned we create one and get data.
             company_info_df = pd.read_sql_query(
@@ -105,7 +124,7 @@ def update_fundamentals_UI(stock_symbol):
                 company_name = company_info_df['company'].values[0]
 
             # Getting Stock Price Data from the DB by the Stock ID(FK)
-            data = dbObj.select_record(conn, 'stock_price', stock_id)
+            data = dbObj.select_record(dbObj, conn, 'stock_price', stock_id)
 
             # Getting the Stock Data for the Stock Symbol that is in our DB, but doesn't have price data.
             if data.empty:
@@ -175,7 +194,7 @@ def update_fundamentals_UI(stock_symbol):
 
             # Insert basic Stock Information into DB
             insert_sql = """ INSERT INTO stock(symbol, company, nasdaq_sector, gics_sector,gics_subsector,headquarters) VALUES (?,?,?,?,?,?);"""
-            dbObj.insert_into_table(conn, insert_sql, param_list)  # TODO DB HIT
+            dbObj.insert_into_table(dbObj, conn, insert_sql, param_list)  # TODO DB HIT
 
             # Insert stock_price data into the stock price by newly created companies stock_id
             companies_df = pd.read_sql_query('SELECT * from stock', conn)  # TODO DB HIT
@@ -251,7 +270,7 @@ def update_fundamentals_UI(stock_symbol):
                 save_data=False, options=True, balanceSheet=False, earnings=False,
                 financials=False, cashflows=False, )
 
-        candlestick_figure = utils.generate_candlestick_graph_w_indicators(data, stock_symbol)
+        candlestick_figure = utils.generate_candlestick_graph_w_indicators(utils, data, stock_symbol)
 
     # Checking to make sure that the stock has options, sometimes it is hit or miss with yFinance
     if len(options) > 0 and type(options) != str:
@@ -260,10 +279,12 @@ def update_fundamentals_UI(stock_symbol):
         puts = options['options'].puts.drop(columns=['contractSymbol', 'lastTradeDate', 'contractSize', 'currency'])
 
         call_datatable = utils.generate_option_dash_datatable(
+            utils,
             dataframe=calls,
             id="calls-table-data")
         # data_1 = calls.to_dict('records')
         put_datatable = utils.generate_option_dash_datatable(
+            utils,
             dataframe=puts,
             id="puts-table-data")
 
@@ -271,9 +292,10 @@ def update_fundamentals_UI(stock_symbol):
     if financials.empty:
         pass
     else:
-        master_financials_df = utils.generate_master_financials(financials, balanceSheet, cashflows, earnings,
+        master_financials_df = utils.generate_master_financials(utils, financials, balanceSheet, cashflows, earnings,
                                                                 master_financials_df)
-        master_financials = utils.generate_generic_dash_datatable(master_financials_df, id='master-financial-data')
+        master_financials = utils.generate_generic_dash_datatable(utils, master_financials_df,
+                                                                  id='master-financial-data')
 
     # Should be Empty for ETFs
 
@@ -432,7 +454,7 @@ def update_fundamentals_UI(stock_symbol):
             pm_chart_df.reset_index(inplace=True)
             pm_chart_df.sort_index(ascending=True, inplace=True)
 
-            sector_pm_sql = dbObj.create_sql_string(SECTOR_RATIOS)
+            sector_pm_sql = dbObj.create_sql_string(dbObj, SECTOR_RATIOS)
             sector_pm_df = pd.read_sql_query(sector_pm_sql, conn)
             sector_pm_df = sector_pm_df.query('gics_sector=="{}"'.format(stock_sector), inplace=False)
             # sector_pm_df = sector_pm_df.transpose()
@@ -451,7 +473,7 @@ def update_fundamentals_UI(stock_symbol):
             # margin_df.drop_duplicates(subset=['Years'], inplace=True)
             # margin_df.sort_index(ascending=True, inplace=True)
 
-            profit_margin_figure = utils.generate_bar_and_line_graph(pm_chart_df, sector_pm_df,
+            profit_margin_figure = utils.generate_bar_and_line_graph(utils, pm_chart_df, sector_pm_df,
                                                                      title='Margin Analysis - Company vs Industry',
                                                                      x_column='Years',
                                                                      y_column='Profit Margin')
@@ -484,16 +506,17 @@ def update_fundamentals_UI(stock_symbol):
         else:
             ebit_margin = avg_ebit / avg_revenue
 
-        revenueCheck = utils.checkForColinDF(master_financials_df, 'Revenue')
-        ebitCheck = utils.checkForColinDF(master_financials_df, 'Ebit') or utils.checkForColinDF(master_financials_df,
-                                                                                                 'EBIT')
-        netIncomeCheck = utils.checkForColinDF(master_financials_df, 'Net Income')
-        incomeBeforeTax = utils.checkForColinDF(master_financials_df, 'Income Before Tax')
+        revenueCheck = utils.checkForColinDF(utils, master_financials_df, 'Revenue')
+        ebitCheck = utils.checkForColinDF(utils, master_financials_df, 'Ebit') or utils.checkForColinDF(
+            master_financials_df,
+            'EBIT')
+        netIncomeCheck = utils.checkForColinDF(utils, master_financials_df, 'Net Income')
+        incomeBeforeTax = utils.checkForColinDF(utils, master_financials_df, 'Income Before Tax')
 
         if revenueCheck:
             income_growth_rate = (((master_financials_df[mfdf_cols[0]]['Revenue'] /
                                     master_financials_df[mfdf_cols[mf_years - 1]]['Revenue']) * (
-                                               1 / mf_years)) - 1) * 100
+                                           1 / mf_years)) - 1) * 100
         else:
             if ebitCheck:
                 if 'Ebit' in master_financials_df.index:
@@ -535,9 +558,10 @@ def update_fundamentals_UI(stock_symbol):
 
         adj_earnings = normalized_profit - avg_capex
 
-        liabNetMinorityInterest = utils.checkForColinDF(master_financials_df, 'Total Liabilities Net Minority Interest')
-        totAssetsCheck = utils.checkForColinDF(master_financials_df, 'Total Assets')
-        totLiabCheck = utils.checkForColinDF(master_financials_df, 'Total Liab')
+        liabNetMinorityInterest = utils.checkForColinDF(utils, master_financials_df,
+                                                        'Total Liabilities Net Minority Interest')
+        totAssetsCheck = utils.checkForColinDF(utils, master_financials_df, 'Total Assets')
+        totLiabCheck = utils.checkForColinDF(utils, master_financials_df, 'Total Liab')
 
         if liabNetMinorityInterest and totAssetsCheck:
             totLiab = master_financials_df[mfdf_cols[0]]['Total Liabilities Net Minority Interest']
@@ -736,7 +760,7 @@ def update_fundamentals_UI(stock_symbol):
             pm_chart_df.reset_index(inplace=True)
             pm_chart_df.sort_index(ascending=True, inplace=True)
 
-            profit_margin_figure = utils.generate_bar_graph(pm_chart_df, 'ETF Margin Analysis', x_column='Years',
+            profit_margin_figure = utils.generate_bar_graph(utils, pm_chart_df, 'ETF Margin Analysis', x_column='Years',
                                                             y_column='Profit Margin')
 
         keys = ['sector', 'fullTimeEmployees', 'longBusinessSummary', 'website', 'city', 'state', 'zip',
@@ -767,7 +791,7 @@ def update_fundamentals_UI(stock_symbol):
 
     financialRatioDF.drop(['Industry Ratios', 'key_0'], axis=1, inplace=True)
 
-    financial_ratios = utils.generate_generic_dash_datatable(financialRatioDF, id='financial-ratios-data')
+    financial_ratios = utils.generate_generic_dash_datatable(utils, financialRatioDF, id='financial-ratios-data')
 
     stock_price = "${:.2f}".format(price)
     business_summary = "Company Business Summary or what they do in their own words. Can be found in Annual Reports."
@@ -796,15 +820,28 @@ Layout of our Dash Application - the Bones of the App
 '''
 
 layout = dbc.Container(
-
     children=[
 
         # utils.get_sidebar("", companies_df, page_stock_info_ids),
-        html.Div(utils.get_sidebar("", companies_df, page_stock_info_ids)),
+        # html.Div(
+        #     children=
+        #     [
+        #         utils.get_sidebar(utils, companies_df, page_stock_info_ids),
+        #     ],
+        # ),
+        dbc.Row(
+            children=[
+
+                html.Div(utils.get_sidebar("", companies_df, page_stock_info_ids)),
+                html.Hr(),
+                html.H1("Fundamental Analysis - ".format(stock_symbol)),
+                html.Br(),
+            ]
+        ),
 
         dbc.Row(
             children=[
-                html.H1(
+                html.H2(
                     id='stock-name-heading',
                     className='mb-5'
                               "{} About".format(stock_symbol)
@@ -949,7 +986,7 @@ layout = dbc.Container(
 
             dbc.Col(
                 children=[
-                    utils.generate_generic_dash_datatable(pd.DataFrame.from_dict(stock_info),
+                    utils.generate_generic_dash_datatable(utils, pd.DataFrame.from_dict(stock_info),
                                                           id='stock-info-table')
                 ])
         ]),
@@ -992,7 +1029,8 @@ layout = dbc.Container(
                 ]),
         ]),
 
-    ])
+    ]
+)
 
 '''
 
@@ -1005,7 +1043,8 @@ Dash Callback that allows for interactivity between UI, API and DB
     Output('stock-name-heading', 'children'),
     Output('master-financial-heading', 'children'),
     Input('stock-storage', 'data'),
-    State('stock-storage', 'data')
+    State('stock-storage', 'data'),
+    suppress_callback_exceptions=True
 )
 def update_layout_w_storage_data(data, data1):
     if data is None or len(data) == 0:
@@ -1031,7 +1070,7 @@ def update_layout_w_storage_data(data, data1):
           Output('financial-ratios', 'children'),
           Output('business-summary', 'children'),
           Output('profit-margin-chart', 'figure'),
-          Input('get_stock_btn', 'n_clicks'),
+          # Input('get_stock_btn', 'n_clicks'),
           Input('ticker_input', 'value'),
           Input('companies_dropdown', 'value'),
           Input('stock-storage', 'data'),
@@ -1042,17 +1081,20 @@ def update_layout_w_storage_data(data, data1):
           suppress_callback_exceptions=True,
           prevent_initial_callbacks=True,
           )
-def update_layout(n_clicks, ticker_input_value, companies_dropdown, ticker_input, data):
+def update_layout(ticker_input_value, companies_dropdown, ticker_input, data):
     # Returns the updated information after entering a Stock Ticker into the Input Box
 
     if type(ticker_input) is dict:
+        logging.info(f"{ticker_input} is a dict, setting data equal to {ticker_input} and ticker_input will be "
+                     f"reset to None")
         data = ticker_input
         ticker_input = None
 
     if data is not None:
+
         stock_symbol = data['stock']
     else:
-        stock_symbol = utils.generate_random_stock()
+        stock_symbol = utils.generate_random_stock(utils)
         # ticker_input = ticker_input
 
         # NOT needed but keep for ex purposes.access Callback Context information to know which button from the options button list that was generated
@@ -1079,7 +1121,7 @@ def update_layout(n_clicks, ticker_input_value, companies_dropdown, ticker_input
 
             # TODO DRY is not being followed here this is also in the update_fundamentals_function as well
             try:
-                conn = dbObj.create_connection(DB_FILE)
+                conn = dbObj.create_connection(dbObj, DB_FILE)
 
                 # Getting single record for company - If no record returned we create and get data.
                 company_info_df = pd.read_sql_query(

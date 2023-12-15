@@ -1,6 +1,21 @@
 # Raw data comes from yfinance - add any other packages that provide data here
 # yfinance documentation https://pypi.org/project/yfinance/
 # Plotly  Documentation https://plotly.com/python/
+"""
+Stocks
+
+------------------------------------------------------------------------------
+Program Description
+-------------------------------------------------------------------------------
+
+This is all about the stocks and interacting with the API's that provide the
+data necessary to power our application.
+
+----------------------------------------------------------------------------------
+
+
+"""
+import config
 import datetime as dt
 import sys
 from sqlite3 import Error
@@ -10,86 +25,9 @@ import pandas as pd
 import talib as ta
 import yfinance as yf
 
+# import app
 import db
 import utils
-
-'''
-Technical Analysis V1.0 
-Author - Anthony Thomas - Bell 
-Version 1.0
-May 13th 2021
-
-------------------------------------------------------------------------------
-Program Description
--------------------------------------------------------------------------------
-
-Quick Program to analyze stock price to learn how to perform technical analysis
-for trading securities better. Also, because I am extra and want to turn this into something 
-to help me learn to identify patterns and trends we are going to make it into a dashboard using plotly
-and serve it either using Django or Flask maybe pull in some sentiment analysis 
-from current news articles and searching thelayoff and blind.com reviews, as well as how 
-that security is performing against its industry as well as the overall market.
-
-----------------------------------------------------------------------------------
-For Trading Options
-
-When buying calls you do not want to get the shares assigned, and want to close it out ITM before expiration, 
-when selling calls you want them to expire worthless, you get to keep premimum and you 100 shares.
-
-******* BEFORE BUYING OPTIONS MAKE SURE TO CHECK EX-DIV DATE ************
-
-Extrinsic Value - Time Value. This is important for Out of the Money (OTM) options. 
-
-Intrinsic Value - The difference between the current price and the strike price. Priced into the option price.
-
-Strike Price -  The price at which you will purchase the underlying given your option contract.
-
-Expiration Date - Date that the option will expire, 
-
-Know the Greeks for Options 
-
-Delta - How much the option value changes with a $1.00 increase/decrease in the share price. 
-    Calls - 0 and 1 
-    Puts - 0 and -1
-    
-    Like Owning the Shares without actually owning the share. 
-    positive delta bullish on the market, negative delta is bearish on the market 
-    
-    Roughly the % Chance of this option becoming in the money (ITM) at some point before expiration, 
-    which helps you hedge risk.
-    
-    Speed at which options prices change
-
-Gamma - How fast the delta changes with a $1 change in share price.
-    accelerates delta in a positive or negative way, so they are correlated.
-    
-    When Buying High Gamma can be your friend if you forecast its direction correctly, converse is true when selling,
-    high gamma is not your friend.
-        
-    
-Theta - How much option value is going to decrease (Time decay) everyday keeping the price and implied volitality (IV) 
-        constant. The option's value decrease increases as time inches closer to expiration. Like a ball rolling downhill,
-        your monies getting further and further away (if your the buyer) until its gone.
-    
-        This is ENEMY NUMBER UNO for options buyer's as it decreases the value down to nothing as time gets closer to 
-        expiration date. Again, this is converse for the Option seller as they not only get to keep their underlying, 
-        but gain a premium as well.
-        
-        at-the-money options have the most sensitivity to theta because they have the biggest time-value built into thier
-        premiums making their risk higher.
-        
-    
-Vega - How much options value will change with a 1% Change to Implied Volatility
-    if IV dies that is how much vega is going to hurt and cost you money even when the stock price goes up
-    Do not fall victim to the IV Crush usually around earnings - DO NOT BUY calls right before Earnings 
-    The lower the IV the less vega will effect option premium
-    
-Rho - How much the option value is going to change with 1% Change in interest rate, T-Bonds, etc. This usually only comes 
-into play with LEAPS because if interest rates rise that makes borrowing money more expensive i.e smaller growth.
-    
-Options Strategum:
-Short Condor Strategy - works on securites with High Volatility (Price Swings)
-'''
 
 '''
     The My Stock Class has the following responsibilities around the Stock chosen and does all the interacting with the 
@@ -105,19 +43,34 @@ Short Condor Strategy - works on securites with High Volatility (Price Swings)
 
 
 class MyStock:
-    ST_PERIOD = 20
-    LG_PERIOD = 50
-    BB_MULTIPLIER = 1.96
+    # ST_PERIOD = app.DEFAULTS.stock_defaults['technical']['ST_PERIOD']
+    # LG_PERIOD = app.DEFAULTS.stock_defaults['technical']['LG_PERIOD']
+    # BB_MULTIPLIER = app.DEFAULTS.stock_defaults['technical']['BB_MULTIPLIER']
+    #
+    # RSI_PERIOD = app.DEFAULTS.stock_defaults['technical']['RSI_PERIOD']
+    #
+    # MA50 = 50
+    # MA72 = 72
+    # MA200 = 200
+    #
+    # MACD_FAST_PD = 12
+    # MACD_SLOW_PD = 26
+    # MACD_SIGNAL_LINE = 9
 
-    RSI_PERIOD = 14
+    def __init__(self):
+        defaults = config.ScreenerConfig()
 
-    MA50 = 50
-    MA72 = 72
-    MA200 = 200
+        self.ST_PERIOD = defaults.stock_defaults['technical']['ST_PERIOD']
+        self.LG_PERIOD = defaults.stock_defaults['technical']['LG_PERIOD']
+        self.BB_MULTIPLIER = defaults.stock_defaults['technical']['BB_MULTIPLIER']
 
-    MACD_FAST_PD = 12
-    MACD_SLOW_PD = 26
-    MACD_SIGNAL_LINE = 9
+        self.RSI_PERIOD = defaults.stock_defaults['technical']['RSI_PERIOD']
+        self.MA50 = defaults.stock_defaults['technical']['MA50']
+        self.MA72 = defaults.stock_defaults['technical']['MA72']
+        self.MA200 = defaults.stock_defaults['technical']['MA200']
+        self.MACD_FAST_PD = defaults.stock_defaults['technical']['MACD_FAST_PD']
+        self.MACD_SLOW_PD = defaults.stock_defaults['technical']['MACD_SLOW_PD']
+        self.MACD_SIGNAL_LINE = defaults.stock_defaults['technical']['MACD_SIGNAL_LINE']
 
     '''
     Converts Timestamp column's to only be the year.
@@ -183,8 +136,6 @@ class MyStock:
         df_to_save['date'] = pd.Timestamp.now()
 
         return df_to_save
-
-    # TODO Move this to the DB Connection Object
 
     '''
     Retrieves the stock ticker symbol to be passed into yFinance
@@ -267,7 +218,6 @@ class MyStock:
                     stock_info_cpy = pd.DataFrame.from_dict(stock_info_cpy, orient='index')
                     stock_info_cpy.loc['symbol', :] = data.history_metadata['symbol']
 
-
                     # stock_info = pd.DataFrame.from_dict(stock_info)
                     # stock_info_cpy.rename(index={'52WeekChange': 'fiftyTwoWeekChange'}, inplace=True)
                     stock_info_cpy.columns = ['Values']
@@ -302,7 +252,10 @@ class MyStock:
                     # COMMIT/APPEND DB Tables
                     if not stock_info_cpy.empty:
                         try:
-                            stock_info_cpy.to_sql('stock_basic_info', conn, index=False, if_exists='append')
+                            dbObj = db.DBConnection
+                            dbObj.append_data_to_table(dbObj, table_name='stock_basic_info', conn=conn,
+                                                       dataframe=stock_info_cpy)
+                            # stock_info_cpy.to_sql('stock_basic_info', conn, index=False, if_exists='append')
                             logging.info("Earnings records appended to the database.")
                         except Error as e:
                             logging.error("Error occurred when appending to the database")
@@ -449,7 +402,13 @@ class MyStock:
             else:
                 dataframe['stock_id'] = stock_id
 
-            max_date = dt.datetime.strptime(str(dataframe['date'].max()), '%Y-%m-%d %H:%M:%S')
+            logging.info(f"The max date is {dataframe['date'].max()}")
+            timestamp_string = str(dataframe['date'].max()).strip()
+            contains_mills = '.' in timestamp_string
+            if contains_mills:
+                max_date = dt.datetime.strptime(str(dataframe['date'].max()).strip(), '%Y-%m-%d %H:%M:%S.%f')
+            else:
+                max_date = dt.datetime.strptime(str(dataframe['date'].max()).strip(), '%Y-%m-%d %H:%M:%S')
             max_date = max_date.date()
             current_date = dt.datetime.now().date() - dt.timedelta(1)
             logging.info(
@@ -494,7 +453,7 @@ class MyStock:
                 dataframe['obv'] = ta.OBV(dataframe['Close'], dataframe['Volume'])
 
                 # will return the dataframe with daily return already attached.
-                dataframe = utils.add_daily_return_to_df(dataframe)
+                dataframe = utils.Utils.add_daily_return_to_df("", dataframe)
                 dataframe['daily_return'].fillna(0, inplace=True)
 
         return dataframe

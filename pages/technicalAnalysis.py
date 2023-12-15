@@ -1,3 +1,77 @@
+'''
+Technical Analysis V1.0
+
+------------------------------------------------------------------------------
+Program Description
+-------------------------------------------------------------------------------
+
+Quick Program to analyze stock price to learn how to perform technical analysis
+for trading securities better. Also, because I am extra and want to turn this into something
+to help me learn to identify patterns and trends we are going to make it into a dashboard using plotly
+and serve it either using Django or Flask maybe pull in some sentiment analysis
+from current news articles and searching thelayoff and blind.com reviews, as well as how
+that security is performing against its industry as well as the overall market.
+
+----------------------------------------------------------------------------------
+For Trading Options
+
+When buying calls you do not want to get the shares assigned, and want to close it out ITM before expiration,
+when selling calls you want them to expire worthless, you get to keep premimum and you 100 shares.
+
+******* BEFORE BUYING OPTIONS MAKE SURE TO CHECK EX-DIV DATE ************
+
+Extrinsic Value - Time Value. This is important for Out of the Money (OTM) options.
+
+Intrinsic Value - The difference between the current price and the strike price. Priced into the option price.
+
+Strike Price -  The price at which you will purchase the underlying given your option contract.
+
+Expiration Date - Date that the option will expire,
+
+Know the Greeks for Options
+
+Delta - How much the option value changes with a $1.00 increase/decrease in the share price.
+    Calls - 0 and 1
+    Puts - 0 and -1
+
+    Like Owning the Shares without actually owning the share.
+    positive delta bullish on the market, negative delta is bearish on the market
+
+    Roughly the % Chance of this option becoming in the money (ITM) at some point before expiration,
+    which helps you hedge risk.
+
+    Speed at which options prices change
+
+Gamma - How fast the delta changes with a $1 change in share price.
+    accelerates delta in a positive or negative way, so they are correlated.
+
+    When Buying High Gamma can be your friend if you forecast its direction correctly, converse is true when selling,
+    high gamma is not your friend.
+
+
+Theta - How much option value is going to decrease (Time decay) everyday keeping the price and implied volitality (IV)
+        constant. The option's value decrease increases as time inches closer to expiration. Like a ball rolling downhill,
+        your monies getting further and further away (if your the buyer) until its gone.
+
+        This is ENEMY NUMBER UNO for options buyer's as it decreases the value down to nothing as time gets closer to
+        expiration date. Again, this is converse for the Option seller as they not only get to keep their underlying,
+        but gain a premium as well.
+
+        at-the-money options have the most sensitivity to theta because they have the biggest time-value built into thier
+        premiums making their risk higher.
+
+
+Vega - How much options value will change with a 1% Change to Implied Volatility
+    if IV dies that is how much vega is going to hurt and cost you money even when the stock price goes up
+    Do not fall victim to the IV Crush usually around earnings - DO NOT BUY calls right before Earnings
+    The lower the IV the less vega will effect option premium
+
+Rho - How much the option value is going to change with 1% Change in interest rate, T-Bonds, etc. This usually only comes
+into play with LEAPS because if interest rates rise that makes borrowing money more expensive i.e smaller growth.
+
+Options Strategum:
+Short Condor Strategy - works on securites with High Volatility (Price Swings)
+'''
 import random
 from sqlite3 import Error
 import logging
@@ -10,8 +84,9 @@ import pandas as pd
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 
+# import app
 import db
-import utils
+from utils import Utils as utils
 from stock import MyStock
 
 # from app import app  # Needed for making app multi-page
@@ -24,14 +99,14 @@ StockObj = MyStock()
 conn = None
 
 # Connect to DB and  Load Data
-DB_FILE = "./stock-db.db"
+DB_FILE = dbObj.DB_FILE
 
 try:
     conn = dbObj.create_connection(db_file=DB_FILE)
     logging.info("Successfully Connected to the DB from Technical Analysis.")
     # stock_price_df = pd.read_sql('SELECT * FROM stock_price, stock WHERE stock_id= stock.id', conn)
 except Error as e:
-    logging.error(f"Error Occured | {e}")
+    logging.error(f"Error Occurred when trying to load {DB_FILE} | {e}")
 
 # TODO Feature Enhancement add ability to automatically show how security of interest does against whatever the industry
 #  3 year rolling averages are. Similar to Grad School Corp Finance Project.
@@ -68,7 +143,7 @@ def update_UI(stock_symbol):
     company_name, stock_sector, stock_subsector, headquarters, data = None, None, None, None, None
 
     if stock_symbol is not None:
-        company_info_df, conn = utils.get_company_info(stock_symbol)
+        company_info_df, conn = utils.get_company_info(utils, stock_symbol)
 
         if company_info_df is None or company_info_df.empty:
             # This takes us to adding the new symbol to our stocks table in the DB
@@ -172,7 +247,8 @@ def update_UI(stock_symbol):
     options, financials, cashflows, earnings, balanceSheet, stock_info = StockObj.get_ticker_additional_information(
         stock_symbol=stock_symbol, stock_info=True)  # TODO API HIT : ALSO MOVE TO OTHER PAGE IN APP
 
-    candlestick_figure = utils.generate_candlestick_graph_w_indicators(data, stock_symbol)
+    candlestick_figure = utils.generate_candlestick_graph_w_indicators(
+        utils, data, stock_symbol)
 
     # Checking to make sure that the stock has options, someitmes it is hit or miss with yFinance
     if len(options) > 0:
@@ -181,26 +257,34 @@ def update_UI(stock_symbol):
         puts = options['options'].puts.drop(columns=['contractSymbol', 'lastTradeDate', 'contractSize', 'currency'])
 
         call_datatable = utils.generate_option_dash_datatable(
+            utils,
             dataframe=calls,
             id="calls-table-data")
         # data_1 = calls.to_dict('records')
         put_datatable = utils.generate_option_dash_datatable(
+            utils,
             dataframe=puts,
             id="puts-table-data")
         # data_2 = puts.to_dict('records')
 
     # OBV Chart which is a leading indicator can be paired with a lagging indicator like (BB, MA, ATR,MACD)
-    obv_chart = utils.generate_scatter_graph_no_bar(dataframe=data, x_column='date', y_column='obv',
-                                                    secondary_y_column='Close',
-                                                    title="OBV (On Balance Volume)", upper_bound=0, lower_bound=0,
-                                                    candlestick=True)
+    obv_chart = utils.generate_scatter_graph_no_bar(
+        utils,
+        dataframe=data,
+        x_column='date',
+        y_column='obv',
+        secondary_y_column='Close',
+        title="OBV (On Balance Volume)", upper_bound=0, lower_bound=0,
+        candlestick=True)
 
     # ATR Chart
-    atr_chart = utils.generate_scatter_graph(dataframe=data, x_column='date', y_column='ATR',
+    atr_chart = utils.generate_scatter_graph(utils, dataframe=data, x_column='date', y_column='ATR',
                                              secondary_y_column='Volume',
                                              title="ATR (Average True Range)", upper_bound=0, lower_bound=0)
 
-    macd_figure = utils.generate_macd_chart(dataframe=data)
+    macd_figure = utils.generate_macd_chart(
+        utils,
+        dataframe=data)
 
     # Gets the most recent price in the data for the stock
     logging.info("End of Dataframe \n {}".format(data.tail()))
@@ -213,7 +297,7 @@ def update_UI(stock_symbol):
     logging.info(
         "{}\n{}\n{}\n{}\n{}".format(company_name, stock_symbol, stock_price, stock_sector, stock_subsector, stock_info))
 
-    return candlestick_figure, obv_chart, atr_chart, macd_figure, call_datatable, put_datatable, company_name, stock_symbol, stock_price, stock_sector, stock_subsector
+    return candlestick_figure, obv_chart, atr_chart, macd_figure, call_datatable, put_datatable
 
 
 # Constant styles for componenets
@@ -262,6 +346,14 @@ layout = dbc.Container(
     # className='col-md-12',
     children=[
         # utils.get_sidebar("", companies_df, page_stock_info_ids),
+        dbc.Row([
+            dbc.Col(
+                [
+                    html.Div(utils.get_sidebar("", companies_df, page_stock_info_ids)),
+                ],
+                width=12,
+            )
+        ]),
 
         dbc.Row([
             # Company Name
@@ -498,7 +590,8 @@ layout = dbc.Container(
     Output('stock-name-heading-tech', 'children'),
     Output('stock-price-heading', 'children'),
     Input('stock-storage', 'data'),
-    State('stock-storage', 'data')
+    State('stock-storage', 'data'),
+    suppress_callback_exceptions=True
 )
 def update_layout_w_storage_data(data, dataState):
     if data is None or len(data) == 0:
@@ -516,12 +609,12 @@ def update_layout_w_storage_data(data, dataState):
           Output('macd-graph', 'figure'),
           Output('calls-table', 'children'),
           Output('puts-table', 'children'),
-          Output('stock-name', 'children'),
-          Output('stock-title', 'children'),
-          Output('stock-price', 'children'),
-          Output('stock-sector', 'children'),
-          Output('stock-subsector', 'children'),
-          Input('get_stock_btn', 'n_clicks'),
+          # Output('stock-name', 'children'),
+          # Output('stock-title', 'children'),
+          # Output('stock-price', 'children'),
+          # Output('stock-sector', 'children'),
+          # Output('stock-subsector', 'children'),
+          # Input('get_stock_btn', 'n_clicks'),
           Input('ticker_input', 'value'),
           Input('companies_dropdown', 'value'),
           Input('stock-storage', 'data'),
@@ -529,8 +622,9 @@ def update_layout_w_storage_data(data, dataState):
           #  range(0, len(options['option_dates']))],
           State('ticker_input', 'value'),
           # State('companies-dropdown', 'value'),
+          suppress_callback_exceptions=True
           )
-def update_layout(n_clicks, ticker_input_value, companies_dropdown, ticker_input, data):
+def update_layout(ticker_input_value, companies_dropdown, ticker_input, data):
     # Returns the updated information after entering a Stock Ticker into the Input Box
     if type(ticker_input) is dict:
         data = ticker_input
@@ -539,7 +633,7 @@ def update_layout(n_clicks, ticker_input_value, companies_dropdown, ticker_input
     if data is not None:
         stock_symbol = data['stock']
     else:
-        stock_symbol = utils.generate_random_stock()
+        stock_symbol = utils.generate_random_stock(utils, )
 
     # TODO access Callback Context information to know which button from the options button list that was generated
     #  and see which button was clicked and get that option chain and data. NEEDS FIXED

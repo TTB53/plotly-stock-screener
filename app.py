@@ -1,4 +1,26 @@
-import dash
+"""
+Author - Anthony Thomas - Bell
+Version 2.0
+Aug 6 2023
+
+-------------------------------------------------------------------------------
+Program Description
+-------------------------------------------------------------------------------
+
+
+Main Entry point into the Stock Screener Application.
+
+Will Help to identify Market Trends and Patterns, Analyze companies by their fundaments
+and technical analysis
+-------------------------------------------------------------------------------
+v1.0 May 2021 - July 2023
+v2.0 July 2023 - Present
+
+"""
+
+import sqlalchemy
+
+import config
 import dash_bootstrap_components as dbc
 from dash import Input, Output, dcc, html, callback, State
 import plotly.io as pio
@@ -18,11 +40,11 @@ from dash.dependencies import Input, Output
 from dash.exceptions import PreventUpdate
 
 import db
-import utils
+from utils import Utils as utils
 
 # Connect to your pages (pages)
 # from pages import fundamentalAnalysis, technicalAnalysis, homepage
-from stock import MyStock
+# from stock import MyStock
 
 # BOOSTRAP APPLICATION THEME
 #   CYBORG, DARKLY, LUX, MINTY, SOLAR, VAPOR,YETI -- All Cool can also create your own as well.
@@ -50,11 +72,13 @@ ALLOWED_TYPES = (
     "tel", "url", "range", "hidden",
 )
 
-ATB_ANALYTICS_GRP_LOGO = './assets/img/logo/atb-analytics-group-logo.png'
+# creating the config clas
+DEFAULTS = config.ScreenerConfig()
 
 # setup logger. Only run this once.
 logging.basicConfig(level=logging.DEBUG,  # lowest level and up. # TODO Change before sending to production.
                     encoding='utf-8',
+                    datefmt='%m-%d-%y %H:%M',
                     filename='./logs/logs.log',
                     filemode='w',
                     format="%(asctime)s - %(levelname)s - %(lineno)d | %(message)s ",
@@ -64,17 +88,19 @@ logging.basicConfig(level=logging.DEBUG,  # lowest level and up. # TODO Change b
 dbObj = db.DBConnection()
 
 # Interacts with the yFinance API
-StockObj = MyStock()
+# StockObj = MyStock()
 conn = None
 
 # Connect to DB and  Load Data
-DB_FILE = "./stock-db.db"
+DB_FILE = DEFAULTS.database_defaults['sqlite']['DB_FILE']
+DB_FILE_SQLALCHMY = DEFAULTS.database_defaults['sqlite']['DB_FILE_SA_SQLITE']
 
 try:
-    conn = dbObj.create_connection(db_file=DB_FILE)
-    logging.info("Successfully Connected to the DB.")
+    conn = dbObj.create_connection(db_file=DB_FILE_SQLALCHMY)
+    logging.info(f"Successfully Connected to the DB using {DB_FILE_SQLALCHMY}")
+    logging.info(f"SQLAlchemy Version -- {sqlalchemy.__version__}")
 except Error as e:
-    logging.error(f"Error occurred when trying to connect to the database | {e}")
+    logging.error(f"Error occurred when trying to connect to the database using {DB_FILE_SQLALCHMY}| {e}")
 
 companies_df = dbObj.select_table_data(conn=conn, table_name='stock')
 
@@ -99,84 +125,7 @@ app = dash.Dash(__name__,
                 assets_folder="./assets",
                 )
 
-navbar_sticky = utils.get_nav(1)
-
-# sidebar_header = dbc.Row(
-#     [
-#         dbc.Col(
-#             [
-#                 dcc.Link([
-#                     html.Img(id='logoImg', src=ATB_ANALYTICS_GRP_LOGO, alt="ATB Analytics Group Logo")
-#                 ], href="https://www.atb-analytics-group.webflow.io"),
-#             ],
-#             width=2,
-#         ),
-#
-#         dbc.Col(
-#             [
-#                 html.Button(
-#                     # use the Bootstrap navbar-toggler classes to style
-#                     html.Span(className="navbar-toggler-icon"),
-#                     className="navbar-toggler",
-#                     # the navbar-toggler classes don't set color
-#                     # style={
-#                     #     "color": "rgba(0,0,0,.5)",
-#                     #     "border-color": "rgba(0,0,0,.1)",
-#                     # },
-#                     id="navbar-toggle",
-#
-#                 ),
-#
-#                 # html.Button(
-#                 #     # use the Bootstrap navbar-toggler classes to style
-#                 #     html.Span(className="navbar-toggler-icon"),
-#                 #     className="navbar-toggler",
-#                 #     # the navbar-toggler classes don't set color
-#                 #     # style={
-#                 #     #     "color": "rgba(0,0,0,.5)",
-#                 #     #     "border-color": "rgba(0,0,0,.1)",
-#                 #     # },
-#                 #     id="sidebar-toggle",
-#                 # ),
-#             ],
-#             # the column containing the toggle will be only as wide as the
-#             # toggle, resulting in the toggle being right aligned
-#             width="auto",
-#             # vertically align the toggle in the center
-#             align="center",
-#         ),
-#         dbc.Col(
-#             [
-#                 dbc.Collapse(
-#                     dbc.Nav(
-#                         [
-#                             dbc.NavLink(f"{page['name']} ", href=page["relative_path"]) for page in
-#                             dash.page_registry.values() if page["module"] != "pages.not_found_404"
-#                         ],
-#                         # vertical=True,
-#                         pills=True,
-#                         horizontal=True,
-#                     ),
-#                     id="collapse",
-#                     is_open=True,
-#                 ),
-#             ]
-#         ),
-#         dbc.Col([
-#             html.Br(),
-#             html.H2(
-#                 id='sidebar-menu-name',
-#                 children=["Home"],
-#                 # className="display-5",
-#             ),
-#         ],
-#             width=12,
-#         ),
-#
-#     ]
-# )
-
-# stock_row_info = utils.get_sidebar("", companies_df, page_stock_info_ids)
+navbar_sticky = utils.get_nav(utils, 1)
 
 sidebar = dbc.Col(
     id='sidebar',
@@ -239,15 +188,12 @@ app.layout = dbc.Container(
             ],
             fullscreen=True,
             type="dot",
-            color=utils.get_random_color(),
+            color=utils.get_random_color(utils, ),
         ),
 
         dbc.Row(
             children=[
                 navbar_sticky,
-                # html.Div(stock_row_info,),
-                # navbar_header,
-                # sidebar,
                 content
             ],
         )
@@ -257,8 +203,10 @@ app.layout = dbc.Container(
 )
 
 
-@callback(Output('stock-storage', 'data'),
-          Input('companies_dropdown', 'value'))
+@callback(
+    Output('stock-storage', 'data'),
+    Input('companies_dropdown', 'value'),
+)
 def add_stock_data_to_storage(stock_symbol, data=None):
     if stock_symbol is None or stock_symbol == "Company Ticker Symbol":
         logging.error(f"Error Occurred {stock_symbol} is None.")

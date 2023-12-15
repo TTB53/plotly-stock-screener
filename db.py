@@ -1,11 +1,25 @@
 '''
-Creating the database for housing stock data information
+
+DB Connection
+
+------------------------------------------------------------------------------
+Program Description
+-------------------------------------------------------------------------------
+
+Class that does the majority of the interacting with the database
+
+----------------------------------------------------------------------------------
 '''
 import sqlite3
 from sqlite3 import Error
 import logging
 
 import pandas as pd
+import sqlalchemy
+from sqlalchemy import create_engine, inspect, text
+from sqlalchemy.orm import sessionmaker
+
+import config
 
 
 def open_and_read_sql(filename):
@@ -18,11 +32,13 @@ def open_and_read_sql(filename):
 
 # Create Table SQL statements
 
-DB_FILE = "./stock-db.db"
+DB_FILE = config.ScreenerConfig.database_defaults['sqlite']['DB_FILE_SA_SQLITE']
+# DB = 'sqlite'
+# DB_FILE_FULL = f'{DB}:///{DB_FILE}'
 SnP500_FILE = "./data/s&p500_stocks_Jun18_2021.csv"
 
-balance_sheet_table_sql = "./data/SQL/create/balnce_sheet/BalanceSheet.sql"
-basic_info_table_sql = "./data/SQL/create/comapny_information/CompanyInfo.sql"
+balance_sheet_table_sql = "./data/SQL/create/balance_sheet/BalanceSheet.sql"
+basic_info_table_sql = "./data/SQL/create/company_information/CompanyInfo.sql"
 cashflow_table_sql = "./data/SQL/create/cashflow/Cashflow.sql"
 earnings_table_sql = "./data/SQL/create/financial/Earnings.sql"
 financials_table_sql = "./data/SQL/create/financial/Financials.sql"
@@ -101,13 +117,12 @@ drop_financials_sql = """ DROP TABLE IF EXISTS stock_financials"""
 
 
 class DBConnection:
-    """
-    Create a database connection to the database specified by db_file
-    :param db_file: database file path
-    :return  Connection object or None
-    """
-
     DB_FILE = DB_FILE
+    """
+    Create an String version of an SQL query or query partial 
+    :param sql_file: sql file path
+    :return  sql_str: string represntation of SQL file
+    """
 
     def create_sql_string(self, sql_file):
         sql_file = open(sql_file)
@@ -115,11 +130,29 @@ class DBConnection:
 
         return sql_str
 
+    """
+    Create a database connection to the database specified by db_file
+    :param db_file: database file path
+    :return  Connection object or None
+    """
+
     def create_connection(self, db_file=DB_FILE):
+        from sqlalchemy.exc import OperationalError
 
         conn = None
         try:
-            conn = sqlite3.connect(db_file)
+            conn = create_engine(db_file)
+
+            # Check the connection that was established
+            with conn.connect() as connection:
+                result = connection.execute(text("SELECT * FROM Stock LIMIT 1"))
+                if result.scalar() == 1:
+                    logging.info(f"Database Connection was established using the following DB: {db_file}")
+        except OperationalError as e:
+            logging.error(
+                f"SQLAlchemy Operation Error Occurred when connecting "
+                f"to the Database check db connection string.{db_file}")
+
             return conn
         except Error as e:
             logging.info(f"There was an error when trying to connect to {db_file} database | {e}")
@@ -137,7 +170,7 @@ class DBConnection:
         try:
             c = conn.cursor()
             c.execute(drop_table_sql)
-            logging.info("Table was Dropped Successfully.")
+            logging.info(f"Table was Dropped Successfully using this statement \n{drop_table_sql}\n")
 
         except Error as e:
             logging.info(
@@ -187,7 +220,6 @@ class DBConnection:
                 conn.commit()
                 logging.info("Data Successfully entered into the DB.")
             c.close()
-            # conn.close() TODO check on if you should close/reopen after each insert or not.Feels like this would make it really slow?
 
         except Error as e:
             logging.info(e)
@@ -295,14 +327,19 @@ class DBConnection:
     '''
     Get all the data in a selected SQL table
     :param table_name name of SQL table
-    :param conn SQLite3 Connection Object
+    :param conn SQLAlchemy Connection Object
     '''
 
     def select_table_data(self, conn, table_name):
         try:
-            c = conn.cursor()
-            data = pd.read_sql_query('''SELECT * from {}'''.format(table_name), conn)
-            c.close()
+            if type(conn) is sqlalchemy.Engine:
+                with conn.begin() as connection:
+                    result = connection.execute(text(f"SELECT * FROM {table_name}"))
+                    data = pd.DataFrame(result)
+            else:
+                c = conn.cursor()
+                data = pd.read_sql_query('''SELECT * from {}'''.format(table_name), conn)
+                c.close()
             return data
         except Error as e:
             logging.info(e)
@@ -316,10 +353,10 @@ class DBConnection:
 
     def select_record(self, conn, table_names, stock_id):
         try:
-            c = conn.cursor()
+            # c = conn.cursor()
             # Will Return Dataframe
             data = pd.read_sql_query('''SELECT * FROM {} WHERE stock_id = {}'''.format(table_names, stock_id), conn, )
-            c.close()
+            # c.close()
             return data
         except Error as e:
             logging.info(e)
@@ -449,3 +486,44 @@ class DBConnection:
         logging.info(stock_df.head())
         logging.info(stock_price_df.head())
         # logging.info(options_df.head())
+
+    def append_data_to_table(self, table_name, conn, dataframe):
+        # Creating SQLAlchemy Session bound to our db connection
+        Session = sessionmaker(bind=conn)
+        session = Session()
+
+        try:
+            # Get the db table columns
+            inspector = inspect(conn)
+            table_cols = [col['name'] for col in inspector.get_columns(table_name)]
+
+            if len(table_cols) > 0:
+                logging.info(f"Table columns retrieved successfully!")
+                # Check for missing columns between db table and current dataframe data.
+                missing_cols = list(set(table_cols) - set(dataframe.columns))
+
+                if len(missing_cols) > 0:
+                    logging.info(f"There were {len(missing_cols)} missing columns identified between the db and data")
+                    for column in missing_cols:
+                        dataframe[column] = None
+
+                ordered_dataframe = dataframe[table_cols]
+                logging.info('Dataframe reordered to match DB col order.')
+
+                try:
+                    ordered_dataframe.to_sql(table_name, conn, index=False, if_exists='append')
+                    logging.info("Data appended to the database Successfully.")
+                    session.close()
+                except Error as e:
+                    session.rollback()
+                    logging.error("Error Occurred when trying to update/append the data to the database.")
+                    logging.error(e)
+                    session.close()
+
+            else:
+                logging.error(f"There are no columns for the table that was entered.")
+                session.close()
+
+        except Error as e:
+            logging.info(e)
+            session.close()

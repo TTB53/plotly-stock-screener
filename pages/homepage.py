@@ -1,3 +1,19 @@
+'''
+Homepage
+
+------------------------------------------------------------------------------
+Program Description
+-------------------------------------------------------------------------------
+
+Homepage of the Stock Screening Application, will show mainly the market
+information to get familiar with the current landscape, and then allow for
+some quick and dirty type analysis to drive you towards either choosing a
+stock from the list, entering a ticker symbol and then either navigating to
+fundamental or technical analysis to learn more about that particular stock.
+
+----------------------------------------------------------------------------------
+
+'''
 from sqlite3 import Error
 import logging
 import dash
@@ -13,8 +29,9 @@ from dash import callback
 from plotly import graph_objects as go
 from plotly.subplots import make_subplots
 
+# import app
 import db
-import utils
+from utils import Utils as utils
 from stock import MyStock
 
 import assets.candlestickPattens as cp
@@ -28,7 +45,7 @@ StockObj = MyStock()
 conn = None
 
 # Connect to DB and  Load Data
-DB_FILE = "./stock-db.db"
+DB_FILE = db.DB_FILE
 
 try:
     conn = dbObj.create_connection(db_file=DB_FILE)
@@ -87,57 +104,113 @@ def serve_layout():
             dcc.Interval(id='page-load-count', ),
             # App Instructions
             dbc.Row([
-                dbc.Col(
-                    children=[
-                        html.Div(
-                            [
-                                html.H1(
-                                    children=[
-                                        "Simple Screener",
-                                    ],
-                                    className='display-1',
-                                ),
-                                html.H3("Keeping it simple when it comes to screening stocks."),
-                                html.Img(
-                                    src='./assets/img/oren-elbaz-Wf1opKy4iaI-unsplash.jpg',
-                                    id='header-img',
-                                    className='img img-responsive',
-                                    width='100%',
-                                    height='100%',
-                                ),
-                                html.Br(),
-                                html.P("How to use the App"),
+                # dbc.Col(
+                #     children=[
+                #         html.Div(
+                #             [
+                #                 html.H1(
+                #                     children=[
+                #                         "Simple Screener",
+                #                     ],
+                #                     className='display-1',
+                #                 ),
+                #                 dbc.Col(children=[
+                #                     html.Img(
+                #                         src='./assets/img/oren-elbaz-Wf1opKy4iaI-unsplash.jpg',
+                #                         id='header-img',
+                #                         className='img img-responsive',
+                #                         width='100%',
+                #                         height='30%',
+                #                     ),
+                #                 ],
+                #                     width=6
+                #                 ),
+                #                 dbc.Col(children=[
+                #                     html.H3("Keeping it simple when it comes to screening stocks."),
+                #
+                #                     html.Br(),
+                #                     html.P("How to use the App"),
+                #
+                #                     html.Ul(
+                #                         id='app-instruction-list',
+                #                         children=[
+                #                             html.Li(
+                #                                 """Check out the Market Analysis Heatmap to see the current market
+                #                                 returns, or select a specific market of interest to view the data. """
+                #                             ),
+                #                             html.Li(
+                #                                 "Select a Candlestick pattern from the dropdown to populate a list"
+                #                                 "of price graphs that match that pattern."),
+                #                             html.Li(
+                #                                 "Select the stock that you want to see more information on from the "
+                #                                 "Dropdown and choose which analysis you would like to see."),
+                #                             # html.Li("Choose the Analysis you wish to start with.You can flip between the "
+                #                             #         "fundamental and technical analysis tabs without"),
+                #                         ]
+                #                     )
+                #                 ],
+                #                     width=6
+                #                 ),
+                #
+                #                 html.Br(),
+                #
+                #             ],
+                #             style={
+                #                 'min-height': '20vh',
+                #             },
+                #             id='app-instructions-wrapper',
+                #             className='mb-2 p-5'
+                #         ),
 
-                                html.Ul(
-                                    id='app-instruction-list',
-                                    children=[
-                                        html.Li(
-                                            """
-                                            Check out the Market Analysis Heatmap to see the current market returns, or select 
-                                            a specific market of interest to view the data.
-                                            """
-                                        ),
-                                        html.Li(
-                                            "Select a Candlestick pattern from the dropdown to populate a list"
-                                            "of price graphs that match that pattern."),
-                                        html.Li(
-                                            "Select the stock that you want to see more information on from the "
-                                            "Dropdown and choose which analysis you would like to see."),
-                                        # html.Li("Choose the Analysis you wish to start with.You can flip between the "
-                                        #         "fundamental and technical analysis tabs without"),
-                                    ]
-                                )
-                            ],
-                            style={
-                                'min-height': '20vh',
-                            },
-                            id='app-instructions-wrapper',
-                            className='mb-2 p-5'
+                    # ],
+                    # width=12
+                # ),
+                    dbc.Col(children=[
+                        html.Img(
+                            src='./assets/img/oren-elbaz-Wf1opKy4iaI-unsplash.jpg',
+                            id='header-img',
+                            className='img img-responsive',
+                            width='100%',
+                            height='30%',
                         ),
-
                     ],
-                    width=12
-                ),
+                        width=6
+                    ),
+                    dbc.Col(children=[
+                        html.H1(
+                            children=[
+                                "Simple Screener",
+                            ],
+                            className='display-1',
+                        ),
+                        html.H3("Keeping it simple when it comes to screening stocks."),
+
+                        html.Br(),
+                        html.P("How to use the App"),
+
+                        html.Ul(
+                            id='app-instruction-list',
+                            children=[
+                                html.Li(
+                                    """Check out the Market Analysis Heatmap to see the current market 
+                                    returns, or select a specific market of interest to view the data. """
+                                ),
+                                html.Li(
+                                    "Select a Candlestick pattern from the dropdown to populate a list"
+                                    "of price graphs that match that pattern."),
+                                html.Li(
+                                    "Select the stock that you want to see more information on from the "
+                                    "Dropdown and choose which analysis you would like to see."),
+                                # html.Li("Choose the Analysis you wish to start with.You can flip between the "
+                                #         "fundamental and technical analysis tabs without"),
+                            ]
+                        )
+                    ],
+                        width=6
+                    ),
+
+                    html.Br(),
+
 
             ]),
             html.Br(),
@@ -179,11 +252,13 @@ def serve_layout():
                     width=12,
                     align='center',
                 ),
+                html.Br(),
                 dbc.Col(
                     children=[
                         html.Div(
                             children=[
                                 utils.loading_wrapper(
+                                    utils,
                                     dbc.Card(
                                         className="card",
                                         children=[
@@ -214,11 +289,13 @@ def serve_layout():
                     width=6,
                 ),
 
+                html.Br(),
                 dbc.Col(
                     children=[
                         html.Div(
                             children=[
                                 utils.loading_wrapper(
+                                    utils,
                                     dbc.Card(
                                         className="card",
                                         children=[
@@ -238,7 +315,7 @@ def serve_layout():
                                             'width': '100%',
                                             # 'height': '25vh',
                                         }
-                                    ), 'stock-rois-loading-wrapper'
+                                    ),
                                 )
                             ]
                         )
@@ -251,214 +328,61 @@ def serve_layout():
             ),
 
             html.Br(),
-            # Fundamental and Technical Analysis selection cards.
-            dbc.Row(
-                [
-                    dbc.Col(
-                        children=[
-                            html.Div(
-                                children=
-                                [
-                                    html.H2("Fundamental and Technical Analysis"),
-                                    html.P(
-                                        """
-                                        Fundamental Analysis and Technical Analysis are of two differing schools of thought,
-                                        however their disciplines tend to overlap quite often when it comes to making
-                                        financially sound decisions.
-                                        """
-                                    ),
-                                    html.P(
-                                        """
-                                        
-                                        """
-                                    ),
-                                    html.Div(utils.get_sidebar("", companies_df, page_stock_info_ids)),
-                                    html.Hr(),
-
-                                    # Quick indicators from the latest db data if possible on the stock selected.
-                                    dbc.CardGroup(
-                                        children=[
-                                            dbc.Card(
-                                                className="card",
-                                                children=[
-                                                    html.H4("Liquidity", className='p-2'),
-                                                    # dbc.CardImg(src="assets/img/technicalAnalysis.png"),
-                                                    utils.loading_wrapper(dcc.Graph(
-                                                        id='liquidity-kpi',  # figure=[],
-                                                        style={
-                                                            'height': '200px',
-                                                            'padding': '2px'
-                                                        }
-
-                                                    ), )
-                                                    # dbc.CardBody(
-                                                    #     children=[
-                                                    #         html.H4("Technical Analysis"),
-                                                    #         html.P(
-                                                    #             "Fundamental Analysis is a method of measuring a security's intrinsic value "
-                                                    #             "by examining related economic and financial factors"
-                                                    #             ""),
-                                                    #     ]
-                                                    # ),
-                                                ],
-                                            ),
-                                            dbc.Card(
-                                                className="card",
-                                                children=[
-                                                    html.H4("Solvency", className='p-2'),
-                                                    # dbc.CardImg(src="assets/img/technicalAnalysis.png"),
-                                                    utils.loading_wrapper(dcc.Graph(
-                                                        id='solvency-kpi',
-                                                        # figure=[],
-                                                        style={
-                                                            'height': '200px',
-                                                            'padding': '2px'
-                                                        }
-                                                    ), )
-                                                    # dbc.CardBody(
-                                                    #     children=[
-                                                    #         html.H4("Technical Analysis"),
-                                                    #         html.P(
-                                                    #             "Fundamental Analysis is a method of measuring a security's intrinsic value "
-                                                    #             "by examining related economic and financial factors"
-                                                    #             ""),
-                                                    #     ]
-                                                    # ),
-                                                ],
-                                            ),
-                                            dbc.Card(
-                                                className="card",
-                                                children=[
-                                                    html.H4("Activity", className='p-2'),
-                                                    utils.loading_wrapper(dcc.Graph(
-                                                        id='activity-kpi',
-                                                        # figure=[],
-                                                        style={
-                                                            'height': '200px',
-                                                            'padding': '2px'
-                                                        }
-                                                    ), )
-                                                ],
-                                            ),
-                                            dbc.Card(
-                                                className="card",
-                                                children=[
-                                                    html.H4("Profitability", className='p-2'),
-                                                    # dbc.CardImg(src="assets/img/technicalAnalysis.png"),
-                                                    utils.loading_wrapper(
-                                                        dcc.Graph(
-                                                            id='profitability-kpi',
-                                                            # figure=[],
-                                                            style={
-                                                                'height': '200px',
-                                                                'padding': '2px'
-                                                            }
-                                                        ),
-                                                    )
-                                                    # dbc.CardBody(
-                                                    #     children=[
-                                                    #         html.H4("Technical Analysis"),
-                                                    #         html.P(
-                                                    #             "Fundamental Analysis is a method of measuring a security's intrinsic value "
-                                                    #             "by examining related economic and financial factors"
-                                                    #             ""),
-                                                    #     ]
-                                                    # ),
-                                                ],
-                                            ),
-                                        ],
-                                        className='p-5'
-                                    ),
-                                ],
-                                id='fun-tech-info-wrapper',
-                                className='mb-1 p-5',
-                            ),
-
-                            # Deeper Analysis of the selected stock.
-                            dbc.CardGroup(
-                                children=[
-                                    dbc.Card(
-                                        className="card",
-                                        children=[
-                                            dbc.CardImg(src="assets/img/fundamentalAnalysis.png"),
-                                            dbc.CardBody(
-                                                # className='cardbody',
-                                                children=[
-                                                    html.H4("Fundamental Analysis"),
-                                                    html.P(
-                                                        ["Fundamental Analysis is a method of measuring a security's "
-                                                         "intrinsic value or fair market value."
-                                                         "by examining related economic and financial factors"
-                                                         ""]),
-                                                ]
-                                            ),
-                                            html.A(className="btn btn-primary", href="/fundamental-analysis",
-                                                   children=["Fundamental Analysis"]),
-
-                                        ],
-
-                                    ),
-                                    dbc.Card(
-                                        className="card",
-                                        children=[
-                                            dbc.CardImg(src="assets/img/technicalAnalysis.png", ),
-                                            dbc.CardBody(
-                                                # className ='cardbody',
-                                                children=[
-                                                    html.H4("Technical Analysis"),
-                                                    html.P(
-                                                        "Fundamental Analysis is a method of measuring a security's intrinsic value "
-                                                        "by examining related economic and financial factors"
-                                                        ""),
-                                                ]
-                                            ),
-                                            html.A(className="btn btn-primary", href="/technical-analysis",
-                                                   children=["Technical Analysis"]),
-                                            # dbc.CardLink("Card link", href="/pages/technical"),
-                                        ],
-
-                                    ),
-                                ],
-                                className='p-5'
-                            ),
-                        ],
-                        align='center',
-                        # width=12,
-                    ),
-                ]),
-            html.Br(),
             # Candlestick Patterns Selection Row
-            dbc.Row([
-                html.Div(
-                    children=[
-                        html.H2("Candlestick Patterns"),
-                        html.P(
+            dbc.Row(
+                children=[
+                dbc.Col(
+                    [
+                    html.H2("Candlestick Patterns"),
+                    html.P(
                             """
                             A daily candlestick represents a market’s opening, high, low, and closing (OHLC) prices. The 
                             rectangular real body, or just body, is colored with a dark color (red or black) for a drop in 
                             price and a light color (green or white) for a price increase. 
-                            """),
-                        html.P(
                             """
-                            The lines above and below the body 
-                            are referred to as wicks or tails, and they represent the day’s maximum high and low. 
-                            Taken together, the parts of the candlestick can frequently signal changes in a market’s direction 
-                            or highlight significant potential moves that frequently must be confirmed by the next day’s candle.
-                            """
-                        ),
-                        html.Br(),
-                        html.P(
-                            """
-                                Common patterns include things like Doji and Spinning Top, Bullish/Bearish Engulfing Lines,
-                                Hammers, Hanging Men and many others, but the key thing to remember is that these patterns
-                                can help in identify short-to-medium directions and momentum's of certain stocks or industries.
-                            """
-                        ),
-                    ],
-                    id='cs-pattern-info-wrapper',
-                    className='mb-2 p-5',
-                ),
+                    ),
+                    html.Br(),
+                        html.Div(
+                            children=[
 
+                                html.P(
+                                    """
+                                    The lines above and below the body 
+                                    are referred to as wicks or tails, and they represent the day’s maximum high and low. 
+                                    Taken together, the parts of the candlestick can frequently signal changes in a market’s direction 
+                                    or highlight significant potential moves that frequently must be confirmed by the next day’s candle.
+                                    """
+                                ),
+                                html.Br(),
+                                html.P(
+                                    """
+                                    Common patterns include things like Doji and Spinning Top, Bullish/Bearish Engulfing Lines,
+                                 Hammers, Hanging Men and many others, but the key thing to remember is that these patterns
+                                        can help in identify short-to-medium directions and momentum's of certain stocks or industries.
+                                    """
+                                ),
+                            ],
+                            id='cs-pattern-info-wrapper',
+                            className='mb-2 p-5',
+                        ),
+                    html.Br()
+                    ],
+                    width=6,
+                ),
+                dbc.Col(
+                    children=[
+                        html.Img(
+                            src='./assets/img/jason-briscoe-amLfrL8LGls-unsplash.jpg',
+                            # id='header-img',
+                            className='img img-responsive',
+                            width='100%',
+                            height='30%'
+                        ),
+
+                    ],
+                    width=6
+                ),
+                html.Br(),
                 html.Hr(),
                 dbc.Col(
                     children=[
@@ -527,7 +451,7 @@ def serve_layout():
                                         )
                                     ],
                                     type='circle',
-                                    color=ATBDEFAULTTHEME.CADETBLUE,
+                                    color=utils.get_random_color(utils),
                                 ),
 
                             ]
@@ -538,6 +462,197 @@ def serve_layout():
                 ),
             ],
             ),
+            html.Br(),
+            # Fundamental and Technical Analysis selection cards.
+            dbc.Row(
+                [
+                    dbc.Col(
+                        children=[
+                            html.Div(
+                                children=
+                                [
+                                    html.H2("Fundamental and Technical Analysis"),
+                                    html.P(
+                                        """
+                                        Fundamental Analysis and Technical Analysis are of two differing schools of thought,
+                                        however their disciplines tend to overlap quite often when it comes to making
+                                        financially sound decisions.
+                                        """
+                                    ),
+                                    html.P(
+                                        """
+                                        
+                                        """
+                                    ),
+                                    html.Div(utils.get_sidebar("", companies_df, page_stock_info_ids)),
+                                    html.Hr(),
+
+                                    # Quick indicators from the latest db data if possible on the stock selected.
+                                    dbc.CardGroup(
+                                        children=[
+                                            dbc.Card(
+                                                className="card",
+                                                children=[
+                                                    html.H4("Liquidity", className='p-2'),
+                                                    # dbc.CardImg(src="assets/img/technicalAnalysis.png"),
+                                                    utils.loading_wrapper(
+                                                        utils,
+                                                        dcc.Graph(
+                                                            id='liquidity-kpi',  # figure=[],
+                                                            style={
+                                                                'height': '200px',
+                                                                'padding': '2px'
+                                                            }
+
+                                                        ),
+                                                    )
+                                                    # dbc.CardBody(
+                                                    #     children=[
+                                                    #         html.H4("Technical Analysis"),
+                                                    #         html.P(
+                                                    #             "Fundamental Analysis is a method of measuring a security's intrinsic value "
+                                                    #             "by examining related economic and financial factors"
+                                                    #             ""),
+                                                    #     ]
+                                                    # ),
+                                                ],
+                                            ),
+                                            dbc.Card(
+                                                className="card",
+                                                children=[
+                                                    html.H4("Solvency", className='p-2'),
+                                                    # dbc.CardImg(src="assets/img/technicalAnalysis.png"),
+                                                    utils.loading_wrapper(
+                                                        utils,
+                                                        dcc.Graph(
+                                                            id='solvency-kpi',
+                                                            # figure=[],
+                                                            style={
+                                                                'height': '200px',
+                                                                'padding': '2px'
+                                                            }
+                                                        ), )
+                                                    # dbc.CardBody(
+                                                    #     children=[
+                                                    #         html.H4("Technical Analysis"),
+                                                    #         html.P(
+                                                    #             "Fundamental Analysis is a method of measuring a security's intrinsic value "
+                                                    #             "by examining related economic and financial factors"
+                                                    #             ""),
+                                                    #     ]
+                                                    # ),
+                                                ],
+                                            ),
+                                            dbc.Card(
+                                                className="card",
+                                                children=[
+                                                    html.H4("Activity", className='p-2'),
+                                                    utils.loading_wrapper(utils,
+                                                                          dcc.Graph(
+                                                                              id='activity-kpi',
+                                                                              # figure=[],
+                                                                              style={
+                                                                                  'height': '200px',
+                                                                                  'padding': '2px'
+                                                                              }
+                                                                          ), )
+                                                ],
+                                            ),
+                                            dbc.Card(
+                                                className="card",
+                                                children=[
+                                                    html.H4("Profitability", className='p-2'),
+                                                    # dbc.CardImg(src="assets/img/technicalAnalysis.png"),
+                                                    utils.loading_wrapper(
+                                                        utils,
+                                                        dcc.Graph(
+                                                            id='profitability-kpi',
+                                                            # figure=[],
+                                                            style={
+                                                                'height': '200px',
+                                                                'padding': '2px'
+                                                            }
+                                                        ),
+                                                    )
+                                                    # dbc.CardBody(
+                                                    #     children=[
+                                                    #         html.H4("Technical Analysis"),
+                                                    #         html.P(
+                                                    #             "Fundamental Analysis is a method of measuring a security's intrinsic value "
+                                                    #             "by examining related economic and financial factors"
+                                                    #             ""),
+                                                    #     ]
+                                                    # ),
+                                                ],
+                                            ),
+                                        ],
+                                        className='p-5'
+                                    ),
+                                ],
+                                id='fun-tech-info-wrapper',
+                                className='mb-1 p-5',
+                            ),
+
+                            # Deeper Analysis of the selected stock.
+                            dbc.CardGroup(
+                                children=[
+                                    dbc.Card(
+                                        className="card",
+                                        children=[
+                                            dbc.CardImg(
+                                                src="assets/img/towfiqu-barbhuiya-nApaSgkzaxg-unsplash.jpg",
+                                                top=True,
+                                                alt="Picture of man checking through and going over fundamental numbers for an investment. Image was provided by Towfiqu Barbhuiy from Unsplash.com"
+                                            ),
+                                            dbc.CardBody(
+                                                # className='cardbody',
+                                                children=[
+                                                    html.H4("Fundamental Analysis"),
+                                                    html.P(
+                                                        ["Fundamental Analysis is a method of measuring a security's "
+                                                         "intrinsic value or fair market value."
+                                                         "by examining related economic and financial factors"
+                                                         ""]),
+                                                ]
+                                            ),
+                                            html.A(className="btn btn-primary", href="/fundamental-analysis",
+                                                   children=["Fundamental Analysis"]),
+
+                                        ],
+
+                                    ),
+                                    dbc.Card(
+                                        className="card",
+                                        children=[
+                                            dbc.CardImg(
+                                                src="assets/img/adam-nowakowski-MFms-wkv3Ow-unsplash.jpg",
+                                                top=True,
+                                                alt="Image of a man performing technical stock analysis on two screens. Image was provided by adam-nowakowski from Upsplash",
+                                            ),
+                                            dbc.CardBody(
+                                                # className ='cardbody',
+                                                children=[
+                                                    html.H4("Technical Analysis"),
+                                                    html.P(
+                                                        "Fundamental Analysis is a method of measuring a security's intrinsic value "
+                                                        "by examining related economic and financial factors"
+                                                        ""),
+                                                ]
+                                            ),
+                                            html.A(className="btn btn-primary", href="/technical-analysis",
+                                                   children=["Technical Analysis"]),
+                                            # dbc.CardLink("Card link", href="/pages/technical"),
+                                        ],
+
+                                    ),
+                                ],
+                                className='p-5'
+                            ),
+                        ],
+                        align='center',
+                        # width=12,
+                    ),
+                ]),
             html.Br(),
             dbc.Row(
                 [
@@ -875,12 +990,14 @@ def update_securities_in_sector_chart(pattern_value):
         #                                            row['max_date'],
         #                                            row['min_date']), axis=1)
 
-        roi_heatmap = utils.generate_heatmap(roi_df,
-                                             title='',
-                                             z_values='Profit_Margin',
-                                             x_column='year',
-                                             y_column='company',
-                                             )
+        roi_heatmap = utils.generate_heatmap(
+            utils,
+            roi_df,
+            title='',
+            z_values='Profit_Margin',
+            x_column='year',
+            y_column='company',
+        )
         roi_heatmap_fig = dcc.Graph(
             figure=roi_heatmap,
             animate=True,
@@ -888,14 +1005,20 @@ def update_securities_in_sector_chart(pattern_value):
             responsive=True
         )
 
-        roi_df = utils.generate_generic_dash_datatable(roi_df, id='sector-margins-data-table')
-        return utils.loading_wrapper(html.Div(
-            [
-                roi_heatmap_fig,
-                html.Br(),
-                roi_df,
-            ]
+        roi_df = utils.generate_generic_dash_datatable(
+            utils,
+            roi_df,
+            id='sector-margins-data-table',
         )
+        return utils.loading_wrapper(
+            utils,
+            html.Div(
+                [
+                    roi_heatmap_fig,
+                    html.Br(),
+                    roi_df,
+                ]
+            ),
         )
 
         # dcc.Loading(
@@ -956,12 +1079,14 @@ def update_securities_in_sector_chart(pattern_value):
         #                                            row['max_date'],
         #                                            row['min_date']), axis=1)
 
-        roi_heatmap = utils.generate_heatmap(roi_df,
-                                             title='',
-                                             z_values='Profit_Margin',
-                                             x_column='year',
-                                             y_column='company',
-                                             )
+        roi_heatmap = utils.generate_heatmap(
+            utils,
+            roi_df,
+            title='',
+            z_values='Profit_Margin',
+            x_column='year',
+            y_column='company',
+        )
         roi_heatmap_fig = dcc.Graph(
             figure=roi_heatmap,
             animate=True,
@@ -969,15 +1094,21 @@ def update_securities_in_sector_chart(pattern_value):
             responsive=True
         )
 
-        roi_df = utils.generate_generic_dash_datatable(roi_df, id='sector-margins-data-table')
-
-        return utils.loading_wrapper(html.Div(
-            [
-                roi_heatmap_fig,
-                html.Br(),
-                roi_df,
-            ]
+        roi_df = utils.generate_generic_dash_datatable(
+            utils,
+            roi_df,
+            id='sector-margins-data-table',
         )
+
+        return utils.loading_wrapper(
+            utils,
+            html.Div(
+                [
+                    roi_heatmap_fig,
+                    html.Br(),
+                    roi_df,
+                ]
+            ),
         )
 
 
@@ -1004,12 +1135,14 @@ def update_sector_chart(sector):
         # roi_df = pd.melt(frames=[sector_bs_df, sector_earn_df],)
         roi_df = sector_bs_df
 
-        roi_heatmap = utils.generate_heatmap(roi_df,
-                                             title='',
-                                             z_values='Profit_Margin',
-                                             x_column='year',
-                                             y_column='gics_sector',
-                                             )
+        roi_heatmap = utils.generate_heatmap(
+            utils,
+            roi_df,
+            title='',
+            z_values='Profit_Margin',
+            x_column='year',
+            y_column='gics_sector',
+        )
         roi_heatmap_fig = dcc.Graph(
             figure=roi_heatmap,
             animate=True,
@@ -1018,18 +1151,23 @@ def update_sector_chart(sector):
         )
 
         roi_df = utils.generate_generic_dash_datatable(
+            utils,
             roi_df,
-            id='sector-margins-data-table')
+            id='sector-margins-data-table',
+        )
 
         return dcc.Loading(
             children=[
-                html.Div(roi_heatmap_fig,
-                         # style={'height': '25vh'}
+                html.Div(
+                    [
+                        roi_heatmap_fig
+                    ],
+                    # style={'height': '25vh'}
 
-                         )
+                )
             ],
             type='circle',
-            color=utils.get_random_color()
+            color=utils.get_random_color(utils, )
         )
     else:
         conn = dbObj.create_connection(dbObj.DB_FILE)
@@ -1043,13 +1181,19 @@ def update_sector_chart(sector):
         # sector_earn_df = pd.read_sql(sector_earnings_sql, conn)
         # roi_df = pd.melt(frames=[sector_bs_df, sector_earn_df],)
         roi_df = sector_bs_df
-        roi_heatmap = utils.generate_heatmap(roi_df,
-                                             title='',
-                                             z_values='Profit_Margin',
-                                             x_column='year',
-                                             y_column='gics_sector')
+        roi_heatmap = utils.generate_heatmap(
+            utils,
+            roi_df,
+            title='',
+            z_values='Profit_Margin',
+            x_column='year',
+            y_column='gics_sector')
 
-        roi_df = utils.generate_generic_dash_datatable(roi_df, id='sector-margins-data-table')
+        roi_df = utils.generate_generic_dash_datatable(
+            utils,
+            roi_df,
+            id='sector-margins-data-table',
+        )
 
         roi_heatmap_fig = dcc.Graph(
             figure=roi_heatmap,
@@ -1068,5 +1212,5 @@ def update_sector_chart(sector):
                 )
             ],
             type='circle',
-            color=utils.get_random_color()
+            color=utils.get_random_color(utils, )
         )
