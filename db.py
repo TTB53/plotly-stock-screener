@@ -357,6 +357,7 @@ class DBConnection:
             # Will Return Dataframe
             data = pd.read_sql_query('''SELECT * FROM {} WHERE stock_id = {}'''.format(table_names, stock_id), conn, )
             # c.close()
+            logging.info(f"the {stock_id} in the {table_names} table(s) produced the following data\n{data}")
             return data
         except Error as e:
             logging.info(e)

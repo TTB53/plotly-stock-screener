@@ -17,10 +17,9 @@ fundamental or technical analysis to learn more about that particular stock.
 from sqlite3 import Error
 import logging
 import dash
+from dash import html, dcc
 
 import dash_bootstrap_components as dbc
-import dash_core_components as dcc
-import dash_html_components as html
 import pandas as pd
 import talib
 from dash.dependencies import Input, Output
@@ -162,55 +161,54 @@ def serve_layout():
                 #             className='mb-2 p-5'
                 #         ),
 
-                    # ],
-                    # width=12
+                # ],
+                # width=12
                 # ),
-                    dbc.Col(children=[
-                        html.Img(
-                            src='./assets/img/oren-elbaz-Wf1opKy4iaI-unsplash.jpg',
-                            id='header-img',
-                            className='img img-responsive',
-                            width='100%',
-                            height='30%',
-                        ),
-                    ],
-                        width=6
+                dbc.Col(children=[
+                    html.Img(
+                        src='./assets/img/oren-elbaz-Wf1opKy4iaI-unsplash.jpg',
+                        id='header-img',
+                        className='img img-responsive',
+                        width='100%',
+                        height='30%',
                     ),
-                    dbc.Col(children=[
-                        html.H1(
-                            children=[
-                                "Simple Screener",
-                            ],
-                            className='display-1',
-                        ),
-                        html.H3("Keeping it simple when it comes to screening stocks."),
-
-                        html.Br(),
-                        html.P("How to use the App"),
-
-                        html.Ul(
-                            id='app-instruction-list',
-                            children=[
-                                html.Li(
-                                    """Check out the Market Analysis Heatmap to see the current market 
-                                    returns, or select a specific market of interest to view the data. """
-                                ),
-                                html.Li(
-                                    "Select a Candlestick pattern from the dropdown to populate a list"
-                                    "of price graphs that match that pattern."),
-                                html.Li(
-                                    "Select the stock that you want to see more information on from the "
-                                    "Dropdown and choose which analysis you would like to see."),
-                                # html.Li("Choose the Analysis you wish to start with.You can flip between the "
-                                #         "fundamental and technical analysis tabs without"),
-                            ]
-                        )
-                    ],
-                        width=6
+                ],
+                    width=6
+                ),
+                dbc.Col(children=[
+                    html.H1(
+                        children=[
+                            "Simple Screener",
+                        ],
+                        className='display-1',
                     ),
+                    html.H3("Keeping it simple when it comes to screening stocks."),
 
                     html.Br(),
+                    html.P("How to use the App"),
 
+                    html.Ul(
+                        id='app-instruction-list',
+                        children=[
+                            html.Li(
+                                """Check out the Market Analysis Heatmap to see the current market 
+                                returns, or select a specific market of interest to view the data. """
+                            ),
+                            html.Li(
+                                "Select a Candlestick pattern from the dropdown to populate a list"
+                                "of price graphs that match that pattern."),
+                            html.Li(
+                                "Select the stock that you want to see more information on from the "
+                                "Dropdown and choose which analysis you would like to see."),
+                            # html.Li("Choose the Analysis you wish to start with.You can flip between the "
+                            #         "fundamental and technical analysis tabs without"),
+                        ]
+                    )
+                ],
+                    width=6
+                ),
+
+                html.Br(),
 
             ]),
             html.Br(),
@@ -331,136 +329,137 @@ def serve_layout():
             # Candlestick Patterns Selection Row
             dbc.Row(
                 children=[
-                dbc.Col(
-                    [
-                    html.H2("Candlestick Patterns"),
-                    html.P(
-                            """
-                            A daily candlestick represents a market’s opening, high, low, and closing (OHLC) prices. The 
-                            rectangular real body, or just body, is colored with a dark color (red or black) for a drop in 
-                            price and a light color (green or white) for a price increase. 
-                            """
+                    dbc.Col(
+                        [
+                            html.H2("Candlestick Patterns"),
+                            html.P(
+                                """
+                                A daily candlestick represents a market’s opening, high, low, and closing (OHLC) prices. The 
+                                rectangular real body, or just body, is colored with a dark color (red or black) for a drop in 
+                                price and a light color (green or white) for a price increase. 
+                                """
+                            ),
+                            html.Br(),
+                            html.Div(
+                                children=[
+
+                                    html.P(
+                                        """
+                                        The lines above and below the body 
+                                        are referred to as wicks or tails, and they represent the day’s maximum high and low. 
+                                        Taken together, the parts of the candlestick can frequently signal changes in a market’s direction 
+                                        or highlight significant potential moves that frequently must be confirmed by the next day’s candle.
+                                        """
+                                    ),
+                                    html.Br(),
+                                    html.P(
+                                        """
+                                        Common patterns include things like Doji and Spinning Top, Bullish/Bearish Engulfing Lines,
+                                     Hammers, Hanging Men and many others, but the key thing to remember is that these patterns
+                                            can help in identify short-to-medium directions and momentum's of certain stocks or industries.
+                                        """
+                                    ),
+                                ],
+                                id='cs-pattern-info-wrapper',
+                                className='mb-2 p-5',
+                            ),
+
+                            html.Br()
+                        ],
+                        width=6,
+                    ),
+                    dbc.Col(
+                        children=[
+                            html.Img(
+                                src='./assets/img/jason-briscoe-amLfrL8LGls-unsplash.jpg',
+                                # id='header-img',
+                                className='img img-responsive',
+                                width='100%',
+                                height='30%'
+                            ),
+
+                        ],
+                        width=6
                     ),
                     html.Br(),
-                        html.Div(
-                            children=[
+                    html.Hr(),
+                    dbc.Col(
+                        children=[
+                            dbc.Card(
+                                className="card",
+                                children=[
+                                    dbc.CardHeader(html.H4("Candlestick Pattern Selection")),
+                                    dbc.CardBody(
+                                        children=[
+                                            html.P(
+                                                children=
+                                                [
+                                                    "Select a Candlestick Chart pattern below. Upon making your selection the application "
+                                                    "will search the database of stocks, and return the stocks that match that criteria."
+                                                    ""
+                                                ]
+                                            ),
+                                            dcc.Dropdown(
+                                                id="candlestick-pattern-dropdown",
+                                                options=[
 
-                                html.P(
-                                    """
-                                    The lines above and below the body 
-                                    are referred to as wicks or tails, and they represent the day’s maximum high and low. 
-                                    Taken together, the parts of the candlestick can frequently signal changes in a market’s direction 
-                                    or highlight significant potential moves that frequently must be confirmed by the next day’s candle.
-                                    """
-                                ),
-                                html.Br(),
-                                html.P(
-                                    """
-                                    Common patterns include things like Doji and Spinning Top, Bullish/Bearish Engulfing Lines,
-                                 Hammers, Hanging Men and many others, but the key thing to remember is that these patterns
-                                        can help in identify short-to-medium directions and momentum's of certain stocks or industries.
-                                    """
-                                ),
-                            ],
-                            id='cs-pattern-info-wrapper',
-                            className='mb-2 p-5',
-                        ),
-                    html.Br()
-                    ],
-                    width=6,
-                ),
-                dbc.Col(
-                    children=[
-                        html.Img(
-                            src='./assets/img/jason-briscoe-amLfrL8LGls-unsplash.jpg',
-                            # id='header-img',
-                            className='img img-responsive',
-                            width='100%',
-                            height='30%'
-                        ),
-
-                    ],
-                    width=6
-                ),
-                html.Br(),
-                html.Hr(),
-                dbc.Col(
-                    children=[
-                        dbc.Card(
-                            className="card",
-                            children=[
-                                dbc.CardHeader(html.H4("Candlestick Pattern Selection")),
-                                dbc.CardBody(
-                                    children=[
-                                        html.P(
-                                            children=
-                                            [
-                                                "Select a Candlestick Chart pattern below. Upon making your selection the application "
-                                                "will search the database of stocks, and return the stocks that match that criteria."
-                                                ""
-                                            ]
-                                        ),
-                                        dcc.Dropdown(
-                                            id="candlestick-pattern-dropdown",
-                                            options=[
-
-                                                {'label': patternsDict[pattern], 'value': patternsDict[pattern]} for
-                                                pattern
-                                                in
-                                                sorted(patternsDict)
-                                            ],
-                                            optionHeight=35,
-                                            searchable=True,
-                                            clearable=False,
-                                            placeholder="Select a Candlestick Chart Pattern",
-                                        ),
-                                        # html.Button('Submit', id='get-pattern-btn', n_clicks=0)
-                                    ],
-                                ),
-                            ]
-                        ),
-                    ],
-                    align='center',
-                    width=12
-                ),
-                dbc.Col(
-                    children=[
-                        html.Div(
-                            children=[
-                                dcc.Loading(
-                                    children=[
-                                        dbc.Card(
-                                            id='chart-pattern-card',
-                                            className="card",
-                                            children=[
-                                                html.Div(id='chart-pattern-container'),
-                                                html.Center(
-                                                    html.Div(
-                                                        dcc.Graph(
-                                                            id='empty',
-                                                            figure={}
+                                                    {'label': patternsDict[pattern], 'value': patternsDict[pattern]} for
+                                                    pattern
+                                                    in
+                                                    sorted(patternsDict)
+                                                ],
+                                                optionHeight=35,
+                                                searchable=True,
+                                                clearable=False,
+                                                placeholder="Select a Candlestick Chart Pattern",
+                                            ),
+                                            # html.Button('Submit', id='get-pattern-btn', n_clicks=0)
+                                        ],
+                                    ),
+                                ]
+                            ),
+                        ],
+                        align='center',
+                        width=12
+                    ),
+                    dbc.Col(
+                        children=[
+                            html.Div(
+                                children=[
+                                    dcc.Loading(
+                                        children=[
+                                            dbc.Card(
+                                                id='chart-pattern-card',
+                                                className="card",
+                                                children=[
+                                                    html.Div(id='chart-pattern-container'),
+                                                    html.Center(
+                                                        html.Div(
+                                                            dcc.Graph(
+                                                                id='empty',
+                                                                figure={}
+                                                            ),
+                                                            style={'display': 'none'},
                                                         ),
-                                                        style={'display': 'none'},
                                                     ),
-                                                ),
-                                            ],
-                                            style={
-                                                'width': '100%',
-                                                # 'height': '25vh',
-                                            }
-                                        )
-                                    ],
-                                    type='circle',
-                                    color=utils.get_random_color(utils),
-                                ),
+                                                ],
+                                                style={
+                                                    'width': '100%',
+                                                    # 'height': '25vh',
+                                                }
+                                            )
+                                        ],
+                                        type='circle',
+                                        color=utils.get_random_color(utils),
+                                    ),
 
-                            ]
-                        ),
-                    ],
-                    align='center',
-                    width=12,
-                ),
-            ],
+                                ]
+                            ),
+                        ],
+                        align='center',
+                        width=12,
+                    ),
+                ],
             ),
             html.Br(),
             # Fundamental and Technical Analysis selection cards.
@@ -886,10 +885,11 @@ def display_candlestick_graph(pattern_value):
             WHERE stock_price.stock_id=stock.id
             ''',
             conn)
+        logging.info(f"All Price Data Sample{all_price_data.head()}\n{all_price_data.tail()}")
         for company in companies:
             # Filter the dataset to only look at the current company and use that for analysis of the candlestick
             # pattern
-            logging.info(company)
+            logging.info(f"{company} being searched in all_price_data table.")
             price_data = all_price_data[(all_price_data.company == company)]
 
             # Get the pattern key from the value selected by in the dropdown. Reverse of how this is supposed to work.
@@ -912,6 +912,8 @@ def display_candlestick_graph(pattern_value):
                     logging.info("{} matches the {} pattern".format(company, pattern_value))
                     new_pattern_graph = create_pattern_chart_card(pattern_value, company, price_data)
                     pattern_graphs.append(new_pattern_graph)
+                else:
+                    logging.info(f"{company} does not match the {pattern_value}")
 
             except Exception as e:
                 logging.error(f"Failed to get pattern data {e}")

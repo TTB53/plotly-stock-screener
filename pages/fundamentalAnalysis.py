@@ -19,8 +19,7 @@ import logging
 
 import dash
 import dash_bootstrap_components as dbc
-import dash_core_components as dcc
-import dash_html_components as html
+from dash import html, dcc
 import pandas as pd
 import yfinance
 from dash import callback
@@ -48,10 +47,10 @@ DB_FILE = dbObj.DB_FILE
 
 try:
     conn = dbObj.create_connection(dbObj, db_file=DB_FILE)
-    logging.info("Successfully Connected to the DB from Fundamental Analysis.")
+    logging.info("Successfully Connected to the DB from Fundamental Analysis Page.")
     # stock_price_df = pd.read_sql('SELECT * FROM stock_price, stock WHERE stock_id= stock.id', conn)
 except Error as e:
-    logging.error(f"Error Occurred | {e}")
+    logging.error(f"Error Occurred while connecting {DB_FILE} from the Fundamental Analysis Page | {e}")
 
 # TODO Feature Enhancement add ability to automatically show how security of interest does against whatever the industry
 #  3 year rolling averages are. Similar to Grad School Corp Finance Project.
@@ -82,6 +81,236 @@ This function will get the desired stock information from the API/DB and build t
 :param stock_symbol is the Stock's ticker symbol
 :returns All the data needed to update the dashboard with the choosen stock information
 '''
+
+
+# Registering the Dash Page
+dash.register_page(__name__,
+                   path='/fundamental-analysis',
+                   name='Fundamental Analysis',
+                   title='Stock Screener - Fundamental Analysis - ATB Analytics Group',
+                   description='Fundamental Analysis of Stocks'
+                   )
+
+'''
+Layout of our Dash Application - the Bones of the App 
+
+'''
+
+layout = dbc.Container(
+    children=[
+
+        # utils.get_sidebar("", companies_df, page_stock_info_ids),
+        # html.Div(
+        #     children=
+        #     [
+        #         utils.get_sidebar(utils, companies_df, page_stock_info_ids),
+        #     ],
+        # ),
+        dbc.Row(
+            children=[
+
+                html.Div(utils.get_sidebar("", companies_df, page_stock_info_ids)),
+                html.Hr(),
+                html.H1("Fundamental Analysis - ".format(stock_symbol)),
+                html.Br(),
+            ]
+        ),
+
+        dbc.Row(
+            children=[
+                html.H2(
+                    id='stock-name-heading',
+                    className='mb-5'
+                              "{} About".format(stock_symbol)
+                ),
+                dbc.Col(
+                    dbc.Card(
+                        className='mb-2 mt-2',
+                        children=[
+                            dbc.CardBody(
+                                children=[
+                                    dcc.Loading(
+                                        children=[
+                                            html.P(
+                                                id='business-summary',
+                                                children=[]
+                                            ),
+                                        ],
+                                        type='circle',
+                                        color='lightseagreen'
+                                    ),
+                                ]
+                            )
+
+                        ]
+                    ),
+                    width=12,
+                ),
+
+                dbc.Col(
+                    className='col-md-12 mt-5',
+                    children=[
+                        dbc.Card(
+                            className='mb-2 mt-2 pl-2 pr-2',
+                            children=[
+                                dbc.CardBody(
+                                    children=[
+                                        html.H2(children=[
+                                            "Financial Ratio's"
+                                        ]),
+                                        html.P(
+                                            children=[
+                                                "Some Quick Financial Ratios to get Familiar. The value is the current"
+                                                " value for the company vs the Industry for 2020 - 2015"
+                                            ]),
+                                        dcc.Loading(
+                                            id='financial-ratios',
+                                            children=[],
+                                            type='circle',
+                                            color='lightseagreen'
+                                        ),
+                                    ]),
+                            ]),
+                    ]),
+
+                dbc.Col(
+                    className='col-md-12 mt-5',
+                    children=[
+                        dbc.Card(
+                            className='mb-2 mt-2 pl-2 pr-2',
+                            children=[
+                                dbc.CardBody(
+                                    children=[
+                                        html.H2(children=[
+                                            "Margin Analysis"
+                                        ]),
+                                        html.P(
+                                            children=[
+                                                "Some Quick Financial Ratios to get Familiar. The value is the current"
+                                                " value for the company vs the Industry for 2020 - 2015"
+                                            ]),
+                                        dcc.Loading(
+                                            children=[
+                                                dcc.Graph(
+                                                    id='profit-margin-chart',
+                                                    animate=True,
+                                                ),
+                                            ],
+                                            type='circle',
+                                            color='lightseagreen'
+                                        ),
+                                    ]),
+                            ]),
+                    ]),
+            ]),
+
+        dbc.Row([
+            # Stock Price Chart - Candlestick Graph
+            dbc.Col(
+                className='col-md-12',
+                children=[
+                    dbc.Card(
+                        className='mb-2 mt-2 pl-2 pr-2',
+                        children=[
+                            dbc.CardBody(
+                                children=[
+                                    dcc.Loading(
+                                        children=[
+                                            html.H2(children=["{} Prices".format(stock_symbol)]),
+                                            html.P(
+                                                children=[
+                                                    "Stock Price with Bollinger Band Overlays."
+                                                    "The Bollinger Bands act as a way to show, "
+                                                    "rising or reversal trends on a security"
+                                                ]
+                                            ),
+                                            dcc.Graph(
+                                                id='fundamentals-candlestick-graph',
+                                                animate=True,
+                                            ),
+                                        ],
+                                        type="circle",
+                                        color='lightseagreen'
+                                    ),
+                                ]),
+                        ]),
+                ]),
+        ]),
+
+        dbc.Row([
+            html.H1(id='master-financial-heading', children=[
+                "{} Financials".format(stock_symbol)
+            ]),
+            html.Br(),
+            dbc.Col(
+                className="col-md-12",
+                children=[
+                    dbc.Card(
+                        className='mb-2 mt-2 pl-2 pr-2',
+                        children=[
+                            dbc.CardBody(
+                                children=[
+                                    html.H2("Master Financials"),
+                                    html.Br(),
+                                    dcc.Loading(
+                                        id='master-financial',
+                                        type="circle",
+                                        color='lightseagreen'
+                                    ),
+                                ]),
+                        ]),
+                ]),
+
+            dbc.Col(
+                children=[
+                    utils.generate_generic_dash_datatable(utils, pd.DataFrame.from_dict(stock_info),
+                                                          id='stock-info-table')
+                ])
+        ]),
+
+        # Options
+        # dbc.Row([
+        #
+        #     dbc.Col(
+        #         className='col-md-12 mb-5',
+        #         children=[
+        #             dbc.Card(
+        #                 className='mb-2 mt-2 pl-2 pr-2',
+        #                 children=[
+        #                     dbc.CardBody(
+        #                         children=[
+        #                             dcc.Loading(
+        #                                 id="fundamentals-calls-table",
+        #                                 children=[],
+        #                                 type="circle",
+        #                                 color='lightseagreen'
+        #                             ),
+        #                         ]),
+        #                 ]
+        #             ),
+        #         ]),
+        #
+        #     dbc.Col(
+        #         className='col-md-12 mb-5',
+        #         children=[
+        #             dbc.Card(
+        #                 className='mb-2 mt-2 pl-2 pr-2',
+        #                 children=[
+        #                     dbc.CardBody(
+        #                         children=[
+        #                             dcc.Loading(
+        #                                 id="fundamentals-puts-table",
+        #                                 type="circle",
+        #                                 color='lightseagreen'
+        #                             ),
+        #                         ]),
+        #                 ]),
+        #         ]),
+        # ]),
+
+    ]
+)
+
 
 
 def update_fundamentals_UI(stock_symbol):
@@ -802,235 +1031,12 @@ def update_fundamentals_UI(stock_symbol):
         "{}\n{}\n{}\n{}\n{}".format(company_name, stock_symbol, stock_price, stock_sector, stock_subsector, stock_info))
 
     logging.info(financialRatioDF)
+    # return candlestick_figure, call_datatable, put_datatable, master_financials, financial_ratios, business_summary, profit_margin_figure
 
-    return candlestick_figure, call_datatable, put_datatable, master_financials, financial_ratios, business_summary, profit_margin_figure
+    return candlestick_figure, master_financials, financial_ratios, business_summary, profit_margin_figure
 
 
-# Registering the Dash Page
-dash.register_page(__name__,
-                   path='/fundamental-analysis',
-                   name='Fundamental Analysis',
-                   title='Stock Screener - Fundamental Analysis - ATB Analytics Group',
-                   description='Fundamental Analysis of Stocks'
-                   )
 
-'''
-Layout of our Dash Application - the Bones of the App 
-
-'''
-
-layout = dbc.Container(
-    children=[
-
-        # utils.get_sidebar("", companies_df, page_stock_info_ids),
-        # html.Div(
-        #     children=
-        #     [
-        #         utils.get_sidebar(utils, companies_df, page_stock_info_ids),
-        #     ],
-        # ),
-        dbc.Row(
-            children=[
-
-                html.Div(utils.get_sidebar("", companies_df, page_stock_info_ids)),
-                html.Hr(),
-                html.H1("Fundamental Analysis - ".format(stock_symbol)),
-                html.Br(),
-            ]
-        ),
-
-        dbc.Row(
-            children=[
-                html.H2(
-                    id='stock-name-heading',
-                    className='mb-5'
-                              "{} About".format(stock_symbol)
-                ),
-                dbc.Col(
-                    dbc.Card(
-                        className='mb-2 mt-2',
-                        children=[
-                            dbc.CardBody(
-                                children=[
-                                    dcc.Loading(
-                                        children=[
-                                            html.P(
-                                                id='business-summary',
-                                                children=[]
-                                            ),
-                                        ],
-                                        type='circle',
-                                        color='lightseagreen'
-                                    ),
-                                ]
-                            )
-
-                        ]
-                    ),
-                    width=12,
-                ),
-
-                dbc.Col(
-                    className='col-md-12 mt-5',
-                    children=[
-                        dbc.Card(
-                            className='mb-2 mt-2 pl-2 pr-2',
-                            children=[
-                                dbc.CardBody(
-                                    children=[
-                                        html.H2(children=[
-                                            "Financial Ratio's"
-                                        ]),
-                                        html.P(
-                                            children=[
-                                                "Some Quick Financial Ratios to get Familiar. The value is the current"
-                                                " value for the company vs the Industry for 2020 - 2015"
-                                            ]),
-                                        dcc.Loading(
-                                            id='financial-ratios',
-                                            children=[],
-                                            type='circle',
-                                            color='lightseagreen'
-                                        ),
-                                    ]),
-                            ]),
-                    ]),
-
-                dbc.Col(
-                    className='col-md-12 mt-5',
-                    children=[
-                        dbc.Card(
-                            className='mb-2 mt-2 pl-2 pr-2',
-                            children=[
-                                dbc.CardBody(
-                                    children=[
-                                        html.H2(children=[
-                                            "Margin Analysis"
-                                        ]),
-                                        html.P(
-                                            children=[
-                                                "Some Quick Financial Ratios to get Familiar. The value is the current"
-                                                " value for the company vs the Industry for 2020 - 2015"
-                                            ]),
-                                        dcc.Loading(
-                                            children=[
-                                                dcc.Graph(
-                                                    id='profit-margin-chart',
-                                                    animate=True,
-                                                ),
-                                            ],
-                                            type='circle',
-                                            color='lightseagreen'
-                                        ),
-                                    ]),
-                            ]),
-                    ]),
-            ]),
-
-        dbc.Row([
-            # Stock Price Chart - Candlestick Graph
-            dbc.Col(
-                className='col-md-12',
-                children=[
-                    dbc.Card(
-                        className='mb-2 mt-2 pl-2 pr-2',
-                        children=[
-                            dbc.CardBody(
-                                children=[
-                                    dcc.Loading(
-                                        children=[
-                                            html.H2(children=["{} Prices".format(stock_symbol)]),
-                                            html.P(
-                                                children=[
-                                                    "Stock Price with Bollinger Band Overlays."
-                                                    "The Bollinger Bands act as a way to show, "
-                                                    "rising or reversal trends on a security"
-                                                ]
-                                            ),
-                                            dcc.Graph(
-                                                id='fundamentals-candlestick-graph',
-                                                animate=True,
-                                            ),
-                                        ],
-                                        type="circle",
-                                        color='lightseagreen'
-                                    ),
-                                ]),
-                        ]),
-                ]),
-        ]),
-
-        dbc.Row([
-            html.H1(id='master-financial-heading', children=[
-                "{} Financials".format(stock_symbol)
-            ]),
-            html.Br(),
-            dbc.Col(
-                className="col-md-12",
-                children=[
-                    dbc.Card(
-                        className='mb-2 mt-2 pl-2 pr-2',
-                        children=[
-                            dbc.CardBody(
-                                children=[
-                                    html.H2("Master Financials"),
-                                    html.Br(),
-                                    dcc.Loading(
-                                        id='master-financial',
-                                        type="circle",
-                                        color='lightseagreen'
-                                    ),
-                                ]),
-                        ]),
-                ]),
-
-            dbc.Col(
-                children=[
-                    utils.generate_generic_dash_datatable(utils, pd.DataFrame.from_dict(stock_info),
-                                                          id='stock-info-table')
-                ])
-        ]),
-
-        dbc.Row([
-
-            dbc.Col(
-                className='col-md-12 mb-5',
-                children=[
-                    dbc.Card(
-                        className='mb-2 mt-2 pl-2 pr-2',
-                        children=[
-                            dbc.CardBody(
-                                children=[
-                                    dcc.Loading(
-                                        id="fundamentals-calls-table",
-                                        children=[],
-                                        type="circle",
-                                        color='lightseagreen'
-                                    ),
-                                ]),
-                        ]),
-                ]),
-
-            dbc.Col(
-                className='col-md-12 mb-5',
-                children=[
-                    dbc.Card(
-                        className='mb-2 mt-2 pl-2 pr-2',
-                        children=[
-                            dbc.CardBody(
-                                children=[
-                                    dcc.Loading(
-                                        id="fundamentals-puts-table",
-                                        type="circle",
-                                        color='lightseagreen'
-                                    ),
-                                ]),
-                        ]),
-                ]),
-        ]),
-
-    ]
-)
 
 '''
 
@@ -1059,8 +1065,8 @@ def update_layout_w_storage_data(data, data1):
 # TODO Break into separate callbacks for each section of the application so
 #  if one it doesnt break the entire application.
 @callback(Output('fundamentals-candlestick-graph', 'figure'),
-          Output('fundamentals-calls-table', 'children'),
-          Output('fundamentals-puts-table', 'children'),
+          # Output('fundamentals-calls-table', 'children'),
+          # Output('fundamentals-puts-table', 'children'),
           # Output('fundamentals-stock-name', 'children'),
           # Output('fundamentals-stock-title', 'children'),
           # Output('fundamentals-stock-price', 'children'),

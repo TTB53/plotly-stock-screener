@@ -33,8 +33,8 @@ import dash
 from sqlite3 import Error
 import logging
 
-import dash_core_components as dcc
-from dash import html
+
+from dash import html, dcc
 from dash.dependencies import Input, Output
 # Connect to main app.py file
 from dash.exceptions import PreventUpdate

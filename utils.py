@@ -17,16 +17,14 @@ import random
 
 import dash
 import dash_bootstrap_components as dbc
-import dash_core_components as dcc
-import dash_html_components as html
-from dash import dash_table
+from dash import html, dcc, dash_table
 import dash_table.FormatTemplate as FormatTemplate
 import pandas as pd
 import plotly.graph_objs as go
 from dash_table.Format import Sign
 from plotly.subplots import make_subplots
 
-# DB Stuff
+# DB Error and Logging
 from sqlite3 import Error
 import logging
 
