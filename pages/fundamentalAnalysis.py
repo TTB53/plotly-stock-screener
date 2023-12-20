@@ -82,7 +82,6 @@ This function will get the desired stock information from the API/DB and build t
 :returns All the data needed to update the dashboard with the choosen stock information
 '''
 
-
 # Registering the Dash Page
 dash.register_page(__name__,
                    path='/fundamental-analysis',
@@ -111,7 +110,7 @@ layout = dbc.Container(
 
                 html.Div(utils.get_sidebar("", companies_df, page_stock_info_ids)),
                 html.Hr(),
-                html.H1("Fundamental Analysis - ".format(stock_symbol)),
+                html.H1("Fundamental Analysis "),
                 html.Br(),
             ]
         ),
@@ -119,9 +118,8 @@ layout = dbc.Container(
         dbc.Row(
             children=[
                 html.H2(
-                    id='stock-name-heading',
+                    id='stock-name-fundamental',
                     className='mb-5'
-                              "{} About".format(stock_symbol)
                 ),
                 dbc.Col(
                     dbc.Card(
@@ -310,7 +308,6 @@ layout = dbc.Container(
 
     ]
 )
-
 
 
 def update_fundamentals_UI(stock_symbol):
@@ -737,6 +734,7 @@ def update_fundamentals_UI(stock_symbol):
 
         revenueCheck = utils.checkForColinDF(utils, master_financials_df, 'Revenue')
         ebitCheck = utils.checkForColinDF(utils, master_financials_df, 'Ebit') or utils.checkForColinDF(
+            utils,
             master_financials_df,
             'EBIT')
         netIncomeCheck = utils.checkForColinDF(utils, master_financials_df, 'Net Income')
@@ -1033,9 +1031,7 @@ def update_fundamentals_UI(stock_symbol):
     logging.info(financialRatioDF)
     # return candlestick_figure, call_datatable, put_datatable, master_financials, financial_ratios, business_summary, profit_margin_figure
 
-    return candlestick_figure, master_financials, financial_ratios, business_summary, profit_margin_figure
-
-
+    return company_name, candlestick_figure, master_financials, financial_ratios, business_summary, profit_margin_figure
 
 
 '''
@@ -1064,29 +1060,31 @@ def update_layout_w_storage_data(data, data1):
 
 # TODO Break into separate callbacks for each section of the application so
 #  if one it doesnt break the entire application.
-@callback(Output('fundamentals-candlestick-graph', 'figure'),
-          # Output('fundamentals-calls-table', 'children'),
-          # Output('fundamentals-puts-table', 'children'),
-          # Output('fundamentals-stock-name', 'children'),
-          # Output('fundamentals-stock-title', 'children'),
-          # Output('fundamentals-stock-price', 'children'),
-          # Output('fundamentals-stock-sector', 'children'),
-          # Output('fundamentals-stock-subsector', 'children'),
-          Output('master-financial', 'children'),
-          Output('financial-ratios', 'children'),
-          Output('business-summary', 'children'),
-          Output('profit-margin-chart', 'figure'),
-          # Input('get_stock_btn', 'n_clicks'),
-          Input('ticker_input', 'value'),
-          Input('companies_dropdown', 'value'),
-          Input('stock-storage', 'data'),
-          # [Input(str(stock_symbol + "-" + str(options['option_dates'][i])), 'n_clicks') for i in
-          #  range(0, len(options['option_dates']))],
-          State('ticker_input', 'value'),
-          # State('companies-dropdown', 'value'),
-          suppress_callback_exceptions=True,
-          prevent_initial_callbacks=True,
-          )
+@callback(
+    Output('stock-name-fundamental', 'children'),
+    Output('fundamentals-candlestick-graph', 'figure'),
+    # Output('fundamentals-calls-table', 'children'),
+    # Output('fundamentals-puts-table', 'children'),
+    # Output('fundamentals-stock-name', 'children'),
+    # Output('fundamentals-stock-title', 'children'),
+    # Output('fundamentals-stock-price', 'children'),
+    # Output('fundamentals-stock-sector', 'children'),
+    # Output('fundamentals-stock-subsector', 'children'),
+    Output('master-financial', 'children'),
+    Output('financial-ratios', 'children'),
+    Output('business-summary', 'children'),
+    Output('profit-margin-chart', 'figure'),
+    # Input('get_stock_btn', 'n_clicks'),
+    Input('ticker_input', 'value'),
+    Input('companies_dropdown', 'value'),
+    Input('stock-storage', 'data'),
+    # [Input(str(stock_symbol + "-" + str(options['option_dates'][i])), 'n_clicks') for i in
+    #  range(0, len(options['option_dates']))],
+    State('ticker_input', 'value'),
+    # State('companies-dropdown', 'value'),
+    suppress_callback_exceptions=True,
+    prevent_initial_callbacks=True,
+)
 def update_layout(ticker_input_value, companies_dropdown, ticker_input, data):
     # Returns the updated information after entering a Stock Ticker into the Input Box
 

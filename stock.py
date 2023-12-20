@@ -15,6 +15,10 @@ data necessary to power our application.
 
 
 """
+import sqlite3
+
+import sqlalchemy
+
 import config
 import datetime as dt
 import sys
@@ -238,7 +242,10 @@ class MyStock:
                         logging.info("Connection to database established")
                     except Error as e:
                         logging.error(e)
+                        logging.info(f"Trying to establish connection with DB")
                         conn = db.DBConnection.create_connection()
+                        if conn is not None:
+                            logging.info(f"{conn} was successfully established with db")
 
                     # Creating a copy of the dataframes to add necessary data before saving into DB
                     balanceSheet_cpy = self.prep_dataframe_to_save(balanceSheet.rename({
@@ -249,6 +256,7 @@ class MyStock:
                     }), stock_id)
                     cashflows_cpy = self.prep_dataframe_to_save(cashflows, stock_id)
                     financials_cpy = self.prep_dataframe_to_save(financials, stock_id)
+
                     # COMMIT/APPEND DB Tables
                     if not stock_info_cpy.empty:
                         try:
@@ -256,11 +264,26 @@ class MyStock:
                             dbObj.append_data_to_table(dbObj, table_name='stock_basic_info', conn=conn,
                                                        dataframe=stock_info_cpy)
                             # stock_info_cpy.to_sql('stock_basic_info', conn, index=False, if_exists='append')
-                            logging.info("Earnings records appended to the database.")
+                            logging.info(f"Stock info records appended to the database.\{stock_info_cpy.head()}")
                         except Error as e:
-                            logging.error("Error occurred when appending to the database")
+                            logging.error(
+                                f"Error occurred when appending {stock_info_cpy.columns} data into stock_basic_info table")
                             logging.error(e)
+                        except sqlite3.OperationalError as f:
+                            logging.error(
+                                "sqlite3 Operational Error occurred when appending {stock_info_cpy.columns} data into stock_basic_info table")
+                            logging.error(f)
+                            pass
+                        except sqlalchemy.exc.OperationalError as g:
+                            logging.error(
+                                "sqlAlchemy Operational Error occurred when appending {stock_info_cpy.columns} data into stock_basic_info table")
+                            logging.error(g)
+                            pass
+                        finally:
+                            logging.info("Stock Info Append/Insert Process Completed.")
+                            pass
 
+                    # Balance Sheet
                     try:
                         balanceSheet_cpy.to_sql('stock_balance_sheet', conn, index=False, if_exists='append')
                         logging.info("Balance Sheet records appended to the database.")
@@ -268,10 +291,22 @@ class MyStock:
                         logging.error("Error Occurred when trying to update/append the balance sheet.")
                         logging.error(e)
                         # balanceSheet_cpy.to_sql('stock_balance_sheet', conn, index=False, if_exists='append',)
+                    except sqlite3.OperationalError as f:
+                        logging.error(
+                            "sqlite3 Operational Error Occurred when trying to update/append the balance sheet.")
+                        logging.error(f)
+                        pass
+                    except sqlalchemy.exc.OperationalError as g:
+                        logging.error(
+                            "sqlAlchemy Operational Error Occurred when trying to update/append the balance sheet.")
+                        logging.error(g)
+                        pass
                     finally:
-                        logging.info("Balance Sheet Insertion Completed.")
+                        logging.info("Balance Sheet Append/Insert Process Completed.")
                         pass
 
+
+                    # Cashflows
                     try:
                         cashflows_cpy.to_sql('stock_cashflows', conn, index=False, if_exists='append')
                         logging.info("Cash Flow records appended to the database.")
@@ -279,10 +314,22 @@ class MyStock:
                         logging.error("Error Occurred when trying to update/append the cashflow sheet.")
                         logging.error(e)
                         # balanceSheet_cpy.to_sql('stock_balance_sheet', conn, index=False, if_exists='append',)
+                    except sqlite3.OperationalError as f:
+                        logging.error(
+                            "sqlite3 Operational Error Occurred when trying to update/append the balance sheet.")
+                        logging.error(f)
+                        pass
+                    except sqlalchemy.exc.OperationalError as g:
+                        logging.error(
+                            "sqlAlchemy Operational Error Occurred when trying to update/append the balance sheet.")
+                        logging.error(g)
+                        pass
                     finally:
-                        logging.info("Cash Flow Insertion Completed.")
+                        logging.info("Cash Flow Append/Insert Process Completed.")
                         pass
 
+
+                    # Financials
                     try:
                         financials_cpy.to_sql('stock_financials', conn, index=False, if_exists='append')
                         logging.info("Financials records appended to the database.")
@@ -290,6 +337,16 @@ class MyStock:
                         logging.error("Error Occurred when trying to update/append the financial.")
                         # balanceSheet_cpy.to_sql('stock_balance_sheet', conn, index=False, if_exists='append',)
                         logging.error(e)
+                    except sqlite3.OperationalError as f:
+                        logging.error(
+                            "sqlite3 Operational Error Occurred when trying to update/append the balance sheet.")
+                        logging.error(f)
+                        pass
+                    except sqlalchemy.exc.OperationalError as g:
+                        logging.error(
+                            "sqlAlchemy Operational Error Occurred when trying to update/append the balance sheet.")
+                        logging.error(g)
+                        pass
                     finally:
                         logging.info("Financials Insertion Completed.")
                         pass
@@ -306,8 +363,18 @@ class MyStock:
                         logging.error("Error Occurred when trying to update/append to earnings.")
                         # balanceSheet_cpy.to_sql('stock_balance_sheet', conn, index=False, if_exists='append',)
                         logging.error(e)
+                    except sqlite3.OperationalError as f:
+                        logging.error(
+                            "sqlite3 Operational Error Occurred when trying to update/append the balance sheet.")
+                        logging.error(f)
+                        pass
+                    except sqlalchemy.exc.OperationalError as g:
+                        logging.error(
+                            "sqlAlchemy Operational Error Occurred when trying to update/append the balance sheet.")
+                        logging.error(g)
+                        pass
                     finally:
-                        logging.info("Earnings Insertion Completed.")
+                        logging.info("Earnings Append/Insert Process Completed.")
                         pass
 
                     # Close Connection
@@ -325,7 +392,7 @@ class MyStock:
                     option_chain = {'options': option_chain, 'option_dates': data.options}
 
                 except Exception as e:
-                    logging.error(e)
+                    logging.error(f"Error Occurred while trying to get the Options {e}")
 
                 return option_chain
 
@@ -336,6 +403,7 @@ class MyStock:
             if balanceSheet:
                 balanceSheet = data.balance_sheet
                 return balanceSheet
+
             if cashflows:
                 cashflows = data.cashflow
                 return cashflows
@@ -474,3 +542,4 @@ class MyStock:
             return None
 
         return stock_info
+

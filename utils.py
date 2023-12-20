@@ -1486,3 +1486,24 @@ class Utils:
         random_color_choice = random_color[rand]
 
         return random_color_choice
+
+
+    '''
+        Checks that the columns in two dataframes are the same, and creates a third dataframe out of the 
+        columns that are not the same.
+        
+        :param df1 is the database table columns that we are trying to insert into
+        :param df2 is the API data that is trying to be inserted into the table.
+    '''
+    def check_dfs_same_cols(self, df1, df2):
+        # Get columns from both dataframes
+        first_columns = set(df1.columns) # should be the database columns
+        second_columns = set(df2.columns)
+
+        # Find columns in the second dataframe that are not in the first
+        missing_columns = second_columns - first_columns
+
+        # Create a new dataframe with only the missing columns from the second dataframe
+        missing_columns_df = df2[list(missing_columns)]
+
+        return missing_columns_df
