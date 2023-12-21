@@ -131,15 +131,30 @@ dash.register_page(__name__,
 
 layout = dbc.Container(
     children=[
-        dbc.Row([
-            dbc.Col(
-                [
-                    html.Div(
-                        utils.get_sidebar("", companies_df, page_stock_info_ids)),
-                ],
-                width=12,
-            )
-        ]),
+        dbc.Row(
+            children=[
+                dbc.Col(
+                    [
+                        html.Div(utils.get_sidebar("", companies_df, page_stock_info_ids)),
+                        # Current Stock info wrapper
+                        html.Span(
+                            id='option-curr-info-wrapper',
+                            className='curr-info-wrapper mb-5',
+                            children=[
+                                html.H2(
+                                    id='stock-name-options',
+                                    className='mb-2 '
+                                ),
+                                html.H2(
+                                    id='stock-price-options',
+                                    className='mb-2 '
+                                ),
+                            ]
+                        ),
+                    ],
+                    width=12,
+                )
+            ]),
         html.Br(),
         html.H1("Options Analysis"),
         dbc.Row(
@@ -151,7 +166,8 @@ layout = dbc.Container(
         html.Br(),
         dbc.Row(id='stock-options-info',
                 children=[
-                    dbc.Col([html.Span([html.H2(id='stock-name-options'), html.H2(id='stock-price-options')])], width=6),
+                    # dbc.Col([html.Span([html.H2(id='stock-name-options'), html.H2(id='stock-price-options')])],
+                    #         width=6),
                     dbc.Col([html.P("Blurb Blurb Blurb")], width=6),
                 ]
                 ),

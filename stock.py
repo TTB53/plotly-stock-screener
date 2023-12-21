@@ -305,7 +305,6 @@ class MyStock:
                         logging.info("Balance Sheet Append/Insert Process Completed.")
                         pass
 
-
                     # Cashflows
                     try:
                         cashflows_cpy.to_sql('stock_cashflows', conn, index=False, if_exists='append')

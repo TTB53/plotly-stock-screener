@@ -332,16 +332,16 @@ def serve_layout():
                     dbc.Col(
                         [
                             html.H2("Candlestick Patterns"),
-                            html.P(
-                                """
-                                A daily candlestick represents a market’s opening, high, low, and closing (OHLC) prices. The 
-                                rectangular real body, or just body, is colored with a dark color (red or black) for a drop in 
-                                price and a light color (green or white) for a price increase. 
-                                """
-                            ),
                             html.Br(),
                             html.Div(
                                 children=[
+                                    html.P(
+                                        """
+                                        A daily candlestick represents a market’s opening, high, low, and closing (OHLC) prices. The 
+                                        rectangular real body, or just body, is colored with a dark color (red or black) for a drop in 
+                                        price and a light color (green or white) for a price increase. 
+                                        """
+                                    ),
 
                                     html.P(
                                         """

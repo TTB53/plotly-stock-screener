@@ -17,6 +17,7 @@ v1.0 May 2021 - July 2023
 v2.0 July 2023 - Present
 
 """
+from datetime import datetime
 
 import sqlalchemy
 
@@ -76,10 +77,12 @@ ALLOWED_TYPES = (
 DEFAULTS = config.ScreenerConfig()
 
 # setup logger. Only run this once.
+current_date = datetime.now().strftime("%m_%d_%y")
+
 logging.basicConfig(level=logging.DEBUG,  # lowest level and up. # TODO Change before sending to production.
                     encoding='utf-8',
                     datefmt='%m-%d-%y %H:%M',
-                    filename='./logs/logs.log',
+                    filename=f'./logs/logs_{current_date}.log',
                     filemode='w',
                     format="%(asctime)s - %(levelname)s - %(lineno)d | %(message)s ",
                     )
@@ -172,7 +175,7 @@ content = dbc.Col(
     children=[dash.page_container],
     # className='col-md-8',
     # style=CONTENT_STYLE,
-    width="auto",
+    width=12,
 )
 
 # Application Layout

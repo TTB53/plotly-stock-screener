@@ -13,7 +13,6 @@ Styles to be applied to the app globally
     --GOLDENROD : #cfa42f;
     --LIGHTGOLDENROD: #d6c79f;
     --ROSYBROWN : #ce9b9b;
-
     --IVORY :#FEFFF1;
     --DIMGREY :#42403f;
     --BLACK : #333333;
@@ -52,6 +51,16 @@ body{
     }
 }
 
+a.nav-link{
+    & hover{
+        color:var(--GOLDENROD);
+    }
+}
+
+a.nav-link:active{
+    color:var(--AQUAMARINE);
+}
+
 img, .card-img{
     border-radius:2em;
     width:100%;
@@ -66,3 +75,15 @@ img, .card-img{
    height:3.75rem;
 }
 
+[id^="stock-name-"]{
+    margin-right:.5rem;
+}
+
+[id=^"stock-price-"]{
+    margin-right:.5rem;
+}
+
+.curr-info-wrapper{
+    display:flex;
+
+}
