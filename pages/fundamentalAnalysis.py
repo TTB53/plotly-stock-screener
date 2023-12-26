@@ -249,7 +249,7 @@ layout = dbc.Container(
 
         # Master Financials  - Table
         dbc.Row(
-           children=[
+            children=[
                 dbc.Col(
                     className="col-md-12",
                     children=[
@@ -456,9 +456,10 @@ def update_fundamentals_UI(stock_symbol):
 
         # Checking if the stock has data already for the financial if it does
         # it will have the data for all the financial statements.
+        COMPANY_FINANCIALS_QRY = utils.open_and_read_sql(utils, './data/SQL/read/financial/CompanyFinancials.sql')
         financials_table_df = pd.read_sql_query(
-            'SELECT * FROM stock_financials WHERE stock_financials.stock_id="{}"'.format(
-                stock_id), conn)
+            COMPANY_FINANCIALS_QRY + f'WHERE stock_financials.stock_id="{stock_id}"', conn)
+        # + f" WHERE stock.symbol=\"{stock_symbol}\""
 
         # Getting and saving the last price that we have for the security
         price = data['Close'][data.shape[0] - 1].min()
@@ -474,23 +475,25 @@ def update_fundamentals_UI(stock_symbol):
             financials.set_index('Year', inplace=True)
             financials = financials.transpose()
 
+            COMPANY_CASHFLOW_QRY = utils.open_and_read_sql(utils, './data/SQL/read/cashflow/CompanyCashflow.sql')
             cashflows = pd.read_sql_query(
-                'SELECT * FROM stock_cashflows WHERE stock_cashflows.stock_id="{}"'.format(
-                    stock_id), conn)
+                COMPANY_CASHFLOW_QRY + f'WHERE stock_cashflows.stock_id="{stock_id}"', conn)
             cashflows.drop(columns=['stock_id', 'id', 'date'], inplace=True)
             cashflows.set_index('Year', inplace=True)
             cashflows = cashflows.transpose()
 
+            COMAPANY_BALANCE_SHT_QRY = utils.open_and_read_sql(utils,
+                                                               './data/SQL/read/balance_sheet/CompanyBalanceSheet.sql')
+
             balanceSheet = pd.read_sql_query(
-                'SELECT * FROM stock_balance_sheet WHERE stock_balance_sheet.stock_id="{}"'.format(
-                    stock_id), conn)
+                COMAPANY_BALANCE_SHT_QRY + f'WHERE stock_balance_sheet.stock_id="{stock_id}"', conn)
             balanceSheet.drop(columns=['stock_id', 'date', 'id'], inplace=True)
             balanceSheet.set_index('year', inplace=True)
             balanceSheet = balanceSheet.transpose()
 
+            COMPANY_EARNINGS_QRY = utils.open_and_read_sql(utils, './data/SQL/read/financial/CompanyEarnings.sql')
             earnings = pd.read_sql_query(
-                'SELECT * FROM stock_earnings WHERE stock_earnings.stock_id="{}"'.format(
-                    stock_id), conn)
+                COMPANY_EARNINGS_QRY + f'WHERE stock_earnings.stock_id="{stock_id}"', conn)
             earnings.drop(columns=['stock_id', 'date', 'id'], inplace=True)
             earnings.set_index('Year', inplace=True)
             earnings.sort_index(ascending=False, inplace=True)
@@ -501,6 +504,9 @@ def update_fundamentals_UI(stock_symbol):
                     stock_id), conn)
             stock_info.drop(columns=['stock_id', 'date', 'id'], inplace=True)
             stock_info = stock_info.T
+            if len(stock_info) > 1:
+                stock_info = stock_info.iloc[:, 0:1]
+
             stock_info.columns = ['Values']
             stock_info.index.rename('Attributes', inplace=True)
 

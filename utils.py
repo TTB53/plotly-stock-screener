@@ -752,13 +752,13 @@ class Utils:
             # font={
             #     'color': '#FFFFFF',
             # },
-            # legend=dict(
-            #     orientation="h",
-            #     yanchor="bottom",
-            #     y=1.02,
-            #     xanchor="left",
-            #     x=2
-            # ),
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=-.2,
+                xanchor="left",
+                x=0
+            ),
             margin=dict(
                 t=120,
                 b=70,
@@ -836,7 +836,7 @@ class Utils:
 
         # QUERY Does this need to have the date in datetime format to work?
         candlestick_figure.update_xaxes(
-            rangeslider_visible=True,
+            rangeslider_visible=False,
             rangeselector=dict(
                 buttons=list([
                     dict(count=1, label="1d", step="day", stepmode="backward"),
@@ -865,7 +865,8 @@ class Utils:
 
         return candlestick_figure
 
-    def generate_scatter_graph(self, dataframe, x_column, y_column, secondary_y_column, title, upper_bound, lower_bound):
+    def generate_scatter_graph(self, dataframe, x_column, y_column, secondary_y_column, title, upper_bound,
+                               lower_bound):
         scatter_chart = make_subplots(specs=[[{'secondary_y': True}]])
 
         x_col_series = dataframe[x_column]
@@ -1053,9 +1054,9 @@ class Utils:
             legend=dict(
                 orientation="h",
                 yanchor="bottom",
-                y=1.05,
+                y=-.5,
                 xanchor="left",
-                x=1
+                x=0
             ),
 
             margin=dict(
@@ -1097,11 +1098,11 @@ class Utils:
                                #     'color': '#FFFFFF',
                                # },
                                legend=dict(
-                                   orientation="h",
+                                   orientation="v",
                                    yanchor="bottom",
-                                   y=1.05,
+                                   y=-.5,
                                    xanchor="left",
-                                   x=1
+                                   x=0
                                ),
 
                                margin=dict(
@@ -1122,12 +1123,17 @@ class Utils:
         bar_figure.add_traces(operating_graph)
         bar_figure.add_traces(gross_graph)
 
+        bar_figure.update_xaxes(
+            {'range': [x_col_series.min(), x_col_series.max()]},
+            categoryorder='category ascending',
+            automargin=True,
+        )
         bar_figure.update_layout(bar_layout)
-        bar_figure.update_xaxes()
 
         return bar_figure
 
-    def generate_bar_and_line_graph(self, df1, df2, title, x_column, y_column, secondary_y_column=None, upper_bound=None,
+    def generate_bar_and_line_graph(self, df1, df2, title, x_column, y_column, secondary_y_column=None,
+                                    upper_bound=None,
                                     lower_bound=None):
         bar_figure = make_subplots(specs=[[{'secondary_y': True}]])
 
@@ -1149,9 +1155,9 @@ class Utils:
             legend=dict(
                 orientation="h",
                 yanchor="bottom",
-                y=1.05,
+                y=-.5,
                 xanchor="left",
-                x=1
+                x=0
             ),
 
             margin=dict(
@@ -1238,6 +1244,10 @@ class Utils:
         else:
             earnings = earnings.transpose()
 
+        if earnings.columns[earnings.columns.duplicated()] > 0:
+            logging.info(f'Duplicate Column names in the earnings column')
+            earnings = earnings.groupby(earnings.columns.str, axis=1).agg(lambda x : x.join(str(v) for v in x if pd.notnull(v)))
+
         # converting the years into the same format as the other financial mm/yyyy format
         for c in earnings.columns:
             # Checking for timestamp objects. Might need to check for DateTime Objects as well.
@@ -1249,7 +1259,7 @@ class Utils:
 
         master_financials_df = pd.DataFrame._append(financials, balanceSheet, )
         master_financials_df = pd.DataFrame._append(master_financials_df, cashflows, )
-        master_financials_df = self.convert_timestamp_columns(self,master_financials_df)
+        master_financials_df = self.convert_timestamp_columns(self, master_financials_df)
         master_financials_df = pd.DataFrame._append(master_financials_df, earnings, )
 
         master_financials_df.index.rename('Financials', inplace=True)
@@ -1439,6 +1449,7 @@ class Utils:
     ''' 
         Opens and reads the SQL file line by line.
     '''
+
     def open_and_read_sql(self, filename):
         f = open(filename, 'r')
         read_sql_file = f.read()
@@ -1472,6 +1483,7 @@ class Utils:
     ''' 
         Gets random color from array or from Colorways defined in the py file. 
     '''
+
     def get_random_color(self):
         random_color = ATBDEFAULTTHEME.dark_colorway_all
         #     [
@@ -1487,7 +1499,6 @@ class Utils:
 
         return random_color_choice
 
-
     '''
         Checks that the columns in two dataframes are the same, and creates a third dataframe out of the 
         columns that are not the same.
@@ -1495,9 +1506,10 @@ class Utils:
         :param df1 is the database table columns that we are trying to insert into
         :param df2 is the API data that is trying to be inserted into the table.
     '''
+
     def check_dfs_same_cols(self, df1, df2):
         # Get columns from both dataframes
-        first_columns = set(df1.columns) # should be the database columns
+        first_columns = set(df1.columns)  # should be the database columns
         second_columns = set(df2.columns)
 
         # Find columns in the second dataframe that are not in the first
@@ -1507,3 +1519,33 @@ class Utils:
         missing_columns_df = df2[list(missing_columns)]
 
         return missing_columns_df
+
+    '''
+    :param sales growth is either a list of floats or a float value
+    :param inflation rate  is either a list of floats or a float value 
+    :param init_revenue = 1  is the revenue value at the start of the period 
+    :param run_scenario = False if true will return a pd df for the sales growth, inflation rates and revenue.
+    '''
+    def forcast_sales_revenue(self, sales_growth, inflation_rate, init_revenue=1, run_scenario=False):
+        if sales_growth is None:
+            # Low, Base, High Sales Growth
+            sales_growth = [0.05, 0.1, 0.15]
+
+        if inflation_rate is None:
+            # Low, Base, High Inflation
+            inflation_rate = [0.02, 0.03, 0.04]
+
+        # revenue = initial_revenue * (1 + sales_growth) / (1 + inflation_rate)
+        revenue = init_revenue * (1 + sales_growth) / (1 + inflation_rate)
+
+        if run_scenario:
+            scenario_results = []
+            for sg in sales_growth:
+                for ir in inflation_rate:
+                    revenue = init_revenue * (1 + sg) / (1 + ir)
+                    scenario_results.append({'Sales_Growth': sg, 'Inflation_Rate': ir, 'Revenue': revenue})
+
+            scenario_df = pd.DataFrame(scenario_results)
+            return scenario_df
+        else:
+            return revenue
