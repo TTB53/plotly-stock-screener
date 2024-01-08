@@ -27,6 +27,8 @@ from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 
 # import app
+from sqlalchemy import text
+
 import db
 from utils import Utils as utils
 from stock import MyStock
@@ -100,14 +102,21 @@ layout = dbc.Container(
 
         dbc.Row(
             children=[
-
-                html.Div(utils.get_sidebar("", companies_df, page_stock_info_ids)),
-                html.Hr(),
-                html.H1("Fundamental Analysis "),
-                html.Br(),
+                dbc.Col(
+                    children=[
+                        html.H1("Fundamental Analysis "),
+                        html.Br(),
+                        html.Br(),
+                        html.Div(utils.get_sidebar("", companies_df, page_stock_info_ids)),
+                        html.Hr(),
+                        html.Br(),
+                        html.Br(),
+                    ],
+                    width=12,
+                ),
 
                 # Current Stock info wrapper
-                html.Span(
+                dbc.Col(
                     id='fundamental-curr-info-wrapper',
                     className='curr-info-wrapper mb-5',
                     children=[
@@ -115,10 +124,26 @@ layout = dbc.Container(
                             id='stock-name-fundamental',
                             className='mb-2 '
                         ),
-                        html.H2(
-                            id='stock-price-fundamental',
-                            className='mb-2 '
+                        html.Br(),
+                        html.Div(
+                            className='sector-info-wrapper',
+                            children=[
+                                html.H3(
+                                    id='stock-sector-fundamental',
+                                    className='mb-2 '
+                                ),
+                                html.H3(
+                                    id='stock-subsector-fundamental',
+                                    className='mb-2 '
+                                ),
+                                html.H2(
+                                    id='stock-price-fundamental',
+                                    className='mb-2 '
+                                ),
+                            ],
+
                         ),
+
                     ]
                 ),
             ]
@@ -258,7 +283,7 @@ layout = dbc.Container(
                             children=[
                                 dbc.CardBody(
                                     children=[
-                                        html.H2(f"Financials"),
+                                        html.H2(f"Master Financials"),
                                         html.Br(),
                                         dcc.Loading(
                                             id='master-financial',
@@ -269,6 +294,21 @@ layout = dbc.Container(
                             ]),
                     ],
                 ),
+                dbc.Col(
+                    children=[
+                        dbc.Card(
+                            children=[
+                                html.H2(f"Finanical Statements"),
+                                html.Br(),
+                                dcc.Loading(
+                                    id='financial-statements-tabs',
+                                    type='circle',
+                                    color=utils.get_random_color(utils)
+                                )
+                            ]
+                        )
+                    ]
+                )
                 # dbc.Col(
                 #
                 #     children=[
@@ -331,7 +371,7 @@ def update_fundamentals_UI(stock_symbol):
     master_financials = []
     financial_ratios = {}
     master_financials_df = {}
-    candlestick_figure, calls, puts, data, call_datatable, put_datatable, = None, None, None, None, None, None
+    candlestick_figure, data = None, None
     company_name, stock_sector, stock_subsector, stock_info, profit_margin_figure = None, None, None, None, None
 
     # f = open('./data/SQL/read/company_information/CompanyInformation.sql', 'r')
@@ -348,7 +388,7 @@ def update_fundamentals_UI(stock_symbol):
 
             # Getting record for company - If no record returned we create one and get data.
             company_info_df = pd.read_sql_query(
-                COMPANY_INFO_QRY + f" WHERE stock.symbol=\"{stock_symbol}\"", conn)
+                text(COMPANY_INFO_QRY.format("'" + stock_symbol + "'", "'" + stock_symbol + "'")), conn)
 
             if company_info_df.empty:
                 # This takes us to adding the new symbol to our stocks table in the DB TODO needs to be handled better
@@ -458,8 +498,7 @@ def update_fundamentals_UI(stock_symbol):
         # it will have the data for all the financial statements.
         COMPANY_FINANCIALS_QRY = utils.open_and_read_sql(utils, './data/SQL/read/financial/CompanyFinancials.sql')
         financials_table_df = pd.read_sql_query(
-            COMPANY_FINANCIALS_QRY + f'WHERE stock_financials.stock_id="{stock_id}"', conn)
-        # + f" WHERE stock.symbol=\"{stock_symbol}\""
+            COMPANY_FINANCIALS_QRY.format(stock_id, stock_id), conn)
 
         # Getting and saving the last price that we have for the security
         price = data['Close'][data.shape[0] - 1].min()
@@ -470,68 +509,55 @@ def update_fundamentals_UI(stock_symbol):
                 stock_symbol=stock_symbol, stock_info=True, stock_id=stock_id, conn=conn,
                 save_data=True)  # TODO API HIT : ALSO MOVE TO OTHER PAGE IN APP
         else:
+            pull_add_data = []  # For knowing which data needs to be re-pulled form API
+
             financials = financials_table_df
             financials.drop(columns=['stock_id', 'date', 'id'], inplace=True)
             financials.set_index('Year', inplace=True)
             financials = financials.transpose()
 
-            COMPANY_CASHFLOW_QRY = utils.open_and_read_sql(utils, './data/SQL/read/cashflow/CompanyCashflow.sql')
-            cashflows = pd.read_sql_query(
-                COMPANY_CASHFLOW_QRY + f'WHERE stock_cashflows.stock_id="{stock_id}"', conn)
-            cashflows.drop(columns=['stock_id', 'id', 'date'], inplace=True)
-            cashflows.set_index('Year', inplace=True)
-            cashflows = cashflows.transpose()
+            cashflows = utils.prep_df_for_db_insert(utils, './data/SQL/read/cashflow/CompanyCashflow.sql', stock_id,
+                                                    'Year', ['stock_id', 'date', 'id'], conn)
+            if cashflows.iloc[0, 0] is None:
+                pull_add_data.append('cashflows')
 
-            COMAPANY_BALANCE_SHT_QRY = utils.open_and_read_sql(utils,
-                                                               './data/SQL/read/balance_sheet/CompanyBalanceSheet.sql')
+            balanceSheet = utils.prep_df_for_db_insert(utils, './data/SQL/read/balance_sheet/CompanyBalanceSheet.sql',
+                                                       stock_id,
+                                                       'year', ['stock_id', 'date', 'id'], conn)
+            if balanceSheet.iloc[0, 0] is None:
+                pull_add_data.append('balanceSheet')
 
-            balanceSheet = pd.read_sql_query(
-                COMAPANY_BALANCE_SHT_QRY + f'WHERE stock_balance_sheet.stock_id="{stock_id}"', conn)
-            balanceSheet.drop(columns=['stock_id', 'date', 'id'], inplace=True)
-            balanceSheet.set_index('year', inplace=True)
-            balanceSheet = balanceSheet.transpose()
-
-            COMPANY_EARNINGS_QRY = utils.open_and_read_sql(utils, './data/SQL/read/financial/CompanyEarnings.sql')
-            earnings = pd.read_sql_query(
-                COMPANY_EARNINGS_QRY + f'WHERE stock_earnings.stock_id="{stock_id}"', conn)
-            earnings.drop(columns=['stock_id', 'date', 'id'], inplace=True)
-            earnings.set_index('Year', inplace=True)
-            earnings.sort_index(ascending=False, inplace=True)
-            earnings = earnings.transpose()
+            earnings = utils.prep_df_for_db_insert(utils, './data/SQL/read/financial/CompanyEarnings.sql',
+                                                   stock_id, 'Year', ['stock_id', 'date', 'id'], conn)
+            if earnings.iloc[0, 0] is None:
+                pull_add_data.append('earnings')
 
             stock_info = pd.read_sql_query(
                 'SELECT * FROM stock_basic_info WHERE stock_basic_info.stock_id="{}"'.format(
                     stock_id), conn)
             stock_info.drop(columns=['stock_id', 'date', 'id'], inplace=True)
             stock_info = stock_info.T
+
+            # stock_info = utils.prep_df_for_db_insert(utils, '.data/SQL/read/company_information/CompanyInformation.sql')
+            if stock_info.shape[1] > 0:
+                pull_add_data.append('stock_info')
+
             if len(stock_info) > 1:
                 stock_info = stock_info.iloc[:, 0:1]
 
-            stock_info.columns = ['Values']
-            stock_info.index.rename('Attributes', inplace=True)
+                if stock_info.size > 0:
+                    stock_info.columns = ['Values']
+                    stock_info.index.rename('Attributes', inplace=True)
+                else:
+                    stock_info['Values'] = ""
+                    stock_info.index.rename('Attributes', inplace=True)
 
-            options = StockObj.get_ticker_additional_information(
-                stock_symbol=stock_symbol, stock_info=True, stock_id=stock_id, conn=conn,
-                save_data=False, options=True, balanceSheet=False, earnings=False,
-                financials=False, cashflows=False, )
+                if len(pull_add_data) > 1:
+                    options, financials, cashflows, earnings, balanceSheet, stock_info = StockObj.get_ticker_additional_information(
+                    stock_symbol=stock_symbol, stock_info=True, stock_id=stock_id, conn=conn,
+                    save_data=True)
 
         candlestick_figure = utils.generate_candlestick_graph_w_indicators(utils, data, stock_symbol)
-
-    # Checking to make sure that the stock has options, sometimes it is hit or miss with yFinance
-    if len(options) > 0 and type(options) != str:
-        calls = options['options'].calls.drop(
-            columns=['contractSymbol', 'lastTradeDate', 'contractSize', 'currency'])
-        puts = options['options'].puts.drop(columns=['contractSymbol', 'lastTradeDate', 'contractSize', 'currency'])
-
-        call_datatable = utils.generate_option_dash_datatable(
-            utils,
-            dataframe=calls,
-            id="calls-table-data")
-        # data_1 = calls.to_dict('records')
-        put_datatable = utils.generate_option_dash_datatable(
-            utils,
-            dataframe=puts,
-            id="puts-table-data")
 
     # Financials for ETF's will be empty.
     if financials.empty:
@@ -542,8 +568,8 @@ def update_fundamentals_UI(stock_symbol):
         master_financials = utils.generate_generic_dash_datatable(utils, master_financials_df,
                                                                   id='master-financial-data')
 
+    # Deals with the Financial Ratio creation TODO think about making this a DB powered thing instead of calc-ing here.
     # Should be Empty for ETFs
-
     if len(master_financials_df) > 0:
         master_financials_df.set_index('Financials', inplace=True)
         master_financials_df.sort_index(ascending=True, inplace=True)
@@ -1044,13 +1070,32 @@ def update_fundamentals_UI(stock_symbol):
     if "longBusinessSummary" in stock_info.index:
         business_summary = stock_info['Values']['longBusinessSummary']
 
+    tabbed_fin_statements = dcc.Tabs(id='fin-statments-tabs', value='balance-sheet-dt',
+                                     children=[
+                                         dcc.Tab(label='Balance Sheet', value='balance-sheet-dt',
+                                                 children=[
+                                                     utils.generate_generic_dash_datatable(utils, balanceSheet,
+                                                                                           'balance-sheet-dt-tab')
+                                                 ]),
+                                         dcc.Tab(label='Cashflow', value='cashflow-dt', children=[
+                                             utils.generate_generic_dash_datatable(utils, cashflows, 'cashflow-dt-tab')
+                                         ]),
+                                         dcc.Tab(label='Earnings', value='earnings-dt', children=[
+                                             utils.generate_generic_dash_datatable(utils, earnings, 'earnings-dt-tab')
+
+                                         ]),
+                                         dcc.Tab(label='Financials', value='financials-dt', children=[
+                                             utils.generate_generic_dash_datatable(utils, financials, 'financials-dt-tab')
+                                         ])
+                                     ])
+
     logging.info(
         "{}\n{}\n{}\n{}\n{}".format(company_name, stock_symbol, stock_price, stock_sector, stock_subsector, stock_info))
 
     logging.info(financialRatioDF)
     # return candlestick_figure, call_datatable, put_datatable, master_financials, financial_ratios, business_summary, profit_margin_figure
 
-    return company_name, stock_price, candlestick_figure, master_financials, financial_ratios, business_summary, profit_margin_figure
+    return company_name, stock_sector, stock_subsector, stock_price, candlestick_figure, master_financials, financial_ratios, business_summary, profit_margin_figure, tabbed_fin_statements
 
 
 '''
@@ -1081,25 +1126,18 @@ def update_layout_w_storage_data(data, data1):
 #  if one it doesnt break the entire application.
 @callback(
     Output('stock-name-fundamental', 'children'),
+    Output('stock-sector-fundamental', 'children'),
+    Output('stock-subsector-fundamental', 'children'),
     Output('stock-price-fundamental', 'children'),
     Output('fundamentals-candlestick-graph', 'figure'),
-    # Output('fundamentals-calls-table', 'children'),
-    # Output('fundamentals-puts-table', 'children'),
-    # Output('fundamentals-stock-name', 'children'),
-    # Output('fundamentals-stock-title', 'children'),
-    # Output('fundamentals-stock-price', 'children'),
-    # Output('fundamentals-stock-sector', 'children'),
-    # Output('fundamentals-stock-subsector', 'children'),
     Output('master-financial', 'children'),
     Output('financial-ratios', 'children'),
     Output('business-summary', 'children'),
     Output('profit-margin-chart', 'figure'),
-    # Input('get_stock_btn', 'n_clicks'),
+    Output('financial-statements-tabs', 'children'),
     Input('ticker_input', 'value'),
     Input('companies_dropdown', 'value'),
     Input('stock-storage', 'data'),
-    # [Input(str(stock_symbol + "-" + str(options['option_dates'][i])), 'n_clicks') for i in
-    #  range(0, len(options['option_dates']))],
     State('ticker_input', 'value'),
     # State('companies-dropdown', 'value'),
     suppress_callback_exceptions=True,

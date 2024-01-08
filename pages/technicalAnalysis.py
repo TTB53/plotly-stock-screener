@@ -78,6 +78,304 @@ Converts Timestamp column's to only be the year.
 '''
 
 
+
+# Constant styles for componenets
+SIDEBAR_STYLE = {
+    "position": "fixed",
+    "top": 0,
+    "left": 0,
+    "bottom": 0,
+    "width": "16rem",
+    "max-width": "20%",
+    "padding": "2rem 1rem",
+    # "background-color": "#f8f9fa",
+    "overflow": "auto",
+    "overflow-x": "hidden",
+}
+
+CONTENT_STYLE = {
+    "margin-left": "20%",
+    "margin-right": "2rem",
+    "min-width": "80%",
+    "padding": "2rem 1rem",
+}
+
+'''
+Layout of our Dash Application - the Bones of the App 
+
+'''
+
+page_stock_info_ids = {}
+page_stock_info_ids['stock-name'] = 'stock-name'
+page_stock_info_ids['stock-title'] = 'stock-title'
+page_stock_info_ids['stock-price'] = 'stock-price'
+page_stock_info_ids['stock-sector'] = 'stock-sector'
+page_stock_info_ids['stock-subsector'] = 'stock-subsector'
+
+# Registering the Dash Page
+dash.register_page(__name__,
+                   path='/technical-analysis',
+                   name='Technical Analysis',
+                   title='Stock Screener - Technical Analysis - ATB Analytics Group',
+                   description='Technical Analysis of Stocks'
+                   )
+
+layout = dbc.Container(
+    # id='page-content',
+    # className='col-md-12',
+    children=[
+        # utils.get_sidebar("", companies_df, page_stock_info_ids),
+        dbc.Row([
+            dbc.Col(
+                [
+                    html.Div(utils.get_sidebar("", companies_df, page_stock_info_ids)),
+                ],
+                width=12,
+            )
+        ]),
+
+        dbc.Row([
+            # Company Name
+            html.H1(
+                id='stock-name-heading-tech',
+                className='mb-5'
+                          "{} About".format(stock_symbol)
+            ),
+            # Company information
+            dbc.Col(
+                className='col-md-12 mt-5',
+                children=[
+                    html.H2(
+                        id='stock-price-heading',
+                        children=[
+                            "Price Analysis".format(stock_symbol)
+                        ]),
+
+                    dbc.Card(
+                        className='mb-2 mt-2 pl-2 pr-2',
+                        children=[
+                            dbc.CardBody(
+                                children=[
+                                    html.P(
+                                        children=[
+                                            "Stock Price with Bollinger Band Overlays."
+                                            "The Bollinger Bands act as a way to show, "
+                                            "rising or reversal trends on a security. The wider"
+                                            "the band the more likely a reversal is to happen"
+                                        ]
+                                    ),
+                                    dcc.Loading(
+                                        children=[
+                                            dcc.Graph(
+                                                id='candlestick-graph',
+                                                animate=True,
+                                            ),
+                                        ],
+                                        type='circle',
+                                        color=utils.get_random_color(utils)
+                                    ),
+
+                                ]),
+                        ]),
+                ],
+                width=12,
+            ),
+
+            dbc.Row(
+                children=[
+                    dbc.Col(
+                        # className='col-md-4 mt-5',
+                        children=[
+                            dbc.Card(
+                                className='mb-2 mt-2 pl-2 pr-2',
+                                children=[
+                                    dbc.CardHeader(children=[
+                                        html.H3("On Balance Volume - OBV"),
+                                    ]),
+                                    dbc.CardBody(
+                                        children=[
+                                            html.P(
+                                                children=[
+
+                                                    "On-balance volume (OBV) is a technical indicator of momentum, "
+                                                    "using volume changes to make price predictions. OBV shows crowd "
+                                                    "sentiment that can predict a bullish or bearish outcome."
+                                                    ""
+                                                    "The actual value of the OBV is unimportant; concentrate on its "
+                                                    "direction."
+                                                    "When both price and OBV are making higher peaks and higher "
+                                                    "troughs, the upward trend is likely to continue. When both price "
+                                                    "and OBV are making lower peaks and lower troughs, the downward "
+                                                    "trend is likely to continue. During a trading range, "
+                                                    "if the OBV is rising, accumulation may be taking place—a "
+                                                    "warning of an upward breakout. During a trading range, if the "
+                                                    "OBV is falling, distribution may be taking place—a warning "
+                                                    "of a downward breakout. When price continues to make higher peaks "
+                                                    "and OBV fails to make higher peaks, the upward trend is likely "
+                                                    "to stall or fail. This is called a negative divergence. When "
+                                                    "price continues to make lower troughs and OBV fails to make "
+                                                    "lower troughs, the downward trend is likely to stall or fail. "
+                                                    "This is called a positive divergence."
+                                                    ""
+                                                ]
+                                            ),
+                                        ]),
+                                ]),
+
+                        ],
+                        width=12,
+                    ),
+
+                    dbc.Col([
+
+                            dbc.Card(
+                                className='mb-2 mt-2 pl-2 pr-2',
+                                children=[
+                                    dbc.CardBody(
+                                        children=[
+                                            dcc.Loading(children=[
+                                                dcc.Graph(
+                                                    id='obv-chart',
+                                                    animate=True,
+                                                ),
+                                            ],
+                                                type='circle',
+                                                color=utils.get_random_color(utils)
+                                            ),
+                                        ]),
+                                ]),
+
+                        ],
+                        width=12,
+                    ),
+
+                ],
+            ),
+            dbc.Row([
+
+                dbc.Col(
+                    className='col-md-12 mt-5',
+                    children=[
+                        dbc.Card(
+                            className='mb-2 mt-2 pl-2 pr-2',
+                            children=[
+                                dbc.CardHeader(children=[
+                                    html.H3("Average True Range - ATR"),
+                                ]),
+                                dbc.CardBody(
+                                    children=[
+                                        html.P(
+                                            children=[
+                                                "Average True Range measures the Volatility in Price. Average True "
+                                                "Range (ATR) is the average of true ranges over the specified period. "
+                                                "ATR measures volatility, taking into account any gaps in the price "
+                                                "movement. Typically, the ATR calculation is based on 14 periods, "
+                                                "which can be intraday, daily, weekly, or monthly. "
+                                                ""
+                                                "An expanding ATR indicates increased volatility in the market, with the"
+                                                " range of each bar getting larger. A reversal in price with an "
+                                                "increase in ATR would indicate strength behind that move. ATR is not "
+                                                "directional so an expanding ATR can indicate selling pressure or "
+                                                "buying pressure. High ATR values usually result from a sharp advance "
+                                                "or decline and are unlikely to be sustained for extended period"
+
+                                            ]
+                                        ),
+
+                                    ]),
+                            ]),
+                    ],
+                    width=12,
+                ),
+
+
+                dbc.Col(
+                    className='col-md-12 mt-5',
+                    children=[
+                        dbc.Card(
+                            className='mb-2 mt-2 pl-2 pr-2',
+                            children=[
+                                dbc.CardBody(
+                                    children=[
+
+                                        dcc.Loading(
+                                            children=[
+                                                dcc.Graph(
+                                                    id='atr-chart',
+                                                    animate=True,
+                                                ),
+                                            ],
+                                            type='circle',
+                                            color=utils.get_random_color(utils)
+                                        ),
+
+                                    ]),
+                            ]),
+                    ],
+                    width=12,
+                ),
+            ]
+            ),
+
+            dbc.Row(
+                children=[
+                    dbc.Col(
+                        className='col-md-12 mt-5',
+                        children=[
+                            dbc.Card(
+                                className='mb-2 mt-2 pl-2 pr-2',
+                                children=[
+                                    dbc.CardBody(
+                                        children=[
+                                            dcc.Loading(
+                                                children=[
+                                                    html.P(
+                                                        children=[
+                                                            "Moving Average Convergence Divergence measures the "
+                                                            "Volatility in Price. Although it is an oscillator, "
+                                                            "it is not typically used to identify over bought or "
+                                                            "oversold conditions. It appears on the chart as two "
+                                                            "lines which oscillate without boundaries. The crossover "
+                                                            "of the two lines give trading signals similar to a two "
+                                                            "moving average system."
+
+                                                        ]
+                                                    ),
+                                                    dcc.Graph(
+                                                        id='macd-graph',
+                                                        animate=True,
+                                                    ),
+                                                ],
+                                                type='circle',
+                                                color=utils.get_random_color(utils)
+                                            ),
+                                        ]),
+                                ]),
+                        ]
+                    ),
+                ]
+            ),
+
+        ]),
+
+        # dcc.Loading(
+        #     id="calls-table",
+        #     type="circle",
+        # ),
+        #
+        # dcc.Loading(
+        #     id="puts-table",
+        #     type="circle",
+        # ),
+    ]
+
+)
+
+'''
+
+    Dash Callback that allows for interactivity between UI, API and DB
+
+    '''
 def update_UI(stock_symbol):
     candlestick_figure, ATR, RSI, macd_figure, ATR_layout, RSI_layout, calls, puts, data, call_datatable, put_datatable, = None, None, None, None, None, None, None, \
                                                                                                                            None, None, None, None
@@ -192,21 +490,21 @@ def update_UI(stock_symbol):
         utils, data, stock_symbol)
 
     # Checking to make sure that the stock has options, someitmes it is hit or miss with yFinance
-    if len(options) > 0:
-        calls = options['options'].calls.drop(
-            columns=['contractSymbol', 'lastTradeDate', 'contractSize', 'currency'])
-        puts = options['options'].puts.drop(columns=['contractSymbol', 'lastTradeDate', 'contractSize', 'currency'])
-
-        call_datatable = utils.generate_option_dash_datatable(
-            utils,
-            dataframe=calls,
-            id="calls-table-data")
-        # data_1 = calls.to_dict('records')
-        put_datatable = utils.generate_option_dash_datatable(
-            utils,
-            dataframe=puts,
-            id="puts-table-data")
-        # data_2 = puts.to_dict('records')
+    # if len(options) > 0:
+    #     calls = options['options'].calls.drop(
+    #         columns=['contractSymbol', 'lastTradeDate', 'contractSize', 'currency'])
+    #     puts = options['options'].puts.drop(columns=['contractSymbol', 'lastTradeDate', 'contractSize', 'currency'])
+    #
+    #     call_datatable = utils.generate_option_dash_datatable(
+    #         utils,
+    #         dataframe=calls,
+    #         id="calls-table-data")
+    #     # data_1 = calls.to_dict('records')
+    #     put_datatable = utils.generate_option_dash_datatable(
+    #         utils,
+    #         dataframe=puts,
+    #         id="puts-table-data")
+    #     # data_2 = puts.to_dict('records')
 
     # OBV Chart which is a leading indicator can be paired with a lagging indicator like (BB, MA, ATR,MACD)
     obv_chart = utils.generate_scatter_graph_no_bar(
@@ -241,301 +539,6 @@ def update_UI(stock_symbol):
     return candlestick_figure, obv_chart, atr_chart, macd_figure
 
 
-# Constant styles for componenets
-SIDEBAR_STYLE = {
-    "position": "fixed",
-    "top": 0,
-    "left": 0,
-    "bottom": 0,
-    "width": "16rem",
-    "max-width": "20%",
-    "padding": "2rem 1rem",
-    # "background-color": "#f8f9fa",
-    "overflow": "auto",
-    "overflow-x": "hidden",
-}
-
-CONTENT_STYLE = {
-    "margin-left": "20%",
-    "margin-right": "2rem",
-    "min-width": "80%",
-    "padding": "2rem 1rem",
-}
-
-'''
-Layout of our Dash Application - the Bones of the App 
-
-'''
-
-page_stock_info_ids = {}
-page_stock_info_ids['stock-name'] = 'stock-name'
-page_stock_info_ids['stock-title'] = 'stock-title'
-page_stock_info_ids['stock-price'] = 'stock-price'
-page_stock_info_ids['stock-sector'] = 'stock-sector'
-page_stock_info_ids['stock-subsector'] = 'stock-subsector'
-
-# Registering the Dash Page
-dash.register_page(__name__,
-                   path='/technical-analysis',
-                   name='Technical Analysis',
-                   title='Stock Screener - Technical Analysis - ATB Analytics Group',
-                   description='Technical Analysis of Stocks'
-                   )
-
-layout = dbc.Container(
-    # id='page-content',
-    # className='col-md-12',
-    children=[
-        # utils.get_sidebar("", companies_df, page_stock_info_ids),
-        dbc.Row([
-            dbc.Col(
-                [
-                    html.Div(utils.get_sidebar("", companies_df, page_stock_info_ids)),
-                ],
-                width=12,
-            )
-        ]),
-
-        dbc.Row([
-            # Company Name
-            html.H1(
-                id='stock-name-heading-tech',
-                className='mb-5'
-                          "{} About".format(stock_symbol)
-            ),
-            # Company information
-            dbc.Col(
-                className='col-md-12 mt-5',
-                children=[
-                    html.H2(
-                        id='stock-price-heading',
-                        children=[
-                            "Price Analysis".format(stock_symbol)
-                        ]),
-
-                    dbc.Card(
-                        className='mb-2 mt-2 pl-2 pr-2',
-                        children=[
-                            dbc.CardBody(
-                                children=[
-                                    html.P(
-                                        children=[
-                                            "Stock Price with Bollinger Band Overlays."
-                                            "The Bollinger Bands act as a way to show, "
-                                            "rising or reversal trends on a security. The wider"
-                                            "the band the more likely a reversal is to happen"
-                                        ]
-                                    ),
-                                    dcc.Loading(
-                                        children=[
-                                            dcc.Graph(
-                                                id='candlestick-graph',
-                                                animate=True,
-                                            ),
-                                        ],
-                                        type='circle',
-                                        color='lightseagreen'
-                                    ),
-
-                                ]),
-                        ]),
-                ],
-                width=12,
-            ),
-
-            dbc.Row(
-                children=[
-                    dbc.Col(
-                        # className='col-md-4 mt-5',
-                        children=[
-                            dbc.Card(
-                                className='mb-2 mt-2 pl-2 pr-2',
-                                children=[
-                                    dbc.CardHeader(children=[
-                                        html.H3("On Balance Volume - OBV"),
-                                    ]),
-                                    dbc.CardBody(
-                                        children=[
-                                            html.P(
-                                                children=[
-
-                                                    "On-balance volume (OBV) is a technical indicator of momentum, "
-                                                    "using volume changes to make price predictions. OBV shows crowd "
-                                                    "sentiment that can predict a bullish or bearish outcome."
-                                                    ""
-                                                    "The actual value of the OBV is unimportant; concentrate on its "
-                                                    "direction."
-                                                    "When both price and OBV are making higher peaks and higher "
-                                                    "troughs, the upward trend is likely to continue. When both price "
-                                                    "and OBV are making lower peaks and lower troughs, the downward "
-                                                    "trend is likely to continue. During a trading range, "
-                                                    "if the OBV is rising, accumulation may be taking place—a "
-                                                    "warning of an upward breakout. During a trading range, if the "
-                                                    "OBV is falling, distribution may be taking place—a warning "
-                                                    "of a downward breakout. When price continues to make higher peaks "
-                                                    "and OBV fails to make higher peaks, the upward trend is likely "
-                                                    "to stall or fail. This is called a negative divergence. When "
-                                                    "price continues to make lower troughs and OBV fails to make "
-                                                    "lower troughs, the downward trend is likely to stall or fail. "
-                                                    "This is called a positive divergence."
-                                                    ""
-                                                ]
-                                            ),
-                                        ]),
-                                ]),
-
-                        ],
-                        width=12,
-                    ),
-
-                    dbc.Col([
-
-                            dbc.Card(
-                                className='mb-2 mt-2 pl-2 pr-2',
-                                children=[
-                                    dbc.CardBody(
-                                        children=[
-                                            dcc.Loading(children=[
-                                                dcc.Graph(
-                                                    id='obv-chart',
-                                                    animate=True,
-                                                ),
-                                            ],
-                                                type='circle',
-                                            ),
-                                        ]),
-                                ]),
-
-                        ],
-                        width=12,
-                    ),
-
-                ],
-            ),
-            dbc.Row([
-
-                dbc.Col(
-                    className='col-md-12 mt-5',
-                    children=[
-                        dbc.Card(
-                            className='mb-2 mt-2 pl-2 pr-2',
-                            children=[
-                                dbc.CardHeader(children=[
-                                    html.H3("Average True Range - ATR"),
-                                ]),
-                                dbc.CardBody(
-                                    children=[
-                                        html.P(
-                                            children=[
-                                                "Average True Range measures the Volatility in Price. Average True "
-                                                "Range (ATR) is the average of true ranges over the specified period. "
-                                                "ATR measures volatility, taking into account any gaps in the price "
-                                                "movement. Typically, the ATR calculation is based on 14 periods, "
-                                                "which can be intraday, daily, weekly, or monthly. "
-                                                ""
-                                                "An expanding ATR indicates increased volatility in the market, with the"
-                                                " range of each bar getting larger. A reversal in price with an "
-                                                "increase in ATR would indicate strength behind that move. ATR is not "
-                                                "directional so an expanding ATR can indicate selling pressure or "
-                                                "buying pressure. High ATR values usually result from a sharp advance "
-                                                "or decline and are unlikely to be sustained for extended period"
-
-                                            ]
-                                        ),
-
-                                    ]),
-                            ]),
-                    ],
-                    width=12,
-                ),
-
-
-                dbc.Col(
-                    className='col-md-12 mt-5',
-                    children=[
-                        dbc.Card(
-                            className='mb-2 mt-2 pl-2 pr-2',
-                            children=[
-                                dbc.CardBody(
-                                    children=[
-
-                                        dcc.Loading(
-                                            children=[
-                                                dcc.Graph(
-                                                    id='atr-chart',
-                                                    animate=True,
-                                                ),
-                                            ],
-                                            type='circle',
-                                        ),
-
-                                    ]),
-                            ]),
-                    ],
-                    width=12,
-                ),
-            ]
-            ),
-
-            dbc.Row(
-                children=[
-                    dbc.Col(
-                        className='col-md-12 mt-5',
-                        children=[
-                            dbc.Card(
-                                className='mb-2 mt-2 pl-2 pr-2',
-                                children=[
-                                    dbc.CardBody(
-                                        children=[
-                                            dcc.Loading(
-                                                children=[
-                                                    html.P(
-                                                        children=[
-                                                            "Moving Average Convergence Divergence measures the "
-                                                            "Volatility in Price. Although it is an oscillator, "
-                                                            "it is not typically used to identify over bought or "
-                                                            "oversold conditions. It appears on the chart as two "
-                                                            "lines which oscillate without boundaries. The crossover "
-                                                            "of the two lines give trading signals similar to a two "
-                                                            "moving average system."
-
-                                                        ]
-                                                    ),
-                                                    dcc.Graph(
-                                                        id='macd-graph',
-                                                        animate=True,
-                                                    ),
-                                                ],
-                                                type='circle',
-                                                color='lightseagreen'
-                                            ),
-                                        ]),
-                                ]),
-                        ]
-                    ),
-                ]
-            ),
-
-        ]),
-
-        # dcc.Loading(
-        #     id="calls-table",
-        #     type="circle",
-        # ),
-        #
-        # dcc.Loading(
-        #     id="puts-table",
-        #     type="circle",
-        # ),
-    ]
-
-)
-
-'''
-
-    Dash Callback that allows for interactivity between UI, API and DB
-
-    '''
 
 
 @callback(

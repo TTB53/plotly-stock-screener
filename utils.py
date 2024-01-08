@@ -29,6 +29,8 @@ from sqlite3 import Error
 import logging
 
 # import app
+from sqlalchemy import text
+
 import assets.templates.atbanalyticsgrp_dark as ATBDEFAULTTHEME
 import db
 
@@ -471,7 +473,7 @@ class Utils:
     '''
 
     def generate_generic_dash_datatable(self, dataframe, id, ):
-        columns = [{"name": i, "id": i, 'type': 'numeric', 'format': FormatTemplate.money(2)} for i in
+        columns = [{"name": str(i), "id": str(i), 'type': 'numeric', 'format': FormatTemplate.money(2)} for i in
                    dataframe.columns]  # for when the column names can change
 
         return dash_table.DataTable(
@@ -740,7 +742,7 @@ class Utils:
         candlestick_figure = make_subplots(specs=[[{'secondary_y': True}]])
 
         candlestick_layout = go.Layout(
-            title='{} Price'.format(stock_symbol),
+            title=f'{stock_symbol} Price',
             barmode='overlay',
             autosize=True,
             xaxis={'range': [dataframe.date.min(), dataframe.date.max()]},
@@ -1244,9 +1246,10 @@ class Utils:
         else:
             earnings = earnings.transpose()
 
-        if earnings.columns[earnings.columns.duplicated()] > 0:
+        if len(earnings.columns[earnings.columns.duplicated()]) > 0:
             logging.info(f'Duplicate Column names in the earnings column')
-            earnings = earnings.groupby(earnings.columns.str, axis=1).agg(lambda x : x.join(str(v) for v in x if pd.notnull(v)))
+            earnings = earnings.groupby(earnings.columns.str, axis=1).agg(
+                lambda x: x.join(str(v) for v in x if pd.notnull(v)))
 
         # converting the years into the same format as the other financial mm/yyyy format
         for c in earnings.columns:
@@ -1457,6 +1460,36 @@ class Utils:
 
         return read_sql_file
 
+    '''
+    
+        Preps and checks that the dataframe is producing the proper information and is removing 
+        standard columns among table groups. 
+        
+        :param df - dataframe
+        :param qry - either path to sql file to read data from table in database
+        :param table_name table name to search in the database
+    
+    '''
+
+    def prep_df_for_db_insert(self, qry_str, stock_id, col_check, drop_cols, conn):
+        QRY = self.open_and_read_sql(self, qry_str)
+        ids_to_check = [stock_id]  # if using the same id multiple time
+        id_string = ', '.join(str(id) for id in ids_to_check)
+        df = pd.read_sql_query(text(QRY.format(id_string, id_string)), conn)
+
+        if df[col_check][0] is not None:
+            df.drop(columns=drop_cols, inplace=True)
+
+            if col_check is 'Year':
+                df.set_index('Year', inplace=True)
+            else:
+                df.set_index('year', inplace=True)
+
+            df.sort_index(ascending=False, inplace=True)
+            df = df.transpose()
+
+        return df
+
     ''' 
         Returns a loading wrapped component can be a single component or a group of nested components
     '''
@@ -1526,6 +1559,7 @@ class Utils:
     :param init_revenue = 1  is the revenue value at the start of the period 
     :param run_scenario = False if true will return a pd df for the sales growth, inflation rates and revenue.
     '''
+
     def forcast_sales_revenue(self, sales_growth, inflation_rate, init_revenue=1, run_scenario=False):
         if sales_growth is None:
             # Low, Base, High Sales Growth

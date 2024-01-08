@@ -8,4 +8,7 @@
 ----------------------------------------------------------------------
 SELECT symbol, id, company, gics_sector, gics_subsector
 FROM stock
--- WHERE stock.symbol = symbol_of_interest
+WHERE stock.symbol = {}
+UNION ALL
+SELECT NULL,NULL,NULL,NULL,NULL
+WHERE NOT EXISTS( SELECT 1 FROM stock WHERE stock.symbol = {})
