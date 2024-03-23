@@ -1,6 +1,6 @@
-'''
+"""
 
-DB Connection
+DB Connection Class
 
 ------------------------------------------------------------------------------
 Program Description
@@ -9,8 +9,7 @@ Program Description
 Class that does the majority of the interacting with the database
 
 ----------------------------------------------------------------------------------
-'''
-import sqlite3
+"""
 from sqlite3 import Error
 import logging
 
@@ -206,15 +205,28 @@ class DBConnection:
     :return  Connection object or None
     """
 
-    def insert_into_table(self, conn, insert_table_sql, param_list=None):
+    def insert_into_table(self, conn, insert_table_sql, table_name, param_list=None):
 
         try:
             c = conn.cursor()
 
+            # Check if columns exist in table.
             if param_list is not None:
-                c.execute(insert_table_sql, param_list)
+                column_names = insert_table_sql.split('(')[1].split(')')[0].replace(' ', '').split(',')
+
+                c.execute(f"PRAGMA table_info({table_name})")
+                columns = [column[1] for column in c.fetchall()]
+                columns_to_insert = [col for col in column_names if col in columns]
+                logging.info(f"The columns that are going to be inserted are {columns_to_insert}")
+
+                columns_str = ', '.join(columns_to_insert)
+                values_str = ', '.join([f":{col}" for col in columns_to_insert])
+                insert_query = f"INSERT INTO {table_name} ({columns_str}) VALUES ({values_str})"
+                logging.info(f"The following query is going to be tried:\n{insert_query}")
+
+                c.execute(insert_table_sql)
                 conn.commit()
-                logging.info("Data Successfully submitted to DB with the provided paramaters\n{}".format(param_list))
+                logging.info(f"Data Successfully submitted to DB with the provided parameters\n{param_list}")
             else:
                 c.execute(insert_table_sql)
                 conn.commit()
@@ -236,7 +248,7 @@ class DBConnection:
         if conn and table_name:
             c = conn.cursor()
             data = c.execute('''SELECT * FROM {}'''.format(table_name)).getall()
-            logging.info(data)
+            logging.info(f"get_all_data function for {table_name} produced\n{data}")
             c.close()
 
     '''
@@ -299,7 +311,7 @@ class DBConnection:
 
                 stock_id = stock_df['id'][i]
                 stock_symbol = stock_df['symbol'][i]
-                stock = stockObj.get_ticker_all(stock, add_ma=False, add_bb=False, add_mi=False)
+                stock = stockObj.get_ticker_all(stock(), add_ma=False, add_bb=False, add_mi=False)
 
                 if stock is not None:
                     stock['date'] = pd.to_datetime(stock.index)
@@ -316,7 +328,7 @@ class DBConnection:
                         stock_symbol=stock_symbol, stock_info=True)
 
                     logging.info("Waiting to get the Other Info\n{}s\n".format(random_number))
-                    time.wait(random_number)
+                    time.sleep(random_number)
                     stock_info = stockObj.get_ticker_additional_information(balanceSheet=False,
                                                                             stock_id=stock_id)
                     logging.info(stock_info)
@@ -333,16 +345,19 @@ class DBConnection:
     def select_table_data(self, conn, table_name):
         try:
             if type(conn) is sqlalchemy.Engine:
+                logging.info(f"Connection is an SQLAlchemy Engine\n{type(conn)}")
                 with conn.begin() as connection:
                     result = connection.execute(text(f"SELECT * FROM {table_name}"))
                     data = pd.DataFrame(result)
+                    logging.info(f"Results from {table_name}\n{data}\n")
             else:
                 c = conn.cursor()
                 data = pd.read_sql_query('''SELECT * from {}'''.format(table_name), conn)
+                logging.info(f"Results from {table_name}\n{data}\n")
                 c.close()
             return data
         except Error as e:
-            logging.info(e)
+            logging.info(f"Error Occurred selecting data from {table_name}:\n{e}")
             return None
 
     '''
@@ -382,9 +397,11 @@ class DBConnection:
             c.execute("Select * FROM {}".format(table_name))
 
             if c.getone()[0] == 1:
+                logging.info(f"Checking for Table with {table_name}...{msg}")
                 return msg
         except:
             msg = f"The {table_name} does not exist in the database."
+            logging.info(f"Checking for Table with {table_name}...{msg}")
 
         return msg
 
@@ -418,7 +435,7 @@ class DBConnection:
         # create a database connection
         db_file = self.DB_FILE
         conn = self.create_connection(self, db_file=db_file)
-        logging.info(conn)
+        logging.info(f"Connection created for populating_init_db: {conn}")
 
         # create tables
         if conn is not None:
@@ -492,39 +509,44 @@ class DBConnection:
         # Creating SQLAlchemy Session bound to our db connection
         Session = sessionmaker(bind=conn)
         session = Session()
+        logging.info(f"Session Object Created \n{session}")
 
         try:
             # Get the db table columns
             inspector = inspect(conn)
             table_cols = [col['name'] for col in inspector.get_columns(table_name)]
+            logging.info(f"Inspector Object Created\n{inspector} "
+                         f"Inspector has the following columns\n{table_cols} for {table_name}")
 
             if len(table_cols) > 0:
-                logging.info(f"Table columns retrieved successfully!")
+                logging.info(f"{table_name} columns retrieved successfully!\nCurrent table columns:\n{table_cols}")
                 # Check for missing columns between db table and current dataframe data.
                 missing_cols = list(set(table_cols) - set(dataframe.columns))
 
                 if len(missing_cols) > 0:
-                    logging.info(f"There were {len(missing_cols)} missing columns identified between the db and data")
+                    logging.info(f"There were {len(missing_cols)} missing columns identified between the db and data"
+                                 f"here are the missing columns\n{missing_cols}")
                     for column in missing_cols:
                         dataframe[column] = None
 
                 ordered_dataframe = dataframe[table_cols]
-                logging.info('Dataframe reordered to match DB col order.')
+                logging.info(f'Dataframe reordered to match DB col order.\n{ordered_dataframe}')
 
                 try:
                     ordered_dataframe.to_sql(table_name, conn, index=False, if_exists='append')
-                    logging.info("Data appended to the database Successfully.")
+                    logging.info(f"Data appended to the database Successfully to {table_name}.")
                     session.close()
                 except Error as e:
                     session.rollback()
-                    logging.error("Error Occurred when trying to update/append the data to the database.")
+                    logging.error(
+                        f"Error Occurred when trying to update/append to {table_name} with the following columms {table_cols} data to the database.")
                     logging.error(e)
                     session.close()
 
             else:
-                logging.error(f"There are no columns for the table that was entered.")
+                logging.error(f"There are no columns for the {table_name} table that was entered.")
                 session.close()
 
         except Error as e:
-            logging.info(e)
+            logging.info(f"Error Occurred when creating the database: {e}")
             session.close()

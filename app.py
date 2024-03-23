@@ -17,13 +17,16 @@ v1.0 May 2021 - July 2023
 v2.0 July 2023 - Present
 
 """
+import atexit
+import json
+import pathlib
 from datetime import datetime
 
 import sqlalchemy
 
 import config
 import dash_bootstrap_components as dbc
-from dash import Input, Output, dcc, html, callback, State
+from dash import callback, State
 import plotly.io as pio
 
 import assets.templates.atbanalyticsgrp_dark as ATBDEFAULTTHEME
@@ -33,7 +36,6 @@ pio.templates.default = "atbAnalyticsGroupDefaultDark"
 import dash
 from sqlite3 import Error
 import logging
-
 
 from dash import html, dcc
 from dash.dependencies import Input, Output
@@ -78,13 +80,26 @@ DEFAULTS = config.ScreenerConfig()
 
 # setup logger. Only run this once.
 current_date = datetime.now().strftime("%m_%d_%y")
+logger = logging.getLogger("main_app_logger")
+
+
+def set_up_logging():
+    config_file = pathlib.Path(".\\logs\\log_config.json")
+    with open(config_file) as f:
+        config = json.load(f)
+    logging.config.dictConfig(config)
+    queue_handler = logging.getHandlerByName("queue_handler")
+    if queue_handler is not None:
+        queue_handler.listener.start()
+        atexit.register(queue_handler.listener.stop)
+
 
 logging.basicConfig(level=logging.DEBUG,  # lowest level and up. # TODO Change before sending to production.
                     encoding='utf-8',
-                    datefmt='%m-%d-%y %H:%M',
+                    datefmt="%m-%d-%Y T%H:%M:%S%z",
                     filename=f'./logs/logs_{current_date}.log',
                     filemode='w',
-                    format="%(asctime)s - %(levelname)s - %(lineno)d | %(message)s ",
+                    format="%(asctime)s - %(levelname)s - %(lineno)d | %(funcName)s | %(module)s | %(message)s ",
                     )
 
 # Interacts with the Database
@@ -128,7 +143,7 @@ app = dash.Dash(__name__,
                 assets_folder="./assets",
                 )
 
-navbar_sticky = utils.get_nav(utils, 1)
+navbar_sticky = utils.get_nav(utils(), 1)
 
 sidebar = dbc.Col(
     id='sidebar',
@@ -191,7 +206,7 @@ app.layout = dbc.Container(
             ],
             fullscreen=True,
             type="dot",
-            color=utils.get_random_color(utils, ),
+            color=utils.get_random_color(utils(), ),
         ),
 
         dbc.Row(
@@ -224,19 +239,6 @@ def add_stock_data_to_storage(stock_symbol, data=None):
 
     logging.info(f"Storage data is {data}")
     return data
-
-
-# @callback(
-#     Output("sidebar", "className"),
-#     [Input("sidebar-toggle", "n_clicks")],
-#     [State("sidebar", "className")],
-#     suppress_callback_exceptions=True,
-#     prevent_initial_callbacks=True,
-# )
-# def toggle_classname(n, classname):
-#     if n and classname == "":
-#         return "collapsed"
-#     return ""
 
 
 @callback(
@@ -313,6 +315,9 @@ def toggle_collapse(n, is_open):
 # app.title = "Stock Screener"
 
 if __name__ == '__main__':
-    app.run_server(
+    app.run(
         debug=True
-    )  # TODO Change to False in Production
+    )
+    # app.run_server(
+    #     debug=True
+    # )  # TODO Change to False in Production

@@ -128,7 +128,7 @@ layout = dbc.Container(
         dbc.Row([
             dbc.Col(
                 [
-                    html.Div(utils.get_sidebar("", companies_df, page_stock_info_ids)),
+                    html.Div(utils.get_sidebar(utils(), companies_df, page_stock_info_ids)),
                 ],
                 width=12,
             )
@@ -429,7 +429,7 @@ def update_UI(stock_symbol):
 
             # Insert basic Stock Information into DB
             insert_sql = """ INSERT INTO stock(symbol, company, nasdaq_sector, gics_sector,gics_subsector,headquarters) VALUES (?,?,?,?,?,?);"""
-            dbObj.insert_into_table(conn, insert_sql, param_list)  # TODO DB HIT
+            dbObj.insert_into_table(conn, insert_sql, 'stock', param_list)  # TODO DB HIT
 
             # Insert stock_price data into the stock price by newly created companies stock_id
             companies_df = pd.read_sql_query('SELECT * from stock', conn)  # TODO DB HIT

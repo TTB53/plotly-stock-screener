@@ -2,11 +2,14 @@ Simple S&P500 Screener
 ---
 ***
 
+![img_1.png](assets/img/fundamental_analysis.png)
+
+
 ## Application Purpose
 
 ***
-Utilize Python, yFinance and/or other financial data packages, TA-LIB, and Plotly Dash, this is intended to be a simple 
-multi-page stock screener that helps increase your knowledge about fundamental, technical, and option investing through
+Utilize Python, yFinance and/or similar API's and financial data packages, TA-LIB, and Plotly Dash, this is intended to be a simple 
+multipage stock screener that helps increase your knowledge about fundamental, technical, and option investing through
 data visualization and analysis.
 
 
@@ -16,30 +19,36 @@ data visualization and analysis.
 To find stocks on the S&P500 that match a desired pattern, and see if there is an investment opportunity. 
 
 I built this
-to strip out all the various things in a screener that are not relevant to my investment level and skillset. This is not
-intended to be a tool to be used for actual investments, but to learn how to identify trends and start to get an
-understanding of financial datasets pertaining to the stock market.
+to strip out all the various things in larger and more commercial screeners that are not relevant to my investment level 
+and skillset. This is not intended to be a tool to be used for actual investments, but as a startging point to learn 
+how to identify trends and start to get an understanding of visualizing and manipulating 
+financial datasets pertaining to the stock market.
 
 ## Lessons Learned
 
 ***
 
 1. Candlestick Analysis using Python and TA-Lib
+![candlestick_pattern.png](assets%2Fimg%2Fcandlestick_pattern.png)
+
+![no_candlestick_pattern.png](assets%2Fimg%2Fno_candlestick_pattern.png)
 2. Multi-Page Plotly Dash
     1. Homepage
     2. Fundamental Analysis
     3. Technical Analysis
-    4. #### Planned Pages
-        1. Options Page - Currently at the bottom of both Technical and Fundamentals Pages
+    4. Options Analysis
+    5. #### Planned Pages
+        ~~1. Options Page - Currently at the bottom of both Technical and Fundamentals Pages~~
         2. Stock vs Top N Stocks within 
            1. Industry
            2. S&P500
 
 4. Calling API Service
-    1. yFinance - option to use Pandareader to include ability to download from various datasources. 
+    1. yFinance  
 5. Database Development
-    1. SQLite - option to use for switch between DB's
+    1. SQLite - this was the smallest and most lightweight to get up and running
 6. Interactive Data Visualization
+   1. Plotly Dash
 
 ## Features
 
@@ -55,7 +64,7 @@ understanding of financial datasets pertaining to the stock market.
         * 200MA
     * On Balance Volume
     * Average True Range
-    * Moving Average Convergance - Divergance
+    * Moving Average Convergence - Divergence
 
 ### Planned Features/Enhancements
 

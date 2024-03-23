@@ -21,7 +21,7 @@ import sqlalchemy
 
 import config
 import datetime as dt
-import sys
+
 from sqlite3 import Error
 import logging
 
@@ -130,6 +130,7 @@ class MyStock:
     '''
 
     def prep_dataframe_to_save(self, dataframe, stock_id):
+        logging.info(f"Data for {stock_id} to be converted\n{dataframe.head(10)}")
         df_to_save = dataframe.copy()
         df_to_save.fillna(0, inplace=True)
         df_to_save = self.convert_timestamp_columns(df_to_save)
@@ -138,7 +139,7 @@ class MyStock:
         df_to_save.reset_index(inplace=True)
         df_to_save['stock_id'] = stock_id
         df_to_save['date'] = pd.Timestamp.now()
-
+        logging.info(f"Data for {stock_id} was converted\n{dataframe.head(10)}")
         return df_to_save
 
     '''
@@ -245,7 +246,7 @@ class MyStock:
                         logging.info(f"Trying to establish connection with DB")
                         conn = db.DBConnection.create_connection()
                         if conn is not None:
-                            logging.info(f"{conn} was successfully established with db")
+                            logging.info(f"{self} : {conn} was successfully established with db")
 
                     # Creating a copy of the dataframes to add necessary data before saving into DB
                     balanceSheet_cpy = self.prep_dataframe_to_save(balanceSheet.rename({
@@ -261,22 +262,23 @@ class MyStock:
                     if not stock_info_cpy.empty:
                         try:
                             dbObj = db.DBConnection
-                            dbObj.append_data_to_table(dbObj, table_name='stock_basic_info', conn=conn,
+                            logging.info(f"Database Connection Object Created for stock info.\n{dbObj}")
+                            dbObj.append_data_to_table(dbObj(), table_name='stock_basic_info', conn=conn,
                                                        dataframe=stock_info_cpy)
                             # stock_info_cpy.to_sql('stock_basic_info', conn, index=False, if_exists='append')
-                            logging.info(f"Stock info records appended to the database.\{stock_info_cpy.head()}")
+                            logging.info(f"Stock info records appended to the database.{stock_info_cpy.head()}")
                         except Error as e:
                             logging.error(
-                                f"Error occurred when appending {stock_info_cpy.columns} data into stock_basic_info table")
+                                f"Error occurred when appending {stock_info_cpy.columns} data into stock_basic_info table using {dbObj}")
                             logging.error(e)
                         except sqlite3.OperationalError as f:
                             logging.error(
-                                "sqlite3 Operational Error occurred when appending {stock_info_cpy.columns} data into stock_basic_info table")
+                                f"sqlite3 Operational Error occurred when appending {stock_info_cpy.columns} data into stock_basic_info table using {dbObj}")
                             logging.error(f)
                             pass
                         except sqlalchemy.exc.OperationalError as g:
                             logging.error(
-                                "sqlAlchemy Operational Error occurred when appending {stock_info_cpy.columns} data into stock_basic_info table")
+                                f"sqlAlchemy Operational Error occurred when appending {stock_info_cpy.columns} data into stock_basic_info table")
                             logging.error(g)
                             pass
                         finally:
@@ -285,20 +287,24 @@ class MyStock:
 
                     # Balance Sheet
                     try:
+                        columns = balanceSheet_cpy.columns
+                        column_count = len(balanceSheet_cpy.columns)
+                        logging.info(f"Balance Sheet Copy has the following")
                         balanceSheet_cpy.to_sql('stock_balance_sheet', conn, index=False, if_exists='append')
                         logging.info("Balance Sheet records appended to the database.")
                     except Error as e:
-                        logging.error("Error Occurred when trying to update/append the balance sheet.")
+                        logging.error(
+                            f"Error Occurred when trying to update/append the {balanceSheet_cpy.columns}balance sheet.")
                         logging.error(e)
                         # balanceSheet_cpy.to_sql('stock_balance_sheet', conn, index=False, if_exists='append',)
                     except sqlite3.OperationalError as f:
                         logging.error(
-                            "sqlite3 Operational Error Occurred when trying to update/append the balance sheet.")
+                            f"sqlite3 Operational Error Occurred when trying to update/append the {balanceSheet_cpy.columns} balance sheet.")
                         logging.error(f)
                         pass
                     except sqlalchemy.exc.OperationalError as g:
                         logging.error(
-                            "sqlAlchemy Operational Error Occurred when trying to update/append the balance sheet.")
+                            f"sqlAlchemy Operational Error Occurred when trying to update/append the {balanceSheet_cpy.columns} balance sheet.")
                         logging.error(g)
                         pass
                     finally:
@@ -310,23 +316,23 @@ class MyStock:
                         cashflows_cpy.to_sql('stock_cashflows', conn, index=False, if_exists='append')
                         logging.info("Cash Flow records appended to the database.")
                     except Error as e:
-                        logging.error("Error Occurred when trying to update/append the cashflow sheet.")
+                        logging.error(
+                            f"Error Occurred when trying to update/append the {cashflows_cpy.columns}  cahflows sheet.")
                         logging.error(e)
                         # balanceSheet_cpy.to_sql('stock_balance_sheet', conn, index=False, if_exists='append',)
                     except sqlite3.OperationalError as f:
                         logging.error(
-                            "sqlite3 Operational Error Occurred when trying to update/append the balance sheet.")
+                            f"sqlite3 Operational Error Occurred when trying to update/append the {cashflows_cpy.columns} cashflow sheet")
                         logging.error(f)
                         pass
                     except sqlalchemy.exc.OperationalError as g:
                         logging.error(
-                            "sqlAlchemy Operational Error Occurred when trying to update/append the balance sheet.")
+                            f"sqlAlchemy Operational Error Occurred when trying to update/append the {cashflows_cpy.columns} cashflows sheet.")
                         logging.error(g)
                         pass
                     finally:
                         logging.info("Cash Flow Append/Insert Process Completed.")
                         pass
-
 
                     # Financials
                     try:
@@ -386,9 +392,11 @@ class MyStock:
             if options:
                 option_chain = {}
                 try:
-                    data.options
-                    option_chain = data.option_chain()
-                    option_chain = {'options': option_chain, 'option_dates': data.options}
+                    if data.options is not None and len(data.options) > 0:
+                        option_chain = data.option_chain()
+                        option_chain = {'options': option_chain, 'option_dates': data.options}
+                    else:
+                        logging.info(f"options ({data.options}) is empty")
 
                 except Exception as e:
                     logging.error(f"Error Occurred while trying to get the Options {e}")
@@ -541,4 +549,3 @@ class MyStock:
             return None
 
         return stock_info
-

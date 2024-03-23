@@ -107,7 +107,7 @@ layout = dbc.Container(
                         html.H1("Fundamental Analysis "),
                         html.Br(),
                         html.Br(),
-                        html.Div(utils.get_sidebar("", companies_df, page_stock_info_ids)),
+                        html.Div(utils.get_sidebar(utils(), companies_df, page_stock_info_ids)),
                         html.Hr(),
                         html.Br(),
                         html.Br(),
@@ -116,18 +116,20 @@ layout = dbc.Container(
                 ),
 
                 # Current Stock info wrapper
-                dbc.Col(
+                dbc.Row(
                     id='fundamental-curr-info-wrapper',
                     className='curr-info-wrapper mb-5',
                     children=[
-                        html.H2(
-                            id='stock-name-fundamental',
-                            className='mb-2 '
+                        dbc.Col(
                         ),
-                        html.Br(),
-                        html.Div(
-                            className='sector-info-wrapper',
-                            children=[
+                        dbc.Col(
+                            html.H2(
+                                id='stock-name-fundamental',
+                                className='mb-2 '
+                            ),
+                        ),
+                        dbc.Col(
+                            [
                                 html.H3(
                                     id='stock-sector-fundamental',
                                     className='mb-2 '
@@ -136,15 +138,55 @@ layout = dbc.Container(
                                     id='stock-subsector-fundamental',
                                     className='mb-2 '
                                 ),
-                                html.H2(
-                                    id='stock-price-fundamental',
-                                    className='mb-2 '
-                                ),
+                            ]
+
+                        ),
+                        dbc.Col(
+                            html.H2(
+                                id='stock-price-fundamental',
+                                className='mb-2 '
+                            ),
+                        ),
+                        dbc.Col(
+                        ),
+                        html.Br(),
+
+                        html.Div(
+                            className='sector-info-wrapper',
+                            children=[
+
                             ],
 
                         ),
 
                     ]
+                ),
+                dbc.Col(
+                    dbc.Card(
+                        className='col-md-12 mb-2 mt-2',
+                        children=[
+                            dbc.CardBody(
+                                children=[
+                                    html.H2(children=[
+                                        "Business Summary"
+                                    ]),
+                                    html.Br(),
+                                    dcc.Loading(
+                                        children=[
+                                            html.P(
+                                                id='business-summary',
+                                                children=[]
+                                            ),
+                                        ],
+                                        type='circle',
+                                        color=utils.get_random_color(utils())
+                                    ),
+                                ]
+                            )
+
+                        ]
+                    ),
+                    width=12,
                 ),
             ]
         ),
@@ -175,7 +217,7 @@ layout = dbc.Container(
                                                 ),
                                             ],
                                             type="circle",
-                                            color=utils.get_random_color(utils)
+                                            color=utils.get_random_color(utils())
                                         ),
                                     ]),
                             ]),
@@ -185,61 +227,7 @@ layout = dbc.Container(
 
         dbc.Row(
             children=[
-                dbc.Col(
-                    dbc.Card(
-                        className='col-md-12 mb-2 mt-2',
-                        children=[
-                            dbc.CardBody(
-                                children=[
-                                    html.H2(children=[
-                                        "Business Summary"
-                                    ]),
-                                    html.Br(),
-                                    dcc.Loading(
-                                        children=[
-                                            html.P(
-                                                id='business-summary',
-                                                children=[]
-                                            ),
-                                        ],
-                                        type='circle',
-                                        color=utils.get_random_color(utils)
-                                    ),
-                                ]
-                            )
-
-                        ]
-                    ),
-                    width=12,
-                ),
-
-                dbc.Col(
-                    children=[
-                        dbc.Card(
-                            className='col-md-12 mb-2 mt-2',
-                            children=[
-                                dbc.CardBody(
-                                    children=[
-                                        html.H2(children=[
-                                            "Financial Ratio's"
-                                        ]),
-                                        html.Br(),
-                                        # html.P(
-                                        #     children=[
-                                        #         "Some Quick Financial Ratios to get Familiar. The value is the current"
-                                        #         " value for the company vs the Industry for 2020 - 2015"
-                                        #     ]),
-                                        dcc.Loading(
-                                            id='financial-ratios',
-                                            type='circle',
-                                            color=utils.get_random_color(utils)
-                                        ),
-                                    ]),
-                            ]),
-                    ],
-                    width=12,
-                ),
-
+                # Margin Analysis
                 dbc.Col(
                     className='col-md-12 mt-5',
                     children=[
@@ -264,11 +252,40 @@ layout = dbc.Container(
                                                 ),
                                             ],
                                             type='circle',
-                                            color=utils.get_random_color(utils)
+                                            color=utils.get_random_color(utils())
                                         ),
                                     ]),
                             ]),
-                    ]),
+                    ]
+                ),
+
+                # Financial Ratios
+                dbc.Col(
+                    children=[
+                        dbc.Card(
+                            className='col-md-12 mb-2 mt-2',
+                            children=[
+                                dbc.CardBody(
+                                    children=[
+                                        html.H2(children=[
+                                            "Financial Ratio's"
+                                        ]),
+                                        html.Br(),
+                                        # html.P(
+                                        #     children=[
+                                        #         "Some Quick Financial Ratios to get Familiar. The value is the current"
+                                        #         " value for the company vs the Industry for 2020 - 2015"
+                                        #     ]),
+                                        dcc.Loading(
+                                            id='financial-ratios',
+                                            type='circle',
+                                            color=utils.get_random_color(utils())
+                                        ),
+                                    ]),
+                            ]),
+                    ],
+                    width=12,
+                ),
             ]
         ),
 
@@ -288,7 +305,7 @@ layout = dbc.Container(
                                         dcc.Loading(
                                             id='master-financial',
                                             type="circle",
-                                            color=utils.get_random_color(utils)
+                                            color=utils.get_random_color(utils())
                                         ),
                                     ]),
                             ]),
@@ -297,67 +314,24 @@ layout = dbc.Container(
                 dbc.Col(
                     children=[
                         dbc.Card(
+
                             children=[
                                 html.H2(f"Finanical Statements"),
                                 html.Br(),
                                 dcc.Loading(
-                                    id='financial-statements-tabs',
                                     type='circle',
-                                    color=utils.get_random_color(utils)
-                                )
+                                    color=utils.get_random_color(utils()),
+                                    children=[
+                                      dcc.Tabs(id='financial-statements-tabs',)
+                                    ],
+                                ),
+                                dcc.Graph(id='tab-bar-chart'),
                             ]
                         )
                     ]
                 )
-                # dbc.Col(
-                #
-                #     children=[
-                #         html.H2(["Generic Stock Info"]),
-                #         utils.generate_generic_dash_datatable(utils, pd.DataFrame.from_dict(stock_info),
-                #                                               id='stock-info-table')
-                #     ])
             ]
         ),
-
-        # Options
-        # dbc.Row([
-        #
-        #     dbc.Col(
-        #         className='col-md-12 mb-5',
-        #         children=[
-        #             dbc.Card(
-        #                 className='mb-2 mt-2 pl-2 pr-2',
-        #                 children=[
-        #                     dbc.CardBody(
-        #                         children=[
-        #                             dcc.Loading(
-        #                                 id="fundamentals-calls-table",
-        #                                 children=[],
-        #                                 type="circle",
-        #                                  color=utils.get_random_color(utils)
-        #                             ),
-        #                         ]),
-        #                 ]
-        #             ),
-        #         ]),
-        #
-        #     dbc.Col(
-        #         className='col-md-12 mb-5',
-        #         children=[
-        #             dbc.Card(
-        #                 className='mb-2 mt-2 pl-2 pr-2',
-        #                 children=[
-        #                     dbc.CardBody(
-        #                         children=[
-        #                             dcc.Loading(
-        #                                 id="fundamentals-puts-table",
-        #                                 type="circle",
-        #                                  color=utils.get_random_color(utils)
-        #                             ),
-        #                         ]),
-        #                 ]),
-        #         ]),
-        # ]),
 
     ]
 )
@@ -375,7 +349,7 @@ def update_fundamentals_UI(stock_symbol):
     company_name, stock_sector, stock_subsector, stock_info, profit_margin_figure = None, None, None, None, None
 
     # f = open('./data/SQL/read/company_information/CompanyInformation.sql', 'r')
-    COMPANY_INFO_QRY = utils.open_and_read_sql(utils, './data/SQL/read/company_information/CompanyInformation.sql')
+    COMPANY_INFO_QRY = utils.open_and_read_sql(utils(), './data/SQL/read/company_information/CompanyInformation.sql')
     logging.info(f"{stock_symbol} will be used with the COMPANY INFO QRY that is being Read\n{COMPANY_INFO_QRY}")
     # f.close()
     # COMPANY_INFO_QRY = "SELECT symbol, id, company, gics_sector, gics_subsector FROM stock"
@@ -384,7 +358,7 @@ def update_fundamentals_UI(stock_symbol):
 
         try:
             # Connect to database
-            conn = dbObj.create_connection(dbObj, DB_FILE)
+            conn = dbObj.create_connection(dbObj(), DB_FILE)
 
             # Getting record for company - If no record returned we create one and get data.
             company_info_df = pd.read_sql_query(
@@ -473,7 +447,7 @@ def update_fundamentals_UI(stock_symbol):
 
             # Insert basic Stock Information into DB
             insert_sql = """ INSERT INTO stock(symbol, company, nasdaq_sector, gics_sector,gics_subsector,headquarters) VALUES (?,?,?,?,?,?);"""
-            dbObj.insert_into_table(dbObj, conn, insert_sql, param_list)  # TODO DB HIT
+            dbObj.insert_into_table(dbObj(), conn, insert_sql, 'stock', param_list)  # TODO DB HIT
 
             # Insert stock_price data into the stock price by newly created companies stock_id
             companies_df = pd.read_sql_query('SELECT * from stock', conn)  # TODO DB HIT
@@ -532,6 +506,7 @@ def update_fundamentals_UI(stock_symbol):
             if earnings.iloc[0, 0] is None:
                 pull_add_data.append('earnings')
 
+            # TODO convert this to the SQL query version
             stock_info = pd.read_sql_query(
                 'SELECT * FROM stock_basic_info WHERE stock_basic_info.stock_id="{}"'.format(
                     stock_id), conn)
@@ -539,6 +514,7 @@ def update_fundamentals_UI(stock_symbol):
             stock_info = stock_info.T
 
             # stock_info = utils.prep_df_for_db_insert(utils, '.data/SQL/read/company_information/CompanyInformation.sql')
+            # TODO double check this is working properly - seems to add to pull_add_data when it does have data present
             if stock_info.shape[1] > 0:
                 pull_add_data.append('stock_info')
 
@@ -554,18 +530,19 @@ def update_fundamentals_UI(stock_symbol):
 
                 if len(pull_add_data) > 1:
                     options, financials, cashflows, earnings, balanceSheet, stock_info = StockObj.get_ticker_additional_information(
-                    stock_symbol=stock_symbol, stock_info=True, stock_id=stock_id, conn=conn,
-                    save_data=True)
+                        stock_symbol=stock_symbol, stock_info=True, stock_id=stock_id, conn=conn,
+                        save_data=True)
 
-        candlestick_figure = utils.generate_candlestick_graph_w_indicators(utils, data, stock_symbol)
+        candlestick_figure = utils.generate_candlestick_graph_w_indicators(utils(), data, stock_symbol)
 
     # Financials for ETF's will be empty.
     if financials.empty:
         pass
     else:
-        master_financials_df = utils.generate_master_financials(utils, financials, balanceSheet, cashflows, earnings,
-                                                                master_financials_df)
-        master_financials = utils.generate_generic_dash_datatable(utils, master_financials_df,
+        master_financials_df = utils.generate_master_financials(utils, financials=financials,
+                                                                balanceSheet=balanceSheet, cashflows=cashflows,
+                                                                earnings=earnings)
+        master_financials = utils.generate_generic_dash_datatable(utils(), master_financials_df,
                                                                   id='master-financial-data')
 
     # Deals with the Financial Ratio creation TODO think about making this a DB powered thing instead of calc-ing here.
@@ -1074,18 +1051,20 @@ def update_fundamentals_UI(stock_symbol):
                                      children=[
                                          dcc.Tab(label='Balance Sheet', value='balance-sheet-dt',
                                                  children=[
-                                                     utils.generate_generic_dash_datatable(utils, balanceSheet,
+                                                     utils.generate_generic_dash_datatable(utils(), balanceSheet,
                                                                                            'balance-sheet-dt-tab')
                                                  ]),
                                          dcc.Tab(label='Cashflow', value='cashflow-dt', children=[
-                                             utils.generate_generic_dash_datatable(utils, cashflows, 'cashflow-dt-tab')
+                                             utils.generate_generic_dash_datatable(utils(), cashflows,
+                                                                                   'cashflow-dt-tab')
                                          ]),
                                          dcc.Tab(label='Earnings', value='earnings-dt', children=[
-                                             utils.generate_generic_dash_datatable(utils, earnings, 'earnings-dt-tab')
+                                             utils.generate_generic_dash_datatable(utils(), earnings, 'earnings-dt-tab')
 
                                          ]),
                                          dcc.Tab(label='Financials', value='financials-dt', children=[
-                                             utils.generate_generic_dash_datatable(utils, financials, 'financials-dt-tab')
+                                             utils.generate_generic_dash_datatable(utils(), financials,
+                                                                                   'financials-dt-tab')
                                          ])
                                      ])
 
@@ -1094,8 +1073,9 @@ def update_fundamentals_UI(stock_symbol):
 
     logging.info(financialRatioDF)
     # return candlestick_figure, call_datatable, put_datatable, master_financials, financial_ratios, business_summary, profit_margin_figure
+    return company_name, stock_sector, stock_subsector, stock_price, candlestick_figure, master_financials, financial_ratios, business_summary, profit_margin_figure
 
-    return company_name, stock_sector, stock_subsector, stock_price, candlestick_figure, master_financials, financial_ratios, business_summary, profit_margin_figure, tabbed_fin_statements
+    # return company_name, stock_sector, stock_subsector, stock_price, candlestick_figure, master_financials, financial_ratios, business_summary, profit_margin_figure, tabbed_fin_statements
 
 
 '''
@@ -1110,7 +1090,8 @@ Dash Callback that allows for interactivity between UI, API and DB
     Output('master-financial-heading', 'children'),
     Input('stock-storage', 'data'),
     State('stock-storage', 'data'),
-    suppress_callback_exceptions=True
+    suppress_callback_exceptions=True,
+    prevent_initial_callbacks=True,
 )
 def update_layout_w_storage_data(data, data1):
     if data is None or len(data) == 0:
@@ -1134,7 +1115,7 @@ def update_layout_w_storage_data(data, data1):
     Output('financial-ratios', 'children'),
     Output('business-summary', 'children'),
     Output('profit-margin-chart', 'figure'),
-    Output('financial-statements-tabs', 'children'),
+    # Output('financial-statements-tabs', 'children'),
     Input('ticker_input', 'value'),
     Input('companies_dropdown', 'value'),
     Input('stock-storage', 'data'),
@@ -1156,7 +1137,7 @@ def update_layout(ticker_input_value, companies_dropdown, ticker_input, data):
 
         stock_symbol = data['stock']
     else:
-        stock_symbol = utils.generate_random_stock(utils)
+        stock_symbol = utils.generate_random_stock(utils())
         # ticker_input = ticker_input
 
         # NOT needed but keep for ex purposes.access Callback Context information to know which button from the options button list that was generated
@@ -1183,7 +1164,7 @@ def update_layout(ticker_input_value, companies_dropdown, ticker_input, data):
 
             # TODO DRY is not being followed here this is also in the update_fundamentals_function as well
             try:
-                conn = dbObj.create_connection(dbObj, DB_FILE)
+                conn = dbObj.create_connection(dbObj(), DB_FILE)
 
                 # Getting single record for company - If no record returned we create and get data.
                 company_info_df = pd.read_sql_query(
@@ -1207,3 +1188,84 @@ def update_layout(ticker_input_value, companies_dropdown, ticker_input, data):
         # Returns initial data for the UI
     elif stock_symbol is not None:
         return update_fundamentals_UI(stock_symbol)
+
+
+@callback(
+    Output('tab-bar-chart', 'figure'),
+    Input('balance-sheet-dt-tab', 'selected_rows'),
+    Input('cashflow-dt-tab', 'selected_rows'),
+    Input('earnings-dt-tab', 'selected_rows'),
+    Input('financials-dt-tab', 'selected_rows'),
+    # Input('financial-statements-tabs', 'value'),
+    State('financial-statements-tabs', 'value'),
+    dash.dependencies.State('balance-sheet-dt-tab', 'derived_virtual_data'),
+    dash.dependencies.State('cashflow-dt-tab', 'derived_virtual_data'),
+    dash.dependencies.State('earnings-dt-tab', 'derived_virtual_data'),
+    dash.dependencies.State('financials-dt-tab', 'derived_virtual_data'),
+    suppress_callback_exceptions=True,
+    prevent_initial_callbacks=True,
+
+)
+def update_bar_chart(bs_selected_rows, cf_selected_rows, earn_selected_rows, fin_selected_rows, active_tab, bs_data,
+                     cf_data, earn_data, fin_data):
+    import plotly.graph_objs as go
+    selected_rows, data = None, None
+
+    def set_selected_rows(rows, tab):
+        if rows is not None:
+
+            selected_rows = rows
+            logging.info(f"{tab} selected row data is {selected_rows}")
+            return selected_rows
+        else:
+            logging.info(f"{rows} is empty for the {active_tab} data table.")
+            return None
+
+    logging.info(f"Beginning Selected Data Graph Update\nActive Tab:{active_tab}\n{bs_data},{bs_selected_rows}")
+    if active_tab == 'Balance Sheet':
+        logging.info(
+            f"Balance Sheet is the active Tab being selected:\n{active_tab}\nChecking for selected row data...")
+        if bs_selected_rows is not None:
+            selected_rows = set_selected_rows(bs_selected_rows, active_tab)
+
+        if bs_data is not None:
+            data = bs_data
+    elif active_tab == 'Cashflow':
+        logging.info(f"Cashflow is the active Tab being selected:\n{active_tab}\nChecking for selected row data...")
+        if cf_selected_rows is not None:
+            selected_rows = set_selected_rows(bs_selected_rows, active_tab)
+        if cf_data is not None:
+            data = cf_data
+    elif active_tab == 'Earnings':
+        logging.info(f"Earnings is the active Tab being selected:\n{active_tab}\nChecking for selected row data...")
+        if earn_selected_rows is not None:
+            selected_rows = set_selected_rows(earn_selected_rows, active_tab)
+
+        if earn_data is not None:
+            data = earn_data
+    elif active_tab == 'Financials':
+        logging.info(f"Financials is the active Tab being selected:\n{active_tab}\nChecking for selected row data...")
+        if fin_selected_rows is not None:
+            selected_rows = set_selected_rows(fin_selected_rows, active_tab)
+
+        if fin_data is not None:
+            data = fin_data
+    else:
+        logging.error(
+            f"{active_tab} is not listed as one of the Fundamental Financial Statements. "
+            f"It may need to be added or have the name updated\nSelected Row:{selected_rows}\nData:{data}")
+
+    if not selected_rows:
+        logging.info(f"There are currently no selected rows: {selected_rows}, returning blank graph for now.")
+        return go.Figure()
+
+    if selected_rows:
+        logging.info(f"{selected_rows} are going to be used to create the bar graph for comparison.")
+        selected_row_data = data[selected_rows[0]]
+        selected_df = pd.DataFrame([selected_row_data], columns=bs_data.columns)
+        fig = go.Figure()
+        for col in selected_df.columns:
+            fig.add_trace(go.Bar(x=[col], y=selected_df[col], name=col))
+
+        fig.update_layout(barmode='group', title='Selected Row Data')
+        return fig

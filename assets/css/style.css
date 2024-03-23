@@ -40,6 +40,8 @@ body{
     margin:2em 0;
     padding:1em;
     display:flex;
+/*    border:0;*/
+    background:var(--DIMGREY);
 }
 
 .btn {

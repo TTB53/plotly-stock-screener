@@ -6,5 +6,5 @@
 -- add new data into Company Information - partial query since the dynamic part is done via python.
 ----------------------------------------------------------------------
 UPDATE stock_earnings
---SET COLUMN_NAME
+--SET COLUMN_NAME(s) = value(s)
 -- WHERE condition;

@@ -1,4 +1,4 @@
-'''
+"""
 Homepage
 
 ------------------------------------------------------------------------------
@@ -13,7 +13,7 @@ fundamental or technical analysis to learn more about that particular stock.
 
 ----------------------------------------------------------------------------------
 
-'''
+"""
 from sqlite3 import Error
 import logging
 import dash
@@ -77,7 +77,7 @@ patten that was selected from the dropdown.
 
 
 def create_pattern_chart_card(pattern, stock, data):
-    fig = utils.generate_candlestick_graph(data, stock + "-" + pattern)
+    fig = utils.generate_candlestick_graph(utils(), data, stock + "-" + pattern)
     fig.update_layout(showlegend=False)
 
     patternChartCard = dcc.Graph(
@@ -450,7 +450,7 @@ def serve_layout():
                                             )
                                         ],
                                         type='circle',
-                                        color=utils.get_random_color(utils),
+                                        color=utils.get_random_color(utils()),
                                     ),
 
                                 ]
@@ -1216,3 +1216,7 @@ def update_sector_chart(sector):
             type='circle',
             color=utils.get_random_color(utils, )
         )
+
+
+
+

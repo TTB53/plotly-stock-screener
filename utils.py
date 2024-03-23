@@ -6,13 +6,20 @@ Program Description
 -------------------------------------------------------------------------------
 
 utility file that houses helper functions for things related to
-    - Data Viz
+    - Data Viz and graphing
     - Common Components across various pages
-    -
+    - Certain Financial Functions
 
 ----------------------------------------------------------------------------------
 
 """
+import os
+import re
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email import encoders
 import random
 
 import dash
@@ -20,6 +27,7 @@ import dash_bootstrap_components as dbc
 from dash import html, dcc, dash_table
 import dash_table.FormatTemplate as FormatTemplate
 import pandas as pd
+import numpy as np
 import plotly.graph_objs as go
 from dash_table.Format import Sign
 from plotly.subplots import make_subplots
@@ -255,7 +263,7 @@ class Utils:
     
     '''
 
-    def get_sidebar(self, dataframe, page_stock_info_ids={}):
+    def get_sidebar(self, dataframe, page_stock_info_ids):
         if page_stock_info_ids == {}:
             page_stock_info_ids['stock-name'] = 'fundamentals-stock-name'
             page_stock_info_ids['stock-title'] = 'fundamentals-stock-title'
@@ -269,69 +277,141 @@ class Utils:
                 html.Br(),
                 html.P("Select a company from the list below, or enter a stock ticker into the search box."),
                 html.Br(),
-                dbc.CardGroup(
-                    children=[
-                        dbc.Col(
-                            id="sb-stock-select-column",
-                            # className='col-md-4',
+                dbc.Col(
+                    [
+                        dbc.Card(
+                            className='mb-2 mt-2',
                             children=[
-                                dbc.Card(
-                                    className='mb-2 mt-2',
+                                dbc.CardBody(
+                                    className='pl-2 pr-2',
                                     children=[
-                                        dbc.CardBody(
-                                            className='pl-2 pr-2',
-                                            children=[
-                                                html.P("Select a Company from the Dropdown below."),
-                                                html.Br(),
-                                                dcc.Dropdown(
-                                                    id='companies_dropdown',
-                                                    value='Company Ticker Symbol',
-                                                    options=[
-                                                        {'label': company, 'value': company} for company in
-                                                        sorted(dataframe.company.unique())
+                                        dbc.Row(
+                                            [
+                                                dbc.Col(
+                                                    id="sb-stock-select-column",
+                                                    # className='col-md-4',
+                                                    children=[
+                                                        dbc.Card(
+                                                            className='mb-2 mt-2',
+                                                            children=[
+                                                                dbc.CardBody(
+                                                                    className='pl-2 pr-2',
+                                                                    children=[
+                                                                        html.P(
+                                                                            "Select a Company from the Dropdown below."),
+                                                                        html.Br(),
+                                                                        dcc.Dropdown(
+                                                                            id='companies_dropdown',
+                                                                            value='Company Ticker Symbol',
+                                                                            options=[
+                                                                                {'label': company, 'value': company} for
+                                                                                company in
+                                                                                sorted(dataframe.company.unique())
+                                                                            ],
+                                                                            optionHeight=35,
+                                                                            searchable=True,
+                                                                        ),
+                                                                    ],
+                                                                ),
+                                                            ],
+                                                        ),
                                                     ],
-                                                    optionHeight=35,
-                                                    searchable=True,
+                                                    width=6,
                                                 ),
-                                                # html.P("or enter the ticker symbol of the stock you wish to research"),
-                                                # html.Br(),
-                                                # dcc.Input(id="ticker_input", type="text",
-                                                #           placeholder="Enter a Stock Ticker"),
-                                                # html.Button('Submit', id='get_stock_btn'),
-                                            ],
-                                        ),
+
+                                                dbc.Col(
+                                                    children=[
+                                                        dbc.Card(
+                                                            className='mb-2 mt-2',
+                                                            children=[
+                                                                dbc.CardBody(
+                                                                    children=
+                                                                    [
+                                                                        html.P(
+                                                                            "Enter the ticker symbol of the stock you wish to research"),
+                                                                        html.Br(),
+                                                                        dcc.Input(id="ticker_input", type="text",
+                                                                                  className='ml-2 mr-4',
+                                                                                  placeholder="Enter a Stock Ticker"),
+                                                                        html.Button(
+                                                                            ['Submit'],
+                                                                            id='get_stock_btn',
+                                                                            className='btn ml-2 p-2',
+                                                                        ),
+                                                                    ]
+                                                                )
+                                                            ]
+                                                        )
+                                                    ],
+                                                    width=6
+                                                )
+                                            ]
+                                        )
                                     ],
                                 ),
                             ],
-                            width=6,
                         ),
-
-                        dbc.Col(
-                            children=[
-                                dbc.Card(
-                                    className='mb-2 mt-2',
-                                    children=[
-                                        dbc.CardBody(
-                                            children=
-                                            [
-                                                html.P("Enter the ticker symbol of the stock you wish to research"),
-                                                html.Br(),
-                                                dcc.Input(id="ticker_input", type="text",
-                                                          placeholder="Enter a Stock Ticker"),
-                                                html.Button(
-                                                    ['Submit'],
-                                                    id='get_stock_btn',
-                                                    className='btn ml-2 p-2',
-                                                ),
-                                            ]
-                                        )
-                                    ]
-                                )
-                            ],
-                            width=6
-                        )
                     ]
                 ),
+
+                # dbc.CardGroup(
+                #     children=[
+                #         dbc.Col(
+                #             id="sb-stock-select-column",
+                #             # className='col-md-4',
+                #             children=[
+                #                 dbc.Card(
+                #                     className='mb-2 mt-2',
+                #                     children=[
+                #                         dbc.CardBody(
+                #                             className='pl-2 pr-2',
+                #                             children=[
+                #                                 html.P("Select a Company from the Dropdown below."),
+                #                                 html.Br(),
+                #                                 dcc.Dropdown(
+                #                                     id='companies_dropdown',
+                #                                     value='Company Ticker Symbol',
+                #                                     options=[
+                #                                         {'label': company, 'value': company} for company in
+                #                                         sorted(dataframe.company.unique())
+                #                                     ],
+                #                                     optionHeight=35,
+                #                                     searchable=True,
+                #                                 ),
+                #                             ],
+                #                         ),
+                #                     ],
+                #                 ),
+                #             ],
+                #             width=6,
+                #         ),
+                #
+                #         dbc.Col(
+                #             children=[
+                #                 dbc.Card(
+                #                     className='mb-2 mt-2',
+                #                     children=[
+                #                         dbc.CardBody(
+                #                             children=
+                #                             [
+                #                                 html.P("Enter the ticker symbol of the stock you wish to research"),
+                #                                 html.Br(),
+                #                                 dcc.Input(id="ticker_input", type="text",
+                #                                           placeholder="Enter a Stock Ticker"),
+                #                                 html.Button(
+                #                                     ['Submit'],
+                #                                     id='get_stock_btn',
+                #                                     className='btn ml-2 p-2',
+                #                                 ),
+                #                             ]
+                #                         )
+                #                     ]
+                #                 )
+                #             ],
+                #             width=6
+                #         )
+                #     ]
+                # ),
 
                 # dbc.Col(
                 #     id="sb-stock-info-column",
@@ -435,7 +515,6 @@ class Utils:
             elif type(c) == int:
                 year = c
                 dataframe.rename(columns={c: str(year)}, inplace=True)
-
             else:
                 pass
 
@@ -443,6 +522,27 @@ class Utils:
             "Columns were converted from Timestamps to Strings and are of type\n{}\n".format(type(dataframe.columns)))
 
         return dataframe
+
+    '''
+    Convert Year column from Timestamp to int so that it can be used in downstream 
+    fucnctions etc.
+    
+    Modifies the df in place. 
+    '''
+
+    def convert_ts_col_to_year(self, df, column_name):
+        for i, val in enumerate(df[column_name]):
+            if isinstance(val, pd.Timestamp):
+                logging.info(f"Timestamp present at {i} with a value of {val}. Converting to int.{val.timestamp()}")
+                df.at[i, column_name] = val.timestamp()
+
+            if isinstance(val, str):
+                logging.info(f"Timestamp in string format at {i} value of {val}. Converting to ts then int.")
+                ts = pd.to_datetime(val)
+                ts = ts.year
+                df.at[i, column_name] = ts
+
+        self.convert_timestamp_columns(self, df)
 
     '''
     Generating a generic html table
@@ -692,7 +792,7 @@ class Utils:
                                )
 
         volume = go.Bar(x=dataframe.date, y=dataframe.Volume, name='Volume', opacity=.7,
-                        marker_color=ATBDEFAULTTHEME.DARKCYAN)
+                        marker_color=ATBDEFAULTTHEME.IVORY)
 
         # Adding the traces to the candlestick figure that will populate our graph mutli-plot graph Setting one of the traces
         # on the secondary axis to true allows for a nice multiplot
@@ -779,31 +879,8 @@ class Utils:
                                decreasing_line_color=ATBDEFAULTTHEME.ROSYBROWN
                                )
 
-        '''
-    
-        Color Choices 
-    
-        aliceblue, antiquewhite, aqua, aquamarine, azure, beige, bisque, black, blanchedalmond, blue, 
-        blueviolet, brown, burlywood, cadetblue, chartreuse, chocolate, coral, cornflowerblue, cornsilk, 
-        crimson, cyan, darkblue, darkcyan, darkgoldenrod, darkgray, darkgrey, darkgreen, darkkhaki, darkmagenta, 
-        darkolivegreen, darkorange, darkorchid, darkred, darksalmon, darkseagreen, darkslateblue, darkslategray, 
-        darkslategrey, darkturquoise, darkviolet, deeppink, deepskyblue, dimgray, dimgrey, dodgerblue, firebrick, 
-        floralwhite, forestgreen, fuchsia, gainsboro, ghostwhite, gold, goldenrod, gray, grey, green, greenyellow, 
-        honeydew, hotpink, indianred, indigo, ivory, khaki, lavender, lavenderblush, lawngreen, lemonchiffon, lightblue, 
-        lightcoral, lightcyan, lightgoldenrodyellow, lightgray, lightgrey, lightgreen, lightpink, lightsalmon, lightseagreen, 
-        lightskyblue, lightslategray, lightslategrey, lightsteelblue, lightyellow, lime, limegreen, linen, magenta, maroon, 
-        mediumaquamarine, mediumblue, mediumorchid, mediumpurple, mediumseagreen, mediumslateblue, mediumspringgreen, 
-        mediumturquoise, mediumvioletred, midnightblue, mintcream, mistyrose, moccasin, navajowhite, navy, oldlace, olive, 
-        olivedrab, orange, orangered, orchid, palegoldenrod, palegreen, paleturquoise, palevioletred, papayawhip, peachpuff,
-         peru, pink, plum, powderblue, purple, red, rosybrown, royalblue, rebeccapurple, saddlebrown, 
-         salmon, sandybrown, seagreen, seashell, sienna, silver, skyblue, slateblue, slategray, slategrey, snow, 
-         springgreen, steelblue, tan, teal, thistle, tomato, turquoise, violet, wheat, white, whitesmoke, yellow, 
-         yellowgreen
-    
-        '''
-
         sell_line = go.Scatter(x=dataframe.date, y=dataframe['Bollinger-Upper'],
-                               line=dict(color=ATBDEFAULTTHEME.DARKSLATECYAN, dash='solid'), opacity=.75,
+                               line=dict(color=ATBDEFAULTTHEME.AZURE, dash='solid'), opacity=.75,
                                name='BB Upper (Sell)', visible='legendonly')
         mid_line = go.Scatter(x=dataframe.date, y=dataframe['Bollinger-Middle'],
                               line=dict(color=ATBDEFAULTTHEME.GOLDENROD, dash='solid'), opacity=.75,
@@ -822,7 +899,7 @@ class Utils:
                           line=dict(color=ATBDEFAULTTHEME.CADETBLUE, ),
                           visible='legendonly')
         MA50 = go.Scatter(x=dataframe['date'], y=dataframe['MA50'], name='50 MA',
-                          line=dict(color=ATBDEFAULTTHEME.DARKSLATECYAN, ),
+                          line=dict(color=ATBDEFAULTTHEME.LIGHTGOLDENROD, ),
                           visible='legendonly')
 
         # Adding the traces to the candlestick figure that will populate our graph mutli-plot graph Setting one of the
@@ -1230,7 +1307,7 @@ class Utils:
 
     # create a "Master Financials Table" overview using the Financials, BalanceSheet, Cashflows, Earnings
     # Note Earnings will have to be transposed
-    def generate_master_financials(self, financials, balanceSheet, cashflows, earnings, master_financials_df):
+    def generate_master_financials(self, financials, balanceSheet, cashflows, earnings):
         # Transposing the rows and columns for the earnings reports.
         if 'Year' in earnings.columns or 'year' in earnings.columns:
             earnings.set_index('Year', inplace=True)
@@ -1453,10 +1530,12 @@ class Utils:
         Opens and reads the SQL file line by line.
     '''
 
-    def open_and_read_sql(self, filename):
-        f = open(filename, 'r')
-        read_sql_file = f.read()
-        f.close()
+    def open_and_read_sql(self, filename=None):
+
+        if os.path.exists(filename):
+            f = open(filename, 'r')
+            read_sql_file = f.read()
+            f.close()
 
         return read_sql_file
 
@@ -1473,15 +1552,24 @@ class Utils:
 
     def prep_df_for_db_insert(self, qry_str, stock_id, col_check, drop_cols, conn):
         QRY = self.open_and_read_sql(self, qry_str)
+        logging.info(f"Prepping the database with the following query\n{QRY}")
         ids_to_check = [stock_id]  # if using the same id multiple time
         id_string = ', '.join(str(id) for id in ids_to_check)
         df = pd.read_sql_query(text(QRY.format(id_string, id_string)), conn)
+        logging.info(f"Data Received from QRY\n{df}")
 
         if df[col_check][0] is not None:
             df.drop(columns=drop_cols, inplace=True)
 
-            if col_check is 'Year':
+            if col_check == 'Year':
+                self.convert_ts_col_to_year(self, df, col_check)
+                df.drop_duplicates(inplace=True)
                 df.set_index('Year', inplace=True)
+
+                if df.index.name == 'Year':
+                    logging.info(f"{col_check} column is a string. need to convert to int")
+                    self.convert_timestamp_columns(self, df)
+
             else:
                 df.set_index('year', inplace=True)
 
@@ -1583,3 +1671,82 @@ class Utils:
             return scenario_df
         else:
             return revenue
+
+    def monte_carlo_sim(self, no_of_sims, p1, p2, b1, b2):
+
+        if no_of_sims != 0 or no_of_sims is None:
+            no_of_sims = 1000000
+        logging.info(f"Starting Monte Carlo Simulation with a {no_of_sims} simulation run with {p1},{p2},{b1},{b2}")
+        P = np.random.uniform(p1, p2, no_of_sims)
+        B = np.random.uniform(b1, b2, no_of_sims)
+
+        duration = P + B
+        logging.info(f"{P}\n{B}\n{duration}")
+
+        return duration
+
+
+
+    # Example usage
+    # log_file_path = 'example.log'
+    # search_words = ['Error', 'Exception']
+    # email_sender = 'sender@example.com'
+    # email_recipient = 'recipient@example.com'
+    # smtp_server = 'smtp.example.com'
+    # smtp_port = 587
+    # smtp_username = 'your_username'
+    # smtp_password = 'your_password'
+
+    def parse_log_file_and_send_email(self,log_file_path, search_words, email_sender, email_recipient, smtp_server,
+                                      smtp_port, smtp_username, smtp_password):
+        try:
+            # Open the log file
+            with open(log_file_path, 'r') as file:
+                log_content = file.read()
+
+            # Initialize a list to store found errors
+            errors = []
+
+            # Search for the specified words in the log content
+            for word in search_words:
+                errors.extend(re.findall(r'\b' + word + r'\b', log_content, flags=re.IGNORECASE))
+
+            # Send email for each error found
+            if errors:
+                for error in errors:
+                    subject = f"Error occurred: {error}"
+                    body = f"Error details:\n{error}\n\nLog file: {log_file_path}"
+
+                    # Create the email message
+                    msg = MIMEMultipart()
+                    msg['From'] = email_sender
+                    msg['To'] = email_recipient
+                    msg['Subject'] = subject
+                    msg.attach(MIMEText(body, 'plain'))
+
+                    # Attach the log file
+                    attachment = MIMEBase('application', 'octet-stream')
+                    with open(log_file_path, 'rb') as file:
+                        attachment.set_payload(file.read())
+                    encoders.encode_base64(attachment)
+                    attachment.add_header('Content-Disposition',
+                                          f'attachment; filename="{os.path.basename(log_file_path)}"')
+                    msg.attach(attachment)
+
+                    # Connect to SMTP server and send email
+                    with smtplib.SMTP(smtp_server, smtp_port) as server:
+                        server.starttls()
+                        server.login(smtp_username, smtp_password)
+                        server.sendmail(email_sender, email_recipient, msg.as_string())
+
+            else:
+                print("No errors found in the log file.")
+
+        except FileNotFoundError:
+            print("Log file not found.")
+
+        except Exception as e:
+            print(f"An error occurred: {e}")
+
+
+
